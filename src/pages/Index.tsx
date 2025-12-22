@@ -1,26 +1,52 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ImageUploader } from '@/components/ImageUploader';
+import { ImageCropper } from '@/components/ImageCropper';
 import { GridSelector } from '@/components/GridSelector';
 import { GridPreview } from '@/components/GridPreview';
 import { DownloadSection } from '@/components/DownloadSection';
 import { Zap } from 'lucide-react';
 
+type Step = 'upload' | 'crop' | 'preview';
+
 const Index = () => {
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [croppedImage, setCroppedImage] = useState<string | null>(null);
   const [selectedGrid, setSelectedGrid] = useState('3x3');
+  const [currentStep, setCurrentStep] = useState<Step>('upload');
 
   const handleImageUpload = useCallback((file: File, preview: string) => {
-    setUploadedImage(preview);
+    setOriginalImage(preview);
+    setCroppedImage(null);
+    setCurrentStep('crop');
   }, []);
 
   const handleClear = useCallback(() => {
-    setUploadedImage(null);
+    setOriginalImage(null);
+    setCroppedImage(null);
+    setCurrentStep('upload');
   }, []);
 
   const handleGridSelect = useCallback((grid: string) => {
     setSelectedGrid(grid);
   }, []);
+
+  const handleCropComplete = useCallback((croppedUrl: string) => {
+    setCroppedImage(croppedUrl);
+    setCurrentStep('preview');
+  }, []);
+
+  const handleSkipCrop = useCallback(() => {
+    setCroppedImage(originalImage);
+    setCurrentStep('preview');
+  }, [originalImage]);
+
+  const handleEditCrop = useCallback(() => {
+    setCroppedImage(null);
+    setCurrentStep('crop');
+  }, []);
+
+  const activeImage = croppedImage || originalImage;
 
   return (
     <div className="min-h-screen bg-background">
@@ -41,22 +67,62 @@ const Index = () => {
               <span className="gradient-text block mt-1">Instagram Grid</span>
             </h1>
             <p className="text-base text-muted-foreground max-w-lg mx-auto">
-              Transform one image into a multi-post grid. Upload, split, and download.
+              Transform one image into a multi-post grid. Upload, crop, split, and download.
             </p>
           </div>
 
           {/* App Interface */}
           <div className="max-w-3xl mx-auto space-y-6">
-            <ImageUploader
-              onImageUpload={handleImageUpload}
-              uploadedImage={uploadedImage}
-              onClear={handleClear}
-            />
+            {/* Step Indicator */}
+            {originalImage && (
+              <div className="flex items-center justify-center gap-2 mb-4">
+                {['Upload', 'Crop', 'Download'].map((label, i) => {
+                  const stepMap: Step[] = ['upload', 'crop', 'preview'];
+                  const isActive = currentStep === stepMap[i];
+                  const isPast = stepMap.indexOf(currentStep) > i;
+                  return (
+                    <div key={label} className="flex items-center gap-2">
+                      <div
+                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
+                          isActive
+                            ? 'bg-primary text-primary-foreground'
+                            : isPast
+                            ? 'bg-primary/20 text-primary'
+                            : 'bg-muted text-muted-foreground'
+                        }`}
+                      >
+                        {i + 1}
+                      </div>
+                      <span className={`text-xs ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+                        {label}
+                      </span>
+                      {i < 2 && <div className="w-8 h-px bg-border" />}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             <AnimatePresence mode="wait">
-              {uploadedImage && (
+              {currentStep === 'upload' && (
                 <motion.div
-                  key="tools"
+                  key="upload"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ImageUploader
+                    onImageUpload={handleImageUpload}
+                    uploadedImage={null}
+                    onClear={handleClear}
+                  />
+                </motion.div>
+              )}
+
+              {currentStep === 'crop' && originalImage && (
+                <motion.div
+                  key="crop"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
@@ -67,29 +133,69 @@ const Index = () => {
                     selectedGrid={selectedGrid}
                     onGridSelect={handleGridSelect}
                   />
+                  <ImageCropper
+                    imageUrl={originalImage}
+                    grid={selectedGrid}
+                    onCropComplete={handleCropComplete}
+                    onCancel={handleSkipCrop}
+                  />
+                </motion.div>
+              )}
+
+              {currentStep === 'preview' && activeImage && (
+                <motion.div
+                  key="preview"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-6"
+                >
+                  <GridSelector
+                    selectedGrid={selectedGrid}
+                    onGridSelect={(grid) => {
+                      handleGridSelect(grid);
+                      handleEditCrop();
+                    }}
+                  />
 
                   <GridPreview
-                    imageUrl={uploadedImage}
+                    imageUrl={activeImage}
                     grid={selectedGrid}
                   />
 
                   <DownloadSection
-                    imageUrl={uploadedImage}
+                    imageUrl={activeImage}
                     grid={selectedGrid}
                   />
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleEditCrop}
+                      className="flex-1 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      ← Edit Crop
+                    </button>
+                    <button
+                      onClick={handleClear}
+                      className="flex-1 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Upload New Image
+                    </button>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
 
           {/* How it works - Simplified */}
-          {!uploadedImage && (
+          {!originalImage && (
             <section className="mt-16 max-w-3xl mx-auto">
               <h2 className="text-xl font-semibold text-center mb-8">How It Works</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
                   { step: '1', title: 'Upload', desc: 'Drop or select your image' },
-                  { step: '2', title: 'Choose Grid', desc: 'Pick 3×1, 3×2, 3×3, or 3×4' },
+                  { step: '2', title: 'Crop & Adjust', desc: 'Frame your image perfectly' },
                   { step: '3', title: 'Download', desc: 'Get all tiles as a ZIP' },
                 ].map((item) => (
                   <div
