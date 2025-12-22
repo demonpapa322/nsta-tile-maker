@@ -1,91 +1,71 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useCallback, useMemo } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ImageUploader } from '@/components/ImageUploader';
 import { GridSelector } from '@/components/GridSelector';
 import { GridPreview } from '@/components/GridPreview';
 import { DownloadSection } from '@/components/DownloadSection';
-import { Grid3X3, Sparkles } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
 const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [selectedGrid, setSelectedGrid] = useState('3x3');
 
-  const handleImageUpload = (file: File, preview: string) => {
-    setImageFile(file);
+  const handleImageUpload = useCallback((file: File, preview: string) => {
     setUploadedImage(preview);
-  };
+  }, []);
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setUploadedImage(null);
-    setImageFile(null);
-  };
+  }, []);
+
+  const handleGridSelect = useCallback((grid: string) => {
+    setSelectedGrid(grid);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Background glow effect */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-accent/10 rounded-full blur-[100px]" />
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Subtle background gradient */}
+      <div className="fixed inset-0 pointer-events-none bg-gradient-to-b from-primary/5 via-transparent to-accent/5" />
 
       <div className="relative z-10">
-        {/* Header */}
-        <header className="border-b border-border/50 backdrop-blur-sm bg-background/50">
-          <div className="container py-4 flex items-center justify-between">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-3"
-            >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent via-primary to-orange-400 flex items-center justify-center">
-                <Grid3X3 className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-semibold">GridSplit</span>
-            </motion.div>
-          </div>
-        </header>
-
         {/* Main Content */}
-        <main className="container py-8 md:py-12">
-          {/* Hero Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-10"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Free & No Sign-up Required</span>
+        <main className="container py-12 md:py-16">
+          {/* Hero Section - Simplified */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-6">
+              <Zap className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-medium text-primary">Free • Fast • No Sign-up</span>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 tracking-tight">
               Split Images for Your
               <span className="gradient-text block mt-1">Instagram Grid</span>
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Transform one image into a stunning multi-post grid. Upload, split, and download – all in your browser.
+            <p className="text-base text-muted-foreground max-w-lg mx-auto">
+              Transform one image into a multi-post grid. Upload, split, and download.
             </p>
-          </motion.div>
+          </div>
 
           {/* App Interface */}
-          <div className="max-w-4xl mx-auto space-y-8">
+          <div className="max-w-3xl mx-auto space-y-6">
             <ImageUploader
               onImageUpload={handleImageUpload}
               uploadedImage={uploadedImage}
               onClear={handleClear}
             />
 
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
               {uploadedImage && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="space-y-8"
+                  key="tools"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-6"
                 >
                   <GridSelector
                     selectedGrid={selectedGrid}
-                    onGridSelect={setSelectedGrid}
+                    onGridSelect={handleGridSelect}
                   />
 
                   <GridPreview
@@ -96,50 +76,43 @@ const Index = () => {
                   <DownloadSection
                     imageUrl={uploadedImage}
                     grid={selectedGrid}
-                    onSplit={() => {}}
                   />
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
 
-          {/* How it works */}
-          <motion.section
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="mt-20 max-w-4xl mx-auto"
-          >
-            <h2 className="text-2xl font-bold text-center mb-8">How It Works</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {[
-                { step: '1', title: 'Upload', desc: 'Drop or select your image' },
-                { step: '2', title: 'Choose Grid', desc: 'Pick your preferred layout' },
-                { step: '3', title: 'Download', desc: 'Get your tiles & post in order' },
-              ].map((item, i) => (
-                <motion.div
-                  key={item.step}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 + i * 0.1 }}
-                  className="glass rounded-2xl p-6 text-center"
-                >
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent via-primary to-orange-400 flex items-center justify-center text-xl font-bold text-primary-foreground mx-auto mb-4">
-                    {item.step}
+          {/* How it works - Simplified */}
+          {!uploadedImage && (
+            <section className="mt-16 max-w-3xl mx-auto">
+              <h2 className="text-xl font-semibold text-center mb-8">How It Works</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { step: '1', title: 'Upload', desc: 'Drop or select your image' },
+                  { step: '2', title: 'Choose Grid', desc: 'Pick 3×1, 3×2, 3×3, or 3×4' },
+                  { step: '3', title: 'Download', desc: 'Get all tiles as a ZIP' },
+                ].map((item) => (
+                  <div
+                    key={item.step}
+                    className="flex flex-col items-center p-6 rounded-xl bg-card border border-border"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-bold mb-3">
+                      {item.step}
+                    </div>
+                    <h3 className="font-semibold mb-1">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground text-center">{item.desc}</p>
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
-                  <p className="text-muted-foreground text-sm">{item.desc}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.section>
+                ))}
+              </div>
+            </section>
+          )}
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-border/50 mt-20">
-          <div className="container py-6 text-center text-sm text-muted-foreground">
-            <p>Made with care for content creators. All processing happens locally in your browser.</p>
-          </div>
+        <footer className="border-t border-border py-6 mt-12">
+          <p className="text-center text-sm text-muted-foreground">
+            100% client-side processing. Your images never leave your device.
+          </p>
         </footer>
       </div>
     </div>

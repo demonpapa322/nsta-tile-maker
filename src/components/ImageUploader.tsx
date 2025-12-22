@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState, memo } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Image as ImageIcon, X } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 interface ImageUploaderProps {
   onImageUpload: (file: File, preview: string) => void;
@@ -10,7 +10,11 @@ interface ImageUploaderProps {
   onClear: () => void;
 }
 
-export function ImageUploader({ onImageUpload, uploadedImage, onClear }: ImageUploaderProps) {
+export const ImageUploader = memo(function ImageUploader({ 
+  onImageUpload, 
+  uploadedImage, 
+  onClear 
+}: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -27,109 +31,86 @@ export function ImageUploader({ onImageUpload, uploadedImage, onClear }: ImageUp
 
   const { getRootProps, getInputProps, open } = useDropzone({
     onDrop,
-    accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.webp']
-    },
+    accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] },
     maxFiles: 1,
     noClick: !!uploadedImage,
     onDragEnter: () => setIsDragging(true),
     onDragLeave: () => setIsDragging(false),
   });
 
+  const handleClear = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClear();
+  }, [onClear]);
+
+  const handleOpen = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    open();
+  }, [open]);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="w-full"
+    <div
+      {...getRootProps()}
+      className={cn(
+        "relative rounded-2xl border-2 border-dashed transition-colors cursor-pointer overflow-hidden",
+        isDragging
+          ? "border-primary bg-primary/5"
+          : uploadedImage
+          ? "border-border bg-card"
+          : "border-muted-foreground/30 hover:border-primary/50 bg-card/50"
+      )}
     >
-      <div
-        {...getRootProps()}
-        className={cn(
-          "relative rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer overflow-hidden",
-          isDragging
-            ? "border-primary bg-primary/10 scale-[1.02]"
-            : uploadedImage
-            ? "border-border bg-card"
-            : "border-muted-foreground/30 hover:border-primary/50 bg-card/50 hover:bg-card"
-        )}
-      >
-        <input {...getInputProps()} />
-        
-        <AnimatePresence mode="wait">
-          {uploadedImage ? (
-            <motion.div
-              key="preview"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="relative aspect-square max-h-[500px] w-full"
-            >
-              <img
-                src={uploadedImage}
-                alt="Uploaded preview"
-                className="w-full h-full object-contain p-4"
-              />
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onClear();
-                }}
-                className="absolute top-4 right-4 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border hover:bg-destructive hover:border-destructive transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  open();
-                }}
-                className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-secondary/80 backdrop-blur-sm border border-border hover:bg-secondary transition-colors text-sm font-medium"
-              >
-                Change Image
-              </button>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="upload"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col items-center justify-center py-16 px-8 text-center"
-            >
-              <motion.div
-                animate={{ y: isDragging ? -5 : 0 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className={cn(
-                  "w-20 h-20 rounded-2xl flex items-center justify-center mb-6 transition-colors",
-                  isDragging ? "bg-primary/20" : "bg-muted"
-                )}
-              >
-                {isDragging ? (
-                  <ImageIcon className="w-10 h-10 text-primary" />
-                ) : (
-                  <Upload className="w-10 h-10 text-muted-foreground" />
-                )}
-              </motion.div>
-              
-              <h3 className="text-xl font-semibold mb-2">
-                {isDragging ? "Drop your image here" : "Upload your image"}
-              </h3>
-              <p className="text-muted-foreground mb-6 max-w-sm">
-                Drag and drop an image, or click to browse. Supports PNG, JPG, and WebP.
-              </p>
-              
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="px-6 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-medium shadow-glow"
-              >
-                Choose File
-              </motion.button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.div>
+      <input {...getInputProps()} />
+      
+      {uploadedImage ? (
+        <div className="relative aspect-video max-h-[400px] w-full flex items-center justify-center bg-muted/20">
+          <img
+            src={uploadedImage}
+            alt="Uploaded preview"
+            className="max-w-full max-h-[400px] object-contain"
+            loading="eager"
+          />
+          <button
+            onClick={handleClear}
+            className="absolute top-3 right-3 p-2 rounded-full bg-background/90 border border-border hover:bg-destructive hover:border-destructive transition-colors"
+            aria-label="Remove image"
+          >
+            <X className="w-4 h-4" />
+          </button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleOpen}
+            className="absolute bottom-3 right-3"
+          >
+            Change Image
+          </Button>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+          <div
+            className={cn(
+              "w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-colors",
+              isDragging ? "bg-primary/20" : "bg-muted"
+            )}
+          >
+            <Upload className={cn(
+              "w-7 h-7 transition-colors",
+              isDragging ? "text-primary" : "text-muted-foreground"
+            )} />
+          </div>
+          
+          <h3 className="text-lg font-semibold mb-1">
+            {isDragging ? "Drop your image" : "Upload your image"}
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Drag and drop or click to browse. PNG, JPG, WebP.
+          </p>
+          <Button variant="outline" size="sm">
+            Choose File
+          </Button>
+        </div>
+      )}
+    </div>
   );
-}
+});

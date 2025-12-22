@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { memo } from 'react';
 import { cn } from '@/lib/utils';
 
 interface GridSelectorProps {
@@ -13,36 +13,26 @@ const gridOptions = [
   { value: '3x4', label: '3×4', cols: 3, rows: 4 },
 ];
 
-export function GridSelector({ selectedGrid, onGridSelect }: GridSelectorProps) {
+export const GridSelector = memo(function GridSelector({ 
+  selectedGrid, 
+  onGridSelect 
+}: GridSelectorProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: 0.1 }}
-      className="w-full"
-    >
-      <h3 className="text-lg font-semibold mb-4">Grid Size</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="w-full">
+      <h3 className="text-sm font-medium text-muted-foreground mb-3">Grid Size</h3>
+      <div className="grid grid-cols-4 gap-2">
         {gridOptions.map((option) => (
           <button
             key={option.value}
             onClick={() => onGridSelect(option.value)}
             className={cn(
-              "relative p-4 rounded-xl border-2 transition-all duration-200",
+              "relative p-3 rounded-xl border transition-colors",
               selectedGrid === option.value
                 ? "border-primary bg-primary/10"
                 : "border-border bg-card hover:border-muted-foreground/50"
             )}
           >
-            {selectedGrid === option.value && (
-              <motion.div
-                layoutId="gridSelector"
-                className="absolute inset-0 rounded-xl bg-primary/10 border-2 border-primary"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
-            )}
-            
-            <div className="relative z-10 flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-2">
               {/* Mini grid preview */}
               <div 
                 className="grid gap-0.5"
@@ -55,7 +45,7 @@ export function GridSelector({ selectedGrid, onGridSelect }: GridSelectorProps) 
                   <div
                     key={i}
                     className={cn(
-                      "w-3 h-3 rounded-sm",
+                      "w-2.5 h-2.5 rounded-sm transition-colors",
                       selectedGrid === option.value
                         ? "bg-primary"
                         : "bg-muted-foreground/40"
@@ -65,7 +55,7 @@ export function GridSelector({ selectedGrid, onGridSelect }: GridSelectorProps) 
               </div>
               
               <span className={cn(
-                "text-sm font-medium",
+                "text-xs font-medium transition-colors",
                 selectedGrid === option.value
                   ? "text-primary"
                   : "text-muted-foreground"
@@ -76,6 +66,6 @@ export function GridSelector({ selectedGrid, onGridSelect }: GridSelectorProps) 
           </button>
         ))}
       </div>
-    </motion.div>
+    </div>
   );
-}
+});
