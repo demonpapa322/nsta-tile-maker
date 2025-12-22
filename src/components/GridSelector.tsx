@@ -11,6 +11,8 @@ const gridOptions = [
   { value: '3x2', label: '3×2', cols: 3, rows: 2 },
   { value: '3x3', label: '3×3', cols: 3, rows: 3 },
   { value: '3x4', label: '3×4', cols: 3, rows: 4 },
+  { value: '4x4', label: '4×4', cols: 4, rows: 4 },
+  { value: '4x5', label: '4×5', cols: 4, rows: 5 },
 ];
 
 export const GridSelector = memo(function GridSelector({ 
@@ -20,7 +22,7 @@ export const GridSelector = memo(function GridSelector({
   return (
     <div className="w-full">
       <h3 className="text-sm font-medium text-muted-foreground mb-3">Grid Size</h3>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
         {gridOptions.map((option) => (
           <button
             key={option.value}

@@ -19,6 +19,9 @@ export const GridPreview = memo(function GridPreview({ imageUrl, grid }: GridPre
     });
   }, [totalTiles, cols]);
 
+  // Limit preview size based on grid complexity
+  const maxPreviewWidth = cols > 3 ? 'max-w-md' : 'max-w-sm';
+
   return (
     <div className="w-full">
       <h3 className="text-sm font-medium text-muted-foreground mb-3">Preview</h3>
@@ -30,30 +33,35 @@ export const GridPreview = memo(function GridPreview({ imageUrl, grid }: GridPre
           </div>
         </div>
         
-        <div 
-          className="grid gap-px rounded-lg overflow-hidden bg-border"
-          style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
-        >
-          {tiles.map(({ index, row, col, postOrder }) => (
-            <div
-              key={index}
-              className="relative aspect-square bg-card overflow-hidden group"
-            >
-              <div 
-                className="absolute inset-0 bg-cover bg-no-repeat"
-                style={{
-                  backgroundImage: `url(${imageUrl})`,
-                  backgroundSize: `${cols * 100}% ${rows * 100}%`,
-                  backgroundPosition: `${cols > 1 ? (col / (cols - 1)) * 100 : 50}% ${rows > 1 ? (row / (rows - 1)) * 100 : 50}%`,
-                }}
-              />
-              
-              {/* Number indicator */}
-              <div className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-[10px] font-bold">
-                {postOrder}
+        <div className={`mx-auto ${maxPreviewWidth}`}>
+          <div 
+            className="grid gap-px rounded-lg overflow-hidden bg-border"
+            style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
+          >
+            {tiles.map(({ index, row, col, postOrder }) => (
+              <div
+                key={index}
+                className="relative aspect-square bg-card overflow-hidden"
+              >
+                <img
+                  src={imageUrl}
+                  alt={`Tile ${postOrder}`}
+                  className="absolute w-full h-full object-cover"
+                  style={{
+                    objectPosition: `${cols > 1 ? (col / (cols - 1)) * 100 : 50}% ${rows > 1 ? (row / (rows - 1)) * 100 : 50}%`,
+                    transform: `scale(${cols}, ${rows})`,
+                    transformOrigin: `${cols > 1 ? (col / (cols - 1)) * 100 : 50}% ${rows > 1 ? (row / (rows - 1)) * 100 : 50}%`,
+                  }}
+                  loading="lazy"
+                />
+                
+                {/* Number indicator */}
+                <div className="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-[8px] font-bold">
+                  {postOrder}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
         
         <p className="text-center text-xs text-muted-foreground mt-3">
