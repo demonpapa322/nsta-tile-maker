@@ -291,7 +291,7 @@ export const ImageCropper = memo(function ImageCropper({
           onClick={onCancel}
           className="flex-1"
         >
-          Skip Crop
+          Cancel
         </Button>
         <Button
           variant="gradient"

@@ -18,7 +18,7 @@ const Index = () => {
   const handleImageUpload = useCallback((file: File, preview: string) => {
     setOriginalImage(preview);
     setCroppedImage(null);
-    setCurrentStep('crop');
+    setCurrentStep('preview'); // Go directly to preview
   }, []);
 
   const handleClear = useCallback(() => {
@@ -36,13 +36,11 @@ const Index = () => {
     setCurrentStep('preview');
   }, []);
 
-  const handleSkipCrop = useCallback(() => {
-    setCroppedImage(originalImage);
+  const handleBackToPreview = useCallback(() => {
     setCurrentStep('preview');
-  }, [originalImage]);
+  }, []);
 
   const handleEditCrop = useCallback(() => {
-    setCroppedImage(null);
     setCurrentStep('crop');
   }, []);
 
@@ -73,13 +71,14 @@ const Index = () => {
 
           {/* App Interface */}
           <div className="max-w-3xl mx-auto space-y-6">
-            {/* Step Indicator */}
+            {/* Step Indicator - only show Upload and Download */}
             {originalImage && (
               <div className="flex items-center justify-center gap-2 mb-4">
-                {['Upload', 'Crop', 'Download'].map((label, i) => {
-                  const stepMap: Step[] = ['upload', 'crop', 'preview'];
-                  const isActive = currentStep === stepMap[i];
-                  const isPast = stepMap.indexOf(currentStep) > i;
+                {['Upload', 'Download'].map((label, i) => {
+                  const isUpload = i === 0;
+                  const isActive = (currentStep === 'upload' && isUpload) || 
+                                   ((currentStep === 'preview' || currentStep === 'crop') && !isUpload);
+                  const isPast = currentStep !== 'upload' && isUpload;
                   return (
                     <div key={label} className="flex items-center gap-2">
                       <div
@@ -96,7 +95,7 @@ const Index = () => {
                       <span className={`text-xs ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
                         {label}
                       </span>
-                      {i < 2 && <div className="w-8 h-px bg-border" />}
+                      {i < 1 && <div className="w-8 h-px bg-border" />}
                     </div>
                   );
                 })}
@@ -137,7 +136,7 @@ const Index = () => {
                     imageUrl={originalImage}
                     grid={selectedGrid}
                     onCropComplete={handleCropComplete}
-                    onCancel={handleSkipCrop}
+                    onCancel={handleBackToPreview}
                   />
                 </motion.div>
               )}
@@ -153,10 +152,7 @@ const Index = () => {
                 >
                   <GridSelector
                     selectedGrid={selectedGrid}
-                    onGridSelect={(grid) => {
-                      handleGridSelect(grid);
-                      handleEditCrop();
-                    }}
+                    onGridSelect={handleGridSelect}
                   />
 
                   <GridPreview
@@ -172,13 +168,13 @@ const Index = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={handleEditCrop}
-                      className="flex-1 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      className="flex-1 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg hover:bg-muted/50"
                     >
-                      ← Edit Crop
+                      ✂️ Crop & Adjust
                     </button>
                     <button
                       onClick={handleClear}
-                      className="flex-1 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      className="flex-1 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg hover:bg-muted/50"
                     >
                       Upload New Image
                     </button>
