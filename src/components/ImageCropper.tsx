@@ -1,9 +1,11 @@
-import { useState, useRef, useCallback, forwardRef, useEffect } from 'react';
+import { useState, useRef, useCallback, forwardRef, useEffect, useMemo } from 'react';
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { Check, RotateCcw, Move, ZoomIn, RotateCw, Minus, Plus } from 'lucide-react';
+import { Check, RotateCcw, Move, ZoomIn, RotateCw, Minus, Plus, Loader2 } from 'lucide-react';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useObjectUrlManager } from '@/hooks/useObjectUrl';
 
 interface ImageCropperProps {
   imageUrl: string;
@@ -39,64 +41,112 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
   onCancel,
 }, ref) {
   const imgRef = useRef<HTMLImageElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [transformedImageUrl, setTransformedImageUrl] = useState(imageUrl);
+  const [isTransforming, setIsTransforming] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
+  
+  const { createUrl, revokeUrl, revokeAll } = useObjectUrlManager();
+  
+  // Debounce zoom and rotation to prevent excessive processing
+  const debouncedZoom = useDebounce(zoom, 150);
+  const debouncedRotation = useDebounce(rotation, 150);
 
-  const { cols, rows, aspect } = (() => {
+  const { cols, rows, aspect } = useMemo(() => {
     const [c, r] = grid.split('x').map(Number);
     return { cols: c, rows: r, aspect: c / r };
-  })();
+  }, [grid]);
 
-  // Generate transformed image when zoom or rotation changes
+  // Generate transformed image when debounced zoom or rotation changes
   useEffect(() => {
-    if (zoom === 1 && rotation === 0) {
+    if (debouncedZoom === 1 && debouncedRotation === 0) {
       setTransformedImageUrl(imageUrl);
+      setIsTransforming(false);
       return;
     }
 
+    let cancelled = false;
+    setIsTransforming(true);
+
     const img = new Image();
     img.crossOrigin = 'anonymous';
+    
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      const radians = (rotation * Math.PI) / 180;
-      const sin = Math.abs(Math.sin(radians));
-      const cos = Math.abs(Math.cos(radians));
-
-      // Calculate new dimensions after rotation
-      const rotatedWidth = img.width * cos + img.height * sin;
-      const rotatedHeight = img.width * sin + img.height * cos;
-
-      // Apply zoom
-      canvas.width = rotatedWidth * zoom;
-      canvas.height = rotatedHeight * zoom;
-
-      ctx.translate(canvas.width / 2, canvas.height / 2);
-      ctx.rotate(radians);
-      ctx.scale(zoom, zoom);
-      ctx.drawImage(img, -img.width / 2, -img.height / 2);
-
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const url = URL.createObjectURL(blob);
-          setTransformedImageUrl(url);
+      if (cancelled) return;
+      
+      // Use requestIdleCallback or setTimeout for non-blocking processing
+      const processImage = () => {
+        if (cancelled) return;
+        
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          setIsTransforming(false);
+          return;
         }
-      }, 'image/png');
+
+        const radians = (debouncedRotation * Math.PI) / 180;
+        const sin = Math.abs(Math.sin(radians));
+        const cos = Math.abs(Math.cos(radians));
+
+        const rotatedWidth = img.width * cos + img.height * sin;
+        const rotatedHeight = img.width * sin + img.height * cos;
+
+        canvas.width = rotatedWidth * debouncedZoom;
+        canvas.height = rotatedHeight * debouncedZoom;
+
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(radians);
+        ctx.scale(debouncedZoom, debouncedZoom);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, -img.width / 2, -img.height / 2);
+
+        canvas.toBlob((blob) => {
+          if (cancelled || !blob) {
+            setIsTransforming(false);
+            return;
+          }
+          
+          // Revoke previous URL before creating new one
+          if (transformedImageUrl !== imageUrl) {
+            revokeUrl(transformedImageUrl);
+          }
+          
+          const url = createUrl(blob);
+          setTransformedImageUrl(url);
+          setIsTransforming(false);
+        }, 'image/png');
+      };
+
+      // Use requestIdleCallback if available, otherwise setTimeout
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(processImage, { timeout: 500 });
+      } else {
+        setTimeout(processImage, 0);
+      }
     };
+    
+    img.onerror = () => {
+      if (!cancelled) setIsTransforming(false);
+    };
+    
     img.src = imageUrl;
 
     return () => {
-      if (transformedImageUrl !== imageUrl) {
-        URL.revokeObjectURL(transformedImageUrl);
-      }
+      cancelled = true;
     };
-  }, [imageUrl, zoom, rotation]);
+  }, [imageUrl, debouncedZoom, debouncedRotation, createUrl, revokeUrl]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      revokeAll();
+    };
+  }, [revokeAll]);
 
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget;
@@ -118,50 +168,64 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
   const handleCropComplete = useCallback(async () => {
     if (!imgRef.current || !completedCrop) return;
 
-    const image = imgRef.current;
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    setIsApplying(true);
 
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
+    // Use setTimeout to prevent UI freeze
+    setTimeout(() => {
+      const image = imgRef.current;
+      if (!image) {
+        setIsApplying(false);
+        return;
+      }
 
-    const pixelRatio = window.devicePixelRatio || 1;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        setIsApplying(false);
+        return;
+      }
 
-    canvas.width = Math.floor(completedCrop.width * scaleX * pixelRatio);
-    canvas.height = Math.floor(completedCrop.height * scaleY * pixelRatio);
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
+      const pixelRatio = window.devicePixelRatio || 1;
 
-    ctx.scale(pixelRatio, pixelRatio);
-    ctx.imageSmoothingQuality = 'high';
+      canvas.width = Math.floor(completedCrop.width * scaleX * pixelRatio);
+      canvas.height = Math.floor(completedCrop.height * scaleY * pixelRatio);
 
-    const cropX = completedCrop.x * scaleX;
-    const cropY = completedCrop.y * scaleY;
-    const cropWidth = completedCrop.width * scaleX;
-    const cropHeight = completedCrop.height * scaleY;
+      ctx.scale(pixelRatio, pixelRatio);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
 
-    ctx.drawImage(
-      image,
-      cropX,
-      cropY,
-      cropWidth,
-      cropHeight,
-      0,
-      0,
-      cropWidth,
-      cropHeight,
-    );
+      const cropX = completedCrop.x * scaleX;
+      const cropY = completedCrop.y * scaleY;
+      const cropWidth = completedCrop.width * scaleX;
+      const cropHeight = completedCrop.height * scaleY;
 
-    canvas.toBlob(
-      (blob) => {
-        if (blob) {
-          const croppedUrl = URL.createObjectURL(blob);
-          onCropComplete(croppedUrl);
-        }
-      },
-      'image/png',
-      1.0
-    );
-  }, [completedCrop, onCropComplete]);
+      ctx.drawImage(
+        image,
+        cropX,
+        cropY,
+        cropWidth,
+        cropHeight,
+        0,
+        0,
+        cropWidth,
+        cropHeight,
+      );
+
+      canvas.toBlob(
+        (blob) => {
+          setIsApplying(false);
+          if (blob) {
+            const croppedUrl = createUrl(blob);
+            onCropComplete(croppedUrl);
+          }
+        },
+        'image/png',
+        1.0
+      );
+    }, 10);
+  }, [completedCrop, onCropComplete, createUrl]);
 
   const handleReset = useCallback(() => {
     setZoom(1);
@@ -173,10 +237,12 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
     }
   }, [aspect]);
 
-  const handleRotateLeft = () => setRotation((r) => r - 90);
-  const handleRotateRight = () => setRotation((r) => r + 90);
-  const handleZoomIn = () => setZoom((z) => Math.min(z + 0.1, 3));
-  const handleZoomOut = () => setZoom((z) => Math.max(z - 0.1, 0.5));
+  const handleRotateLeft = useCallback(() => setRotation((r) => r - 90), []);
+  const handleRotateRight = useCallback(() => setRotation((r) => r + 90), []);
+  const handleZoomIn = useCallback(() => setZoom((z) => Math.min(z + 0.1, 3)), []);
+  const handleZoomOut = useCallback(() => setZoom((z) => Math.max(z - 0.1, 0.5)), []);
+
+  const isProcessing = isTransforming || isApplying;
 
   return (
     <div ref={ref} className="w-full space-y-4">
@@ -200,7 +266,7 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
             size="icon"
             className="h-7 w-7"
             onClick={handleZoomOut}
-            disabled={zoom <= 0.5}
+            disabled={zoom <= 0.5 || isProcessing}
           >
             <Minus className="w-3 h-3" />
           </Button>
@@ -211,13 +277,14 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
             max={3}
             step={0.1}
             className="flex-1"
+            disabled={isProcessing}
           />
           <Button
             variant="outline"
             size="icon"
             className="h-7 w-7"
             onClick={handleZoomIn}
-            disabled={zoom >= 3}
+            disabled={zoom >= 3 || isProcessing}
           >
             <Plus className="w-3 h-3" />
           </Button>
@@ -233,6 +300,7 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
             size="sm"
             onClick={handleRotateLeft}
             className="gap-1"
+            disabled={isProcessing}
           >
             <RotateCcw className="w-4 h-4" />
             -90°
@@ -242,6 +310,7 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
             size="sm"
             onClick={handleRotateRight}
             className="gap-1"
+            disabled={isProcessing}
           >
             <RotateCw className="w-4 h-4" />
             +90°
@@ -253,13 +322,19 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
       </div>
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="flex items-center justify-center p-4 bg-muted/30 max-h-[500px]">
+        <div className="flex items-center justify-center p-4 bg-muted/30 max-h-[500px] relative">
+          {isTransforming && (
+            <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+          )}
           <ReactCrop
             crop={crop}
             onChange={(_, percentCrop) => setCrop(percentCrop)}
             onComplete={(c) => setCompletedCrop(c)}
             aspect={aspect}
             className="max-h-[450px]"
+            disabled={isProcessing}
           >
             <img
               ref={imgRef}
@@ -273,14 +348,13 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
         </div>
       </div>
 
-      <canvas ref={canvasRef} className="hidden" />
-
       <div className="flex gap-2">
         <Button
           variant="outline"
           size="sm"
           onClick={handleReset}
           className="flex-1"
+          disabled={isProcessing}
         >
           <RotateCcw className="w-4 h-4" />
           Reset All
@@ -290,6 +364,7 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
           size="sm"
           onClick={onCancel}
           className="flex-1"
+          disabled={isProcessing}
         >
           Cancel
         </Button>
@@ -298,9 +373,13 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
           size="sm"
           onClick={handleCropComplete}
           className="flex-1"
-          disabled={!completedCrop}
+          disabled={!completedCrop || isProcessing}
         >
-          <Check className="w-4 h-4" />
+          {isApplying ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Check className="w-4 h-4" />
+          )}
           Apply Crop
         </Button>
       </div>

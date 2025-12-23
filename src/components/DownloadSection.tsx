@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, memo } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef, forwardRef } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { Download, Package, Loader2, Check, Settings2 } from 'lucide-react';
@@ -26,16 +26,34 @@ const qualityPresets: Record<QualityPreset, { label: string; description: string
   compressed: { label: 'Compressed', description: 'Smaller files', quality: 0.6, maxSize: 1080 },
 };
 
-export const DownloadSection = memo(function DownloadSection({ 
+export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(function DownloadSection({ 
   imageUrl, 
   grid 
-}: DownloadSectionProps) {
+}, ref) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [splitImages, setSplitImages] = useState<SplitResult[]>([]);
   const [isComplete, setIsComplete] = useState(false);
   const [format, setFormat] = useState<ExportFormat>('png');
   const [qualityPreset, setQualityPreset] = useState<QualityPreset>('standard');
   const [showSettings, setShowSettings] = useState(false);
+  const [progress, setProgress] = useState(0);
+  
+  // Track if component is mounted to prevent state updates on unmounted component
+  const isMountedRef = useRef(true);
+  
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // Reset when image or grid changes
+  useEffect(() => {
+    setSplitImages([]);
+    setIsComplete(false);
+    setProgress(0);
+  }, [imageUrl, grid]);
 
   const { cols, rows } = useMemo(() => {
     const [c, r] = grid.split('x').map(Number);
@@ -43,8 +61,11 @@ export const DownloadSection = memo(function DownloadSection({
   }, [grid]);
 
   const splitImage = useCallback(async () => {
+    if (!isMountedRef.current) return;
+    
     setIsProcessing(true);
     setIsComplete(false);
+    setProgress(0);
 
     try {
       const totalTiles = cols * rows;
@@ -59,11 +80,12 @@ export const DownloadSection = memo(function DownloadSection({
         img.src = imageUrl;
       });
 
+      if (!isMountedRef.current) return;
+
       const tileWidth = Math.floor(img.width / cols);
       const tileHeight = Math.floor(img.height / rows);
       const tileSize = Math.min(tileWidth, tileHeight);
       
-      // For HD, use original size; otherwise cap to maxSize
       const outputSize = preset.maxSize ? Math.min(tileSize, preset.maxSize) : tileSize;
       
       const offsetX = Math.floor((img.width - tileSize * cols) / 2);
@@ -72,7 +94,10 @@ export const DownloadSection = memo(function DownloadSection({
       const results: SplitResult[] = [];
       const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
 
-      for (let i = 0; i < totalTiles; i++) {
+      // Process tiles with requestAnimationFrame for smoother UI
+      const processTile = async (i: number): Promise<void> => {
+        if (!isMountedRef.current) return;
+
         const row = Math.floor(i / cols);
         const col = i % cols;
 
@@ -81,7 +106,6 @@ export const DownloadSection = memo(function DownloadSection({
         canvas.height = outputSize;
         const ctx = canvas.getContext('2d', { willReadFrequently: false })!;
         
-        // Enable high-quality scaling
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
 
@@ -106,7 +130,26 @@ export const DownloadSection = memo(function DownloadSection({
           index: i,
           postOrder: totalTiles - i,
         });
+
+        if (isMountedRef.current) {
+          setProgress(Math.round(((i + 1) / totalTiles) * 100));
+        }
+      };
+
+      // Process tiles in batches for better performance
+      const batchSize = 3;
+      for (let i = 0; i < totalTiles; i += batchSize) {
+        const batch = [];
+        for (let j = i; j < Math.min(i + batchSize, totalTiles); j++) {
+          batch.push(processTile(j));
+        }
+        await Promise.all(batch);
+        
+        // Yield to main thread
+        await new Promise((resolve) => setTimeout(resolve, 0));
       }
+
+      if (!isMountedRef.current) return;
 
       setSplitImages(results);
       setIsComplete(true);
@@ -119,9 +162,13 @@ export const DownloadSection = memo(function DownloadSection({
       toast.success(`Split into ${totalTiles} images (${sizeStr})`);
     } catch (error) {
       console.error('Error splitting image:', error);
-      toast.error('Failed to split image. Please try again.');
+      if (isMountedRef.current) {
+        toast.error('Failed to split image. Please try again.');
+      }
     } finally {
-      setIsProcessing(false);
+      if (isMountedRef.current) {
+        setIsProcessing(false);
+      }
     }
   }, [imageUrl, cols, rows, format, qualityPreset]);
 
@@ -144,7 +191,7 @@ export const DownloadSection = memo(function DownloadSection({
   }, [fileExtension]);
 
   return (
-    <div className="w-full space-y-4">
+    <div ref={ref} className="w-full space-y-4">
       {!isComplete ? (
         <div className="space-y-4">
           {/* Export Settings */}
@@ -231,7 +278,7 @@ export const DownloadSection = memo(function DownloadSection({
             {isProcessing ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Processing...
+                Processing... {progress}%
               </>
             ) : (
               <>
@@ -240,6 +287,15 @@ export const DownloadSection = memo(function DownloadSection({
               </>
             )}
           </Button>
+          
+          {isProcessing && (
+            <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-300 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-4">
@@ -287,6 +343,7 @@ export const DownloadSection = memo(function DownloadSection({
               setSplitImages([]);
               setIsComplete(false);
               setShowSettings(false);
+              setProgress(0);
             }}
           >
             Split Again

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ImageUploader } from '@/components/ImageUploader';
 import { ImageCropper } from '@/components/ImageCropper';
@@ -14,27 +14,71 @@ const Index = () => {
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
   const [selectedGrid, setSelectedGrid] = useState('3x3');
   const [currentStep, setCurrentStep] = useState<Step>('upload');
+  
+  // Track URLs for cleanup
+  const urlsToCleanupRef = useRef<Set<string>>(new Set());
 
-  const handleImageUpload = useCallback((file: File, preview: string) => {
-    setOriginalImage(preview);
-    setCroppedImage(null);
-    setCurrentStep('preview'); // Go directly to preview
+  // Cleanup URLs on unmount
+  useEffect(() => {
+    return () => {
+      urlsToCleanupRef.current.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+    };
   }, []);
 
+  const handleImageUpload = useCallback((file: File, preview: string) => {
+    // Cleanup previous original image if it's a blob URL
+    if (originalImage && originalImage.startsWith('blob:')) {
+      URL.revokeObjectURL(originalImage);
+      urlsToCleanupRef.current.delete(originalImage);
+    }
+    
+    // Track new URL
+    if (preview.startsWith('blob:')) {
+      urlsToCleanupRef.current.add(preview);
+    }
+    
+    setOriginalImage(preview);
+    setCroppedImage(null);
+    setCurrentStep('preview');
+  }, [originalImage]);
+
   const handleClear = useCallback(() => {
+    // Cleanup all blob URLs
+    if (originalImage?.startsWith('blob:')) {
+      URL.revokeObjectURL(originalImage);
+      urlsToCleanupRef.current.delete(originalImage);
+    }
+    if (croppedImage?.startsWith('blob:')) {
+      URL.revokeObjectURL(croppedImage);
+      urlsToCleanupRef.current.delete(croppedImage);
+    }
+    
     setOriginalImage(null);
     setCroppedImage(null);
     setCurrentStep('upload');
-  }, []);
+  }, [originalImage, croppedImage]);
 
   const handleGridSelect = useCallback((grid: string) => {
     setSelectedGrid(grid);
   }, []);
 
   const handleCropComplete = useCallback((croppedUrl: string) => {
+    // Cleanup previous cropped image
+    if (croppedImage?.startsWith('blob:')) {
+      URL.revokeObjectURL(croppedImage);
+      urlsToCleanupRef.current.delete(croppedImage);
+    }
+    
+    // Track new URL
+    if (croppedUrl.startsWith('blob:')) {
+      urlsToCleanupRef.current.add(croppedUrl);
+    }
+    
     setCroppedImage(croppedUrl);
     setCurrentStep('preview');
-  }, []);
+  }, [croppedImage]);
 
   const handleBackToPreview = useCallback(() => {
     setCurrentStep('preview');
