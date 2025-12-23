@@ -1,4 +1,4 @@
-import { useCallback, useState, memo } from 'react';
+import { useCallback, useState, forwardRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -10,11 +10,11 @@ interface ImageUploaderProps {
   onClear: () => void;
 }
 
-export const ImageUploader = memo(function ImageUploader({ 
+export const ImageUploader = forwardRef<HTMLDivElement, ImageUploaderProps>(function ImageUploader({ 
   onImageUpload, 
   uploadedImage, 
   onClear 
-}: ImageUploaderProps) {
+}, ref) {
   const [isDragging, setIsDragging] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -50,6 +50,7 @@ export const ImageUploader = memo(function ImageUploader({
 
   return (
     <div
+      ref={ref}
       {...getRootProps()}
       className={cn(
         "relative rounded-2xl border-2 border-dashed transition-colors cursor-pointer overflow-hidden",

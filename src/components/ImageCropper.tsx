@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, memo, useEffect } from 'react';
+import { useState, useRef, useCallback, forwardRef, useEffect } from 'react';
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { Button } from '@/components/ui/button';
@@ -32,12 +32,12 @@ function centerAspectCrop(
   );
 }
 
-export const ImageCropper = memo(function ImageCropper({
+export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(function ImageCropper({
   imageUrl,
   grid,
   onCropComplete,
   onCancel,
-}: ImageCropperProps) {
+}, ref) {
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [crop, setCrop] = useState<Crop>();
@@ -179,7 +179,7 @@ export const ImageCropper = memo(function ImageCropper({
   const handleZoomOut = () => setZoom((z) => Math.max(z - 0.1, 0.5));
 
   return (
-    <div className="w-full space-y-4">
+    <div ref={ref} className="w-full space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Move className="w-4 h-4" />

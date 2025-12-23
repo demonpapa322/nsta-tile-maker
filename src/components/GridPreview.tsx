@@ -1,11 +1,11 @@
-import { memo, useMemo } from 'react';
+import { forwardRef, useMemo } from 'react';
 
 interface GridPreviewProps {
   imageUrl: string;
   grid: string;
 }
 
-export const GridPreview = memo(function GridPreview({ imageUrl, grid }: GridPreviewProps) {
+export const GridPreview = forwardRef<HTMLDivElement, GridPreviewProps>(function GridPreview({ imageUrl, grid }, ref) {
   const { cols, rows, totalTiles } = useMemo(() => {
     const [c, r] = grid.split('x').map(Number);
     return { cols: c, rows: r, totalTiles: c * r };
@@ -23,7 +23,7 @@ export const GridPreview = memo(function GridPreview({ imageUrl, grid }: GridPre
   const maxPreviewWidth = cols > 3 ? 'max-w-md' : 'max-w-sm';
 
   return (
-    <div className="w-full">
+    <div ref={ref} className="w-full">
       <h3 className="text-sm font-medium text-muted-foreground mb-3">Preview</h3>
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 mb-3">
