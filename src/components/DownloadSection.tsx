@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef, forwardRef } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { Download, Package, Loader2, Check, Settings2 } from 'lucide-react';
+import { Download, Package, Loader2, Check, Settings2, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -26,6 +26,16 @@ const qualityPresets: Record<QualityPreset, { label: string; description: string
   compressed: { label: 'Compressed', description: 'Smaller files', quality: 0.6, maxSize: 1080 },
 };
 
+// Check if Web Share API with files is supported
+const canShareFiles = () => {
+  return 'share' in navigator && 'canShare' in navigator;
+};
+
+// Check if on mobile device
+const isMobileDevice = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
 export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(function DownloadSection({ 
   imageUrl, 
   grid 
@@ -33,16 +43,20 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
   const [isProcessing, setIsProcessing] = useState(false);
   const [splitImages, setSplitImages] = useState<SplitResult[]>([]);
   const [isComplete, setIsComplete] = useState(false);
-  const [format, setFormat] = useState<ExportFormat>('png');
+  const [format, setFormat] = useState<ExportFormat>('jpeg'); // Default to jpeg for better mobile compatibility
   const [qualityPreset, setQualityPreset] = useState<QualityPreset>('standard');
   const [showSettings, setShowSettings] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [isSharingSupported, setIsSharingSupported] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   
   // Track if component is mounted to prevent state updates on unmounted component
   const isMountedRef = useRef(true);
   
   useEffect(() => {
     isMountedRef.current = true;
+    setIsSharingSupported(canShareFiles());
+    setIsMobile(isMobileDevice());
     return () => {
       isMountedRef.current = false;
     };
@@ -59,6 +73,9 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
     const [c, r] = grid.split('x').map(Number);
     return { cols: c, rows: r };
   }, [grid]);
+
+  const fileExtension = format === 'png' ? 'png' : 'jpg';
+  const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
 
   const splitImage = useCallback(async () => {
     if (!isMountedRef.current) return;
@@ -92,7 +109,6 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
       const offsetY = Math.floor((img.height - tileSize * rows) / 2);
 
       const results: SplitResult[] = [];
-      const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
 
       // Process tiles with requestAnimationFrame for smoother UI
       const processTile = async (i: number): Promise<void> => {
@@ -170,9 +186,58 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
         setIsProcessing(false);
       }
     }
-  }, [imageUrl, cols, rows, format, qualityPreset]);
+  }, [imageUrl, cols, rows, mimeType, qualityPreset]);
 
-  const fileExtension = format === 'png' ? 'png' : 'jpg';
+  // Share/save single image to gallery using Web Share API
+  const shareToGallery = useCallback(async (img: SplitResult) => {
+    const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
+    const file = new File([img.blob], fileName, { type: mimeType });
+    
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Instagram Grid Tile',
+        });
+        toast.success('Image shared/saved!');
+      } else {
+        // Fallback to regular download
+        saveAs(img.blob, fileName);
+        toast.success('Downloaded!');
+      }
+    } catch (error) {
+      // User cancelled or error
+      if ((error as Error).name !== 'AbortError') {
+        saveAs(img.blob, fileName);
+        toast.success('Downloaded!');
+      }
+    }
+  }, [fileExtension, mimeType]);
+
+  // Share/save all images to gallery
+  const shareAllToGallery = useCallback(async () => {
+    const files = splitImages.map((img) => {
+      const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
+      return new File([img.blob], fileName, { type: mimeType });
+    });
+
+    try {
+      if (navigator.canShare && navigator.canShare({ files })) {
+        await navigator.share({
+          files,
+          title: 'Instagram Grid Tiles',
+        });
+        toast.success('Images shared/saved!');
+      } else {
+        // Fallback to ZIP download
+        await downloadZip();
+      }
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        await downloadZip();
+      }
+    }
+  }, [splitImages, fileExtension, mimeType]);
 
   const downloadZip = useCallback(async () => {
     const zip = new JSZip();
@@ -187,8 +252,12 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
   }, [splitImages, fileExtension, qualityPreset]);
 
   const downloadSingle = useCallback((img: SplitResult) => {
-    saveAs(img.blob, `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`);
-  }, [fileExtension]);
+    if (isMobile && isSharingSupported) {
+      shareToGallery(img);
+    } else {
+      saveAs(img.blob, `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`);
+    }
+  }, [fileExtension, isMobile, isSharingSupported, shareToGallery]);
 
   return (
     <div ref={ref} className="w-full space-y-4">
@@ -301,24 +370,39 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
         <div className="space-y-4">
           <div className="flex items-center justify-center gap-2 text-primary text-sm">
             <Check className="w-4 h-4" />
-            <span className="font-medium">Ready to download</span>
+            <span className="font-medium">Ready to {isMobile ? 'save' : 'download'}</span>
             <span className="text-muted-foreground">
               ({format.toUpperCase()} • {qualityPresets[qualityPreset].label})
             </span>
           </div>
           
-          <Button
-            variant="gradient"
-            size="lg"
-            className="w-full"
-            onClick={downloadZip}
-          >
-            <Package className="w-4 h-4" />
-            Download All as ZIP
-          </Button>
+          {/* Primary action - different for mobile vs desktop */}
+          {isMobile && isSharingSupported ? (
+            <Button
+              variant="gradient"
+              size="lg"
+              className="w-full"
+              onClick={shareAllToGallery}
+            >
+              <Share2 className="w-4 h-4" />
+              Save All to Gallery
+            </Button>
+          ) : (
+            <Button
+              variant="gradient"
+              size="lg"
+              className="w-full"
+              onClick={downloadZip}
+            >
+              <Package className="w-4 h-4" />
+              Download All as ZIP
+            </Button>
+          )}
 
           <div className="pt-2">
-            <p className="text-xs text-muted-foreground text-center mb-3">Or download individually:</p>
+            <p className="text-xs text-muted-foreground text-center mb-3">
+              Or {isMobile ? 'save' : 'download'} individually:
+            </p>
             <div 
               className="grid gap-2"
               style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
@@ -334,6 +418,19 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
               ))}
             </div>
           </div>
+
+          {/* Secondary option for mobile - also offer ZIP */}
+          {isMobile && isSharingSupported && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={downloadZip}
+            >
+              <Package className="w-4 h-4" />
+              Download as ZIP instead
+            </Button>
+          )}
 
           <Button
             variant="outline"
