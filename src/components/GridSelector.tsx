@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { forwardRef, memo } from 'react';
 import { cn } from '@/lib/utils';
 
 interface GridSelectorProps {
@@ -15,12 +15,12 @@ const gridOptions = [
   { value: '4x5', label: '4×5', cols: 4, rows: 5 },
 ];
 
-export const GridSelector = memo(function GridSelector({ 
+export const GridSelector = memo(forwardRef<HTMLDivElement, GridSelectorProps>(function GridSelector({ 
   selectedGrid, 
   onGridSelect 
-}: GridSelectorProps) {
+}, ref) {
   return (
-    <div className="w-full">
+    <div ref={ref} className="w-full">
       <h3 className="text-sm font-medium text-muted-foreground mb-3">Grid Size</h3>
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
         {gridOptions.map((option) => (
@@ -70,4 +70,4 @@ export const GridSelector = memo(function GridSelector({
       </div>
     </div>
   );
-});
+}));
