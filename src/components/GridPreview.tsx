@@ -6,9 +6,9 @@ interface GridPreviewProps {
 }
 
 export const GridPreview = forwardRef<HTMLDivElement, GridPreviewProps>(function GridPreview({ imageUrl, grid }, ref) {
-  const { cols, rows, totalTiles } = useMemo(() => {
+  const { cols, rows, totalTiles, aspect } = useMemo(() => {
     const [c, r] = grid.split('x').map(Number);
-    return { cols: c, rows: r, totalTiles: c * r };
+    return { cols: c, rows: r, totalTiles: c * r, aspect: c / r };
   }, [grid]);
 
   const tiles = useMemo(() => {
@@ -34,33 +34,35 @@ export const GridPreview = forwardRef<HTMLDivElement, GridPreviewProps>(function
         </div>
         
         <div className={`mx-auto ${maxPreviewWidth}`}>
+          {/* Container with correct aspect ratio for the full grid */}
           <div 
-            className="grid gap-px rounded-lg overflow-hidden bg-border"
-            style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
+            className="relative w-full rounded-lg overflow-hidden bg-border"
+            style={{ aspectRatio: `${cols} / ${rows}` }}
           >
-            {tiles.map(({ index, row, col, postOrder }) => (
-              <div
-                key={index}
-                className="relative aspect-square bg-card overflow-hidden"
-              >
-                <img
-                  src={imageUrl}
-                  alt={`Tile ${postOrder}`}
-                  className="absolute w-full h-full object-cover"
-                  style={{
-                    objectPosition: `${cols > 1 ? (col / (cols - 1)) * 100 : 50}% ${rows > 1 ? (row / (rows - 1)) * 100 : 50}%`,
-                    transform: `scale(${cols}, ${rows})`,
-                    transformOrigin: `${cols > 1 ? (col / (cols - 1)) * 100 : 50}% ${rows > 1 ? (row / (rows - 1)) * 100 : 50}%`,
-                  }}
-                  loading="lazy"
-                />
-                
-                {/* Number indicator */}
-                <div className="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-[8px] font-bold">
-                  {postOrder}
+            {/* Full image covering the entire grid area */}
+            <img
+              src={imageUrl}
+              alt="Grid preview"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            
+            {/* Grid overlay showing tile divisions */}
+            <div 
+              className="absolute inset-0 grid gap-px"
+              style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
+            >
+              {tiles.map(({ index, postOrder }) => (
+                <div
+                  key={index}
+                  className="relative aspect-square border border-background/20"
+                >
+                  {/* Number indicator */}
+                  <div className="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-[8px] font-bold">
+                    {postOrder}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
         
