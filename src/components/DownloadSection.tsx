@@ -379,17 +379,7 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
             className="w-full"
             onClick={saveAllToDevice}
           >
-            {isMobile && isSharingSupported ? (
-              <>
-                <Share2 className="w-4 h-4" />
-                Save All to Gallery
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4" />
-                Download All
-              </>
-            )}
+            {isMobile && isSharingSupported ? 'Save to Gallery' : 'Download All'}
           </Button>
 
           <div className="pt-2">
