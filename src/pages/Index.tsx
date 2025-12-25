@@ -5,7 +5,8 @@ import { ImageCropper } from '@/components/ImageCropper';
 import { GridSelector } from '@/components/GridSelector';
 import { GridPreview } from '@/components/GridPreview';
 import { DownloadSection } from '@/components/DownloadSection';
-import { Zap } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { Sparkles } from 'lucide-react';
 
 type Step = 'upload' | 'crop' | 'preview';
 
@@ -98,24 +99,29 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Theme Toggle - Top Right */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
       {/* Subtle background gradient */}
-      <div className="fixed inset-0 pointer-events-none bg-gradient-to-b from-primary/5 via-transparent to-accent/5" />
+      <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
 
       <div className="relative z-10">
         {/* Main Content */}
         <main className="container py-12 md:py-16">
-          {/* Hero Section - Simplified */}
+          {/* Hero Section - Modern & Minimal */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-6">
-              <Zap className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-medium text-primary">Free • Fast • No Sign-up</span>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6">
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-medium text-primary">Free & Private</span>
             </div>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 tracking-tight">
-              Split Images for Your
-              <span className="gradient-text block mt-1">Instagram Grid</span>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tight text-foreground">
+              Split Your Image Into
+              <span className="gradient-text block mt-1">Beautiful Grid Posts</span>
             </h1>
-            <p className="text-base text-muted-foreground max-w-lg mx-auto">
-              Transform one image into a multi-post grid. Upload, crop, split, and download.
+            <p className="text-base text-muted-foreground max-w-md mx-auto">
+              Create stunning Instagram grids in seconds
             </p>
           </div>
 
@@ -234,25 +240,18 @@ const Index = () => {
             </AnimatePresence>
           </div>
 
-          {/* How it works - Simplified */}
+          {/* How it works - Minimal */}
           {!originalImage && (
-            <section className="mt-16 max-w-3xl mx-auto">
-              <h2 className="text-xl font-semibold text-center mb-8">How It Works</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <section className="mt-16 max-w-2xl mx-auto">
+              <div className="grid grid-cols-3 gap-6 text-center">
                 {[
-                  { step: '1', title: 'Upload', desc: 'Drop or select your image' },
-                  { step: '2', title: 'Crop & Adjust', desc: 'Frame your image perfectly' },
-                  { step: '3', title: 'Download', desc: 'Get all tiles as a ZIP' },
-                ].map((item) => (
-                  <div
-                    key={item.step}
-                    className="flex flex-col items-center p-6 rounded-xl bg-card border border-border"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-bold mb-3">
-                      {item.step}
-                    </div>
-                    <h3 className="font-semibold mb-1">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground text-center">{item.desc}</p>
+                  { icon: '📤', title: 'Upload' },
+                  { icon: '✂️', title: 'Crop' },
+                  { icon: '⬇️', title: 'Download' },
+                ].map((item, i) => (
+                  <div key={item.title} className="flex flex-col items-center gap-2">
+                    <span className="text-2xl">{item.icon}</span>
+                    <span className="text-sm font-medium text-muted-foreground">{item.title}</span>
                   </div>
                 ))}
               </div>
@@ -261,9 +260,9 @@ const Index = () => {
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-border py-6 mt-12">
-          <p className="text-center text-sm text-muted-foreground">
-            100% client-side processing. Your images never leave your device.
+        <footer className="py-8 mt-12">
+          <p className="text-center text-xs text-muted-foreground/70">
+            Your images stay on your device
           </p>
         </footer>
       </div>
