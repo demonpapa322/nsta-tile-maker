@@ -217,7 +217,9 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
         (blob) => {
           setIsApplying(false);
           if (blob) {
-            const croppedUrl = createUrl(blob);
+            // Create URL directly without using the manager since this URL
+            // will be owned by the parent component and shouldn't be revoked on unmount
+            const croppedUrl = URL.createObjectURL(blob);
             onCropComplete(croppedUrl);
           }
         },
@@ -225,7 +227,7 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
         1.0
       );
     }, 10);
-  }, [completedCrop, onCropComplete, createUrl]);
+  }, [completedCrop, onCropComplete]);
 
   const handleReset = useCallback(() => {
     setZoom(1);
