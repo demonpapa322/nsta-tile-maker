@@ -1,5 +1,8 @@
-import { forwardRef, memo } from 'react';
+import { forwardRef, memo, useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Check } from 'lucide-react';
 
 interface GridSelectorProps {
   selectedGrid: string;
@@ -15,18 +18,54 @@ const gridOptions = [
   { value: '4x5', label: '4×5', cols: 4, rows: 5 },
 ];
 
+const MAX_COLS = 10;
+const MAX_ROWS = 10;
+
 export const GridSelector = memo(forwardRef<HTMLDivElement, GridSelectorProps>(function GridSelector({ 
   selectedGrid, 
   onGridSelect 
 }, ref) {
+  const [customCols, setCustomCols] = useState('');
+  const [customRows, setCustomRows] = useState('');
+  const [error, setError] = useState('');
+
+  const isPresetSelected = gridOptions.some(opt => opt.value === selectedGrid);
+
+  const handleCustomApply = useCallback(() => {
+    const cols = parseInt(customCols, 10);
+    const rows = parseInt(customRows, 10);
+
+    if (isNaN(cols) || isNaN(rows) || cols < 1 || rows < 1) {
+      setError('Enter valid numbers (1 or more)');
+      return;
+    }
+
+    if (cols > MAX_COLS || rows > MAX_ROWS) {
+      setError(`Max ${MAX_COLS} columns and ${MAX_ROWS} rows`);
+      return;
+    }
+
+    setError('');
+    onGridSelect(`${cols}x${rows}`);
+  }, [customCols, customRows, onGridSelect]);
+
+  const handlePresetSelect = useCallback((value: string) => {
+    setCustomCols('');
+    setCustomRows('');
+    setError('');
+    onGridSelect(value);
+  }, [onGridSelect]);
+
   return (
     <div ref={ref} className="w-full">
       <h3 className="text-sm font-medium text-muted-foreground mb-3">Grid Size</h3>
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+      
+      {/* Preset options */}
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-4">
         {gridOptions.map((option) => (
           <button
             key={option.value}
-            onClick={() => onGridSelect(option.value)}
+            onClick={() => handlePresetSelect(option.value)}
             className={cn(
               "relative p-3 rounded-xl border transition-colors",
               selectedGrid === option.value
@@ -67,6 +106,54 @@ export const GridSelector = memo(forwardRef<HTMLDivElement, GridSelectorProps>(f
             </div>
           </button>
         ))}
+      </div>
+
+      {/* Custom grid input */}
+      <div className="border border-border rounded-xl p-3 bg-card">
+        <p className="text-xs font-medium text-muted-foreground mb-2">Custom Size</p>
+        <div className="flex items-center gap-2">
+          <Input
+            type="number"
+            min={1}
+            max={MAX_COLS}
+            placeholder="Cols"
+            value={customCols}
+            onChange={(e) => {
+              setCustomCols(e.target.value);
+              setError('');
+            }}
+            className="w-16 h-9 text-center text-sm"
+          />
+          <span className="text-muted-foreground font-medium">×</span>
+          <Input
+            type="number"
+            min={1}
+            max={MAX_ROWS}
+            placeholder="Rows"
+            value={customRows}
+            onChange={(e) => {
+              setCustomRows(e.target.value);
+              setError('');
+            }}
+            className="w-16 h-9 text-center text-sm"
+          />
+          <Button
+            size="sm"
+            onClick={handleCustomApply}
+            disabled={!customCols || !customRows}
+            className="h-9 px-3"
+          >
+            <Check className="h-4 w-4" />
+          </Button>
+          {!isPresetSelected && (
+            <span className="text-xs text-primary font-medium ml-1">
+              {selectedGrid}
+            </span>
+          )}
+        </div>
+        {error && (
+          <p className="text-xs text-destructive mt-2">{error}</p>
+        )}
       </div>
     </div>
   );
