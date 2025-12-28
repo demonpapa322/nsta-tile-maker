@@ -1,6 +1,6 @@
 import { useCallback, useState, forwardRef } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, X, ShieldCheck } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -107,14 +107,9 @@ export const ImageUploader = forwardRef<HTMLDivElement, ImageUploaderProps>(func
           <p className="text-sm text-muted-foreground mb-4">
             Drag and drop or click to browse. PNG, JPG, WebP.
           </p>
-          <Button variant="default" size="sm" className="font-bold">
+          <Button variant="outline" size="sm">
             Choose File
           </Button>
-          
-          <div className="flex items-center gap-2 mt-6 text-xs text-muted-foreground">
-            <ShieldCheck className="w-4 h-4 text-primary" />
-            <span>Your images stay on your device. We don't store or upload them.</span>
-          </div>
         </div>
       )}
     </div>
