@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef, forwardRef } from 'react';
 import { saveAs } from 'file-saver';
-import { Download, Loader2, Check, Settings2, Share2 } from 'lucide-react';
+import { Download, Loader2, Check, Settings2, Share2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,40 @@ const qualityPresets: Record<QualityPreset, { label: string; description: string
   compressed: { label: 'Compressed', description: 'Smaller files', quality: 0.6, maxSize: 1080 },
 };
 
+// Social platforms for sharing
+const socialPlatforms = [
+  { 
+    id: 'native', 
+    label: 'Share', 
+    icon: '📤',
+    description: 'Device share menu'
+  },
+  { 
+    id: 'instagram', 
+    label: 'Instagram', 
+    icon: '📸',
+    description: 'Save & open Instagram'
+  },
+  { 
+    id: 'twitter', 
+    label: 'X/Twitter', 
+    icon: '🐦',
+    description: 'Post to X'
+  },
+  { 
+    id: 'facebook', 
+    label: 'Facebook', 
+    icon: '👤',
+    description: 'Share to Facebook'
+  },
+  { 
+    id: 'pinterest', 
+    label: 'Pinterest', 
+    icon: '📌',
+    description: 'Pin it'
+  },
+];
+
 // Check if Web Share API with files is supported
 const canShareFiles = () => {
   return 'share' in navigator && 'canShare' in navigator;
@@ -42,14 +76,14 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
   const [isProcessing, setIsProcessing] = useState(false);
   const [splitImages, setSplitImages] = useState<SplitResult[]>([]);
   const [isComplete, setIsComplete] = useState(false);
-  const [format, setFormat] = useState<ExportFormat>('jpeg'); // Default to jpeg for better mobile compatibility
+  const [format, setFormat] = useState<ExportFormat>('jpeg');
   const [qualityPreset, setQualityPreset] = useState<QualityPreset>('standard');
   const [showSettings, setShowSettings] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isSharingSupported, setIsSharingSupported] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
   
-  // Track if component is mounted to prevent state updates on unmounted component
   const isMountedRef = useRef(true);
   
   useEffect(() => {
@@ -61,7 +95,6 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
     };
   }, []);
 
-  // Reset when image or grid changes
   useEffect(() => {
     setSplitImages([]);
     setIsComplete(false);
@@ -109,7 +142,6 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
 
       const results: SplitResult[] = [];
 
-      // Process tiles with requestAnimationFrame for smoother UI
       const processTile = async (i: number): Promise<void> => {
         if (!isMountedRef.current) return;
 
@@ -151,7 +183,6 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
         }
       };
 
-      // Process tiles in batches for better performance
       const batchSize = 3;
       for (let i = 0; i < totalTiles; i += batchSize) {
         const batch = [];
@@ -159,8 +190,6 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
           batch.push(processTile(j));
         }
         await Promise.all(batch);
-        
-        // Yield to main thread
         await new Promise((resolve) => setTimeout(resolve, 0));
       }
 
@@ -187,7 +216,131 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
     }
   }, [imageUrl, cols, rows, mimeType, qualityPreset]);
 
-  // Share/save single image to gallery using Web Share API
+  // Native share using Web Share API (privacy-friendly - no server uploads)
+  const handleNativeShare = useCallback(async () => {
+    const files = splitImages.map((img) => {
+      const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
+      return new File([img.blob], fileName, { type: mimeType });
+    });
+
+    try {
+      if (navigator.canShare && navigator.canShare({ files })) {
+        await navigator.share({
+          files,
+          title: 'Grid Tiles',
+          text: 'Check out my split images!',
+        });
+        toast.success('Shared successfully!');
+        setShowShareMenu(false);
+      } else {
+        toast.error('Sharing not supported on this device');
+      }
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        toast.error('Failed to share');
+      }
+    }
+  }, [splitImages, fileExtension, mimeType]);
+
+  // Share to Instagram - saves files first, then opens Instagram
+  const handleInstagramShare = useCallback(async () => {
+    // First save all files to device
+    const files = splitImages.map((img) => {
+      const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
+      return new File([img.blob], fileName, { type: mimeType });
+    });
+
+    try {
+      if (navigator.canShare && navigator.canShare({ files })) {
+        await navigator.share({ files });
+      } else {
+        splitImages.forEach((img) => {
+          const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
+          saveAs(img.blob, fileName);
+        });
+      }
+      
+      toast.success('Images saved! Open Instagram to post them.');
+      setShowShareMenu(false);
+      
+      // Try to open Instagram (works on mobile)
+      if (isMobile) {
+        setTimeout(() => {
+          window.open('instagram://app', '_blank');
+        }, 500);
+      }
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        splitImages.forEach((img) => {
+          const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
+          saveAs(img.blob, fileName);
+        });
+        toast.success('Images downloaded! Upload them to Instagram.');
+      }
+    }
+  }, [splitImages, fileExtension, mimeType, isMobile]);
+
+  // Share to Twitter/X
+  const handleTwitterShare = useCallback(() => {
+    const text = encodeURIComponent('Check out my grid images! Created with Tile Maker 🎨');
+    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+    
+    // Also download images for user to attach
+    splitImages.forEach((img) => {
+      const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
+      saveAs(img.blob, fileName);
+    });
+    
+    toast.success('Images downloaded. Attach them to your tweet!');
+    setShowShareMenu(false);
+  }, [splitImages, fileExtension]);
+
+  // Share to Facebook
+  const handleFacebookShare = useCallback(() => {
+    window.open('https://www.facebook.com/', '_blank');
+    
+    splitImages.forEach((img) => {
+      const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
+      saveAs(img.blob, fileName);
+    });
+    
+    toast.success('Images downloaded. Share them on Facebook!');
+    setShowShareMenu(false);
+  }, [splitImages, fileExtension]);
+
+  // Share to Pinterest
+  const handlePinterestShare = useCallback(() => {
+    window.open('https://www.pinterest.com/pin-builder/', '_blank');
+    
+    splitImages.forEach((img) => {
+      const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
+      saveAs(img.blob, fileName);
+    });
+    
+    toast.success('Images downloaded. Pin them on Pinterest!');
+    setShowShareMenu(false);
+  }, [splitImages, fileExtension]);
+
+  const handleSharePlatform = useCallback((platformId: string) => {
+    switch (platformId) {
+      case 'native':
+        handleNativeShare();
+        break;
+      case 'instagram':
+        handleInstagramShare();
+        break;
+      case 'twitter':
+        handleTwitterShare();
+        break;
+      case 'facebook':
+        handleFacebookShare();
+        break;
+      case 'pinterest':
+        handlePinterestShare();
+        break;
+    }
+  }, [handleNativeShare, handleInstagramShare, handleTwitterShare, handleFacebookShare, handlePinterestShare]);
+
   const shareToGallery = useCallback(async (img: SplitResult) => {
     const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
     const file = new File([img.blob], fileName, { type: mimeType });
@@ -196,16 +349,14 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: 'Instagram Grid Tile',
+          title: 'Grid Tile',
         });
         toast.success('Image shared/saved!');
       } else {
-        // Fallback to regular download
         saveAs(img.blob, fileName);
         toast.success('Downloaded!');
       }
     } catch (error) {
-      // User cancelled or error
       if ((error as Error).name !== 'AbortError') {
         saveAs(img.blob, fileName);
         toast.success('Downloaded!');
@@ -213,7 +364,6 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
     }
   }, [fileExtension, mimeType]);
 
-  // Save all images directly to device
   const saveAllToDevice = useCallback(async () => {
     const files = splitImages.map((img) => {
       const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
@@ -224,11 +374,10 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
       if (navigator.canShare && navigator.canShare({ files })) {
         await navigator.share({
           files,
-          title: 'Instagram Grid Tiles',
+          title: 'Grid Tiles',
         });
         toast.success('Images saved!');
       } else {
-        // Fallback: download each file individually
         splitImages.forEach((img) => {
           const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
           saveAs(img.blob, fileName);
@@ -237,7 +386,6 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
       }
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
-        // Fallback: download each file individually
         splitImages.forEach((img) => {
           const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
           saveAs(img.blob, fileName);
@@ -382,6 +530,49 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
             {isMobile && isSharingSupported ? 'Save to Gallery' : 'Download All'}
           </Button>
 
+          {/* Share to Social Media Button */}
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full"
+            onClick={() => setShowShareMenu(!showShareMenu)}
+          >
+            <Share2 className="w-4 h-4 mr-2" />
+            Share to Social Media
+          </Button>
+
+          {/* Share Menu */}
+          {showShareMenu && (
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3 animate-fade-in">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">Share to</p>
+                <button 
+                  onClick={() => setShowShareMenu(false)}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Images stay on your device - we never upload to servers.
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {socialPlatforms
+                  .filter(p => p.id !== 'native' || isSharingSupported)
+                  .map((platform) => (
+                    <button
+                      key={platform.id}
+                      onClick={() => handleSharePlatform(platform.id)}
+                      className="flex flex-col items-center gap-1 p-3 rounded-xl border border-border bg-background hover:border-primary hover:bg-primary/5 transition-colors"
+                    >
+                      <span className="text-xl">{platform.icon}</span>
+                      <span className="text-xs font-medium">{platform.label}</span>
+                    </button>
+                  ))}
+              </div>
+            </div>
+          )}
+
           <div className="pt-2">
             <p className="text-xs text-muted-foreground text-center mb-3">
               Or {isMobile ? 'save' : 'download'} individually:
@@ -411,6 +602,7 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
               setIsComplete(false);
               setShowSettings(false);
               setProgress(0);
+              setShowShareMenu(false);
             }}
           >
             Split Again
