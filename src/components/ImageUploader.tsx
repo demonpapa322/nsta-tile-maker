@@ -49,73 +49,73 @@ export const ImageUploader = forwardRef<HTMLDivElement, ImageUploaderProps>(func
   }, [open]);
 
   return (
-    <div
-      ref={ref}
-      {...getRootProps()}
-      className={cn(
-        "relative rounded-2xl border-2 border-dashed transition-colors cursor-pointer overflow-hidden",
-        isDragging
-          ? "border-primary bg-primary/5"
-          : uploadedImage
-          ? "border-border bg-card"
-          : "border-muted-foreground/30 hover:border-primary/50 bg-card/50"
-      )}
-    >
-      <input {...getInputProps()} />
+    <div className="w-full">
+      <div
+        ref={ref}
+        {...getRootProps()}
+        className={cn(
+          "relative rounded-2xl border-2 border-dashed transition-colors cursor-pointer overflow-hidden",
+          isDragging
+            ? "border-primary bg-primary/5"
+            : uploadedImage
+            ? "border-border bg-card"
+            : "border-muted-foreground/30 hover:border-primary/50 bg-card/50"
+        )}
+      >
+        <input {...getInputProps()} />
+        
+        {uploadedImage ? (
+          <div className="relative aspect-video max-h-[400px] w-full flex items-center justify-center bg-muted/20">
+            <img
+              src={uploadedImage}
+              alt="Uploaded preview"
+              className="max-w-full max-h-[400px] object-contain"
+              loading="eager"
+            />
+            <button
+              onClick={handleClear}
+              className="absolute top-3 right-3 p-2 rounded-full bg-background/90 border border-border hover:bg-destructive hover:border-destructive transition-colors"
+              aria-label="Remove image"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleOpen}
+              className="absolute bottom-3 right-3"
+            >
+              Change Image
+            </Button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+            <div
+              className={cn(
+                "w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-colors",
+                isDragging ? "bg-primary/20" : "bg-muted"
+              )}
+            >
+              <Upload className={cn(
+                "w-7 h-7 transition-colors",
+                isDragging ? "text-primary" : "text-muted-foreground"
+              )} />
+            </div>
+            
+            <h3 className="text-lg font-semibold mb-1">
+              {isDragging ? "Drop your image" : "Upload your image"}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Drag and drop or click to browse. PNG, JPG, WebP.
+            </p>
+          </div>
+        )}
+      </div>
       
-      {uploadedImage ? (
-        <div className="relative aspect-video max-h-[400px] w-full flex items-center justify-center bg-muted/20">
-          <img
-            src={uploadedImage}
-            alt="Uploaded preview"
-            className="max-w-full max-h-[400px] object-contain"
-            loading="eager"
-          />
-          <button
-            onClick={handleClear}
-            className="absolute top-3 right-3 p-2 rounded-full bg-background/90 border border-border hover:bg-destructive hover:border-destructive transition-colors"
-            aria-label="Remove image"
-          >
-            <X className="w-4 h-4" />
-          </button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleOpen}
-            className="absolute bottom-3 right-3"
-          >
-            Change Image
-          </Button>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-          <div
-            className={cn(
-              "w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-colors",
-              isDragging ? "bg-primary/20" : "bg-muted"
-            )}
-          >
-            <Upload className={cn(
-              "w-7 h-7 transition-colors",
-              isDragging ? "text-primary" : "text-muted-foreground"
-            )} />
-          </div>
-          
-          <h3 className="text-lg font-semibold mb-1">
-            {isDragging ? "Drop your image" : "Upload your image"}
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Drag and drop or click to browse. PNG, JPG, WebP.
-          </p>
-          <Button variant="outline" size="sm">
-            Choose File
-          </Button>
-          
-          <div className="flex items-center gap-2 mt-4" title="Your images stay on your device — nothing is uploaded or stored">
-            <ShieldCheck className="w-4 h-4 text-emerald-500" />
-          </div>
-        </div>
-      )}
+      <div className="flex items-center justify-center gap-1.5 mt-3" title="Your images stay on your device — nothing is uploaded or stored">
+        <ShieldCheck className="w-4 h-4 text-emerald-500" />
+        <span className="text-xs text-muted-foreground">Your images stay private</span>
+      </div>
     </div>
   );
 });
