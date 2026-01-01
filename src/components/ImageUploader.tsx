@@ -1,6 +1,6 @@
 import { useCallback, useState, forwardRef } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -110,6 +110,11 @@ export const ImageUploader = forwardRef<HTMLDivElement, ImageUploaderProps>(func
           <Button variant="outline" size="sm">
             Choose File
           </Button>
+          
+          <div className="flex items-center gap-1.5 mt-4 text-xs text-muted-foreground">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Your images stay on your device — nothing is uploaded or stored</span>
+          </div>
         </div>
       )}
     </div>
