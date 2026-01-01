@@ -111,9 +111,8 @@ export const ImageUploader = forwardRef<HTMLDivElement, ImageUploaderProps>(func
             Choose File
           </Button>
           
-          <div className="flex items-center gap-1.5 mt-4 text-xs text-muted-foreground">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Your images stay on your device — nothing is uploaded or stored</span>
+          <div className="flex items-center gap-2 mt-4" title="Your images stay on your device — nothing is uploaded or stored">
+            <ShieldCheck className="w-4 h-4 text-emerald-500" />
           </div>
         </div>
       )}
