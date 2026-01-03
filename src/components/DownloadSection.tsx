@@ -204,36 +204,13 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
     }
   }, [fileExtension, mimeType]);
 
-  const saveAllToDevice = useCallback(async () => {
-    const files = splitImages.map((img) => {
+  const saveAllToDevice = useCallback(() => {
+    splitImages.forEach((img) => {
       const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
-      return new File([img.blob], fileName, { type: mimeType });
+      saveAs(img.blob, fileName);
     });
-
-    try {
-      if (navigator.canShare && navigator.canShare({ files })) {
-        await navigator.share({
-          files,
-          title: 'Grid Tiles',
-        });
-        toast.success('Images saved!');
-      } else {
-        splitImages.forEach((img) => {
-          const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
-          saveAs(img.blob, fileName);
-        });
-        toast.success('All images downloaded!');
-      }
-    } catch (error) {
-      if ((error as Error).name !== 'AbortError') {
-        splitImages.forEach((img) => {
-          const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
-          saveAs(img.blob, fileName);
-        });
-        toast.success('All images downloaded!');
-      }
-    }
-  }, [splitImages, fileExtension, mimeType]);
+    toast.success('All images downloaded!');
+  }, [splitImages, fileExtension]);
 
   const downloadSingle = useCallback((img: SplitResult) => {
     if (isMobile && isSharingSupported) {
