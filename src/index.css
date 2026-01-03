@@ -182,3 +182,7 @@
 .ReactCrop__drag-handle::after {
   display: none !important;
 }
+
+#lovable-badge {
+  display: none !important;
+}
