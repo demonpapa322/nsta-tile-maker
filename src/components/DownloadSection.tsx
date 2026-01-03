@@ -204,11 +204,16 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
     }
   }, [fileExtension, mimeType]);
 
-  const saveAllToDevice = useCallback(() => {
-    splitImages.forEach((img) => {
+  const saveAllToDevice = useCallback(async () => {
+    for (let i = 0; i < splitImages.length; i++) {
+      const img = splitImages[i];
       const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
       saveAs(img.blob, fileName);
-    });
+      // Small delay between downloads to prevent browser blocking
+      if (i < splitImages.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 150));
+      }
+    }
     toast.success('All images downloaded!');
   }, [splitImages, fileExtension]);
 
