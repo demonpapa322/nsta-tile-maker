@@ -214,13 +214,31 @@ const Index = () => {
                     </div>
 
                     {/* Right: Controls Panel */}
-                    <div className="sticky top-8 space-y-6 p-6 rounded-2xl bg-card border border-border shadow-sm">
+                    <div className="sticky top-8 space-y-5 p-6 rounded-2xl bg-card border border-border shadow-sm">
                       <div>
                         <h3 className="text-sm font-medium text-foreground mb-3">Grid Layout</h3>
                         <GridSelector
                           selectedGrid={selectedGrid}
                           onGridSelect={handleGridSelect}
                         />
+                      </div>
+                      
+                      <div className="h-px bg-border" />
+                      
+                      {/* Edit actions before download */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleEditCrop}
+                          className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30"
+                        >
+                          ✂️ Crop
+                        </button>
+                        <button
+                          onClick={handleClear}
+                          className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30"
+                        >
+                          📤 New
+                        </button>
                       </div>
                       
                       <div className="h-px bg-border" />
@@ -244,25 +262,26 @@ const Index = () => {
                       grid={selectedGrid}
                     />
 
-                    <DownloadSection
-                      imageUrl={activeImage}
-                      grid={selectedGrid}
-                    />
-
+                    {/* Edit actions before download */}
                     <div className="flex gap-2">
                       <button
                         onClick={handleEditCrop}
-                        className="flex-1 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg hover:bg-muted/50"
+                        className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30"
                       >
                         ✂️ Crop & Adjust
                       </button>
                       <button
                         onClick={handleClear}
-                        className="flex-1 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg hover:bg-muted/50"
+                        className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30"
                       >
-                        Upload New Image
+                        Upload New
                       </button>
                     </div>
+
+                    <DownloadSection
+                      imageUrl={activeImage}
+                      grid={selectedGrid}
+                    />
                   </div>
                 </motion.div>
               )}
