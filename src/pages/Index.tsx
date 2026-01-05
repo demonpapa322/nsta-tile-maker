@@ -109,55 +109,38 @@ const Index = () => {
 
       <div className="relative z-10">
         {/* Main Content */}
-        <main className="container py-12 md:py-16">
-          {/* Hero Section - Modern & Minimal */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6">
-              <Sparkles className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-medium text-primary">Free & Private</span>
-            </div>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tight text-foreground">
-              Split Your Image Into
-              <span className="gradient-text block mt-1">Beautiful Grid Posts</span>
+        <main className="container py-8 md:py-12 lg:py-8">
+          {/* Hero Section - Compact on desktop when image is present */}
+          <div className={`text-center transition-all duration-300 ${originalImage ? 'mb-6 lg:mb-4' : 'mb-12'}`}>
+            {!originalImage && (
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6">
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-medium text-primary">Free & Private</span>
+              </div>
+            )}
+            <h1 className={`font-bold tracking-tight text-foreground transition-all duration-300 ${
+              originalImage 
+                ? 'text-xl md:text-2xl lg:text-xl mb-2' 
+                : 'text-3xl md:text-4xl lg:text-5xl mb-4'
+            }`}>
+              {originalImage ? (
+                'Customize & Download'
+              ) : (
+                <>
+                  Split Your Image Into
+                  <span className="gradient-text block mt-1">Beautiful Grid Posts</span>
+                </>
+              )}
             </h1>
-            <p className="text-base text-muted-foreground max-w-md mx-auto">
-              Create stunning Instagram grids in seconds
-            </p>
+            {!originalImage && (
+              <p className="text-base text-muted-foreground max-w-md mx-auto">
+                Create stunning Instagram grids in seconds
+              </p>
+            )}
           </div>
 
           {/* App Interface */}
-          <div className="max-w-3xl mx-auto space-y-6">
-            {/* Step Indicator - only show Upload and Download */}
-            {originalImage && (
-              <div className="flex items-center justify-center gap-2 mb-4">
-                {['Upload', 'Download'].map((label, i) => {
-                  const isUpload = i === 0;
-                  const isActive = (currentStep === 'upload' && isUpload) || 
-                                   ((currentStep === 'preview' || currentStep === 'crop') && !isUpload);
-                  const isPast = currentStep !== 'upload' && isUpload;
-                  return (
-                    <div key={label} className="flex items-center gap-2">
-                      <div
-                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
-                          isActive
-                            ? 'bg-primary text-primary-foreground'
-                            : isPast
-                            ? 'bg-primary/20 text-primary'
-                            : 'bg-muted text-muted-foreground'
-                        }`}
-                      >
-                        {i + 1}
-                      </div>
-                      <span className={`text-xs ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
-                        {label}
-                      </span>
-                      {i < 1 && <div className="w-8 h-px bg-border" />}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
+          <div className="max-w-6xl mx-auto">
             <AnimatePresence mode="wait">
               {currentStep === 'upload' && (
                 <motion.div
@@ -166,6 +149,7 @@ const Index = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
+                  className="max-w-xl mx-auto"
                 >
                   <ImageUploader
                     onImageUpload={handleImageUpload}
@@ -182,7 +166,7 @@ const Index = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
-                  className="space-y-6"
+                  className="max-w-3xl mx-auto space-y-6"
                 >
                   <GridSelector
                     selectedGrid={selectedGrid}
@@ -204,36 +188,81 @@ const Index = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
-                  className="space-y-6"
                 >
-                  <GridSelector
-                    selectedGrid={selectedGrid}
-                    onGridSelect={handleGridSelect}
-                  />
+                  {/* Desktop: Side-by-side layout */}
+                  <div className="hidden lg:grid lg:grid-cols-[1fr,360px] lg:gap-8 lg:items-start">
+                    {/* Left: Large Preview */}
+                    <div className="space-y-4">
+                      <GridPreview
+                        imageUrl={activeImage}
+                        grid={selectedGrid}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleEditCrop}
+                          className="flex-1 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg hover:bg-muted/50"
+                        >
+                          ✂️ Crop & Adjust
+                        </button>
+                        <button
+                          onClick={handleClear}
+                          className="flex-1 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg hover:bg-muted/50"
+                        >
+                          Upload New
+                        </button>
+                      </div>
+                    </div>
 
-                  <GridPreview
-                    imageUrl={activeImage}
-                    grid={selectedGrid}
-                  />
+                    {/* Right: Controls Panel */}
+                    <div className="sticky top-8 space-y-6 p-6 rounded-2xl bg-card border border-border shadow-sm">
+                      <div>
+                        <h3 className="text-sm font-medium text-foreground mb-3">Grid Layout</h3>
+                        <GridSelector
+                          selectedGrid={selectedGrid}
+                          onGridSelect={handleGridSelect}
+                        />
+                      </div>
+                      
+                      <div className="h-px bg-border" />
+                      
+                      <DownloadSection
+                        imageUrl={activeImage}
+                        grid={selectedGrid}
+                      />
+                    </div>
+                  </div>
 
-                  <DownloadSection
-                    imageUrl={activeImage}
-                    grid={selectedGrid}
-                  />
+                  {/* Mobile/Tablet: Stacked layout */}
+                  <div className="lg:hidden space-y-6 max-w-xl mx-auto">
+                    <GridSelector
+                      selectedGrid={selectedGrid}
+                      onGridSelect={handleGridSelect}
+                    />
 
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleEditCrop}
-                      className="flex-1 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg hover:bg-muted/50"
-                    >
-                      ✂️ Crop & Adjust
-                    </button>
-                    <button
-                      onClick={handleClear}
-                      className="flex-1 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg hover:bg-muted/50"
-                    >
-                      Upload New Image
-                    </button>
+                    <GridPreview
+                      imageUrl={activeImage}
+                      grid={selectedGrid}
+                    />
+
+                    <DownloadSection
+                      imageUrl={activeImage}
+                      grid={selectedGrid}
+                    />
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleEditCrop}
+                        className="flex-1 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg hover:bg-muted/50"
+                      >
+                        ✂️ Crop & Adjust
+                      </button>
+                      <button
+                        onClick={handleClear}
+                        className="flex-1 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg hover:bg-muted/50"
+                      >
+                        Upload New Image
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -248,7 +277,7 @@ const Index = () => {
                   { icon: '📤', title: 'Upload' },
                   { icon: '✂️', title: 'Crop' },
                   { icon: '⬇️', title: 'Download' },
-                ].map((item, i) => (
+                ].map((item) => (
                   <div key={item.title} className="flex flex-col items-center gap-2">
                     <span className="text-2xl">{item.icon}</span>
                     <span className="text-sm font-medium text-muted-foreground">{item.title}</span>
