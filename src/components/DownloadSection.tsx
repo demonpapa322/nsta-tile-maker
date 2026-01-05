@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef, forwardRef } from 'react';
+import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { Download, Loader2, Check, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -205,17 +206,28 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
   }, [fileExtension, mimeType]);
 
   const saveAllToDevice = useCallback(async () => {
-    for (let i = 0; i < splitImages.length; i++) {
-      const img = splitImages[i];
-      const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
-      saveAs(img.blob, fileName);
-      // Small delay between downloads to prevent browser blocking
-      if (i < splitImages.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 150));
-      }
+    if (!splitImages.length) return;
+
+    // Browsers often block multiple automatic downloads from a single click.
+    // To reliably download ALL tiles in one user action, we package them into a single ZIP.
+    if (splitImages.length > 1) {
+      const zip = new JSZip();
+
+      splitImages.forEach((img) => {
+        const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
+        zip.file(fileName, img.blob);
+      });
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      saveAs(zipBlob, `grid_${cols}x${rows}_tiles.zip`);
+      toast.success(`Downloaded ZIP with ${splitImages.length} images`);
+      return;
     }
-    toast.success('All images downloaded!');
-  }, [splitImages, fileExtension]);
+
+    const only = splitImages[0];
+    saveAs(only.blob, `tile_${only.postOrder.toString().padStart(2, '0')}.${fileExtension}`);
+    toast.success('Downloaded!');
+  }, [cols, fileExtension, rows, splitImages]);
 
   const downloadSingle = useCallback((img: SplitResult) => {
     if (isMobile && isSharingSupported) {
