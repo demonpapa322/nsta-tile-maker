@@ -253,44 +253,37 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
   }, [fileExtension, isMobile, isSharingSupported, shareToGallery]);
 
   return (
-    <div ref={ref} className="w-full space-y-4">
+    <div ref={ref} className="w-full space-y-3">
       {!isComplete ? (
-        <div className="space-y-4">
-          {/* Export Settings - Always visible and prominent */}
-          <div className="rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-4 space-y-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Settings2 className="w-4 h-4 text-primary" />
-              <span className="font-medium text-sm">Export Format</span>
+        <div className="space-y-3">
+          {/* Export Settings - Compact horizontal layout */}
+          <div className="rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Settings2 className="w-3.5 h-3.5 text-primary" />
+              <span className="font-medium text-xs">Export Format</span>
             </div>
             
-            <div className="grid grid-cols-1 gap-2">
+            <div className="flex gap-1.5">
               {(Object.keys(exportOptions) as ExportOption[]).map((option) => (
                 <button
                   key={option}
                   onClick={() => setExportOption(option)}
                   className={cn(
-                    "py-3 px-4 rounded-lg border text-left transition-all",
+                    "flex-1 py-2 px-2 rounded-lg border text-center transition-all",
                     exportOption === option
-                      ? "border-primary bg-primary/10 shadow-sm"
-                      : "border-border bg-card hover:border-primary/50 hover:bg-muted/50"
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-card hover:border-primary/50"
                   )}
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className={cn(
-                        "font-medium text-sm",
-                        exportOption === option ? "text-primary" : "text-foreground"
-                      )}>
-                        {exportOptions[option].label}
-                      </span>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {exportOptions[option].description}
-                      </p>
-                    </div>
-                    {exportOption === option && (
-                      <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                    )}
-                  </div>
+                  <span className={cn(
+                    "font-medium text-xs block",
+                    exportOption === option ? "text-primary" : "text-foreground"
+                  )}>
+                    {option === 'jpeg' ? 'JPEG' : option === 'png-standard' ? 'PNG' : 'PNG HD'}
+                  </span>
+                  <span className="text-[9px] text-muted-foreground block mt-0.5">
+                    {option === 'jpeg' ? 'Smaller' : option === 'png-standard' ? 'Standard' : 'Max quality'}
+                  </span>
                 </button>
               ))}
             </div>

@@ -190,52 +190,35 @@ const Index = () => {
                   transition={{ duration: 0.2 }}
                 >
                   {/* Desktop: Side-by-side layout */}
-                  <div className="hidden lg:grid lg:grid-cols-[1fr,360px] lg:gap-8 lg:items-start">
+                  <div className="hidden lg:grid lg:grid-cols-[1fr,340px] lg:gap-6 lg:items-start">
                     {/* Left: Large Preview */}
-                    <div className="space-y-4">
+                    <div>
                       <GridPreview
                         imageUrl={activeImage}
                         grid={selectedGrid}
                       />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={handleEditCrop}
-                          className="flex-1 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg hover:bg-muted/50"
-                        >
-                          ✂️ Crop & Adjust
-                        </button>
-                        <button
-                          onClick={handleClear}
-                          className="flex-1 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg hover:bg-muted/50"
-                        >
-                          Upload New
-                        </button>
-                      </div>
                     </div>
 
-                    {/* Right: Controls Panel */}
-                    <div className="sticky top-8 space-y-5 p-6 rounded-2xl bg-card border border-border shadow-sm">
-                      <div>
-                        <h3 className="text-sm font-medium text-foreground mb-3">Grid Layout</h3>
-                        <GridSelector
-                          selectedGrid={selectedGrid}
-                          onGridSelect={handleGridSelect}
-                        />
-                      </div>
+                    {/* Right: Controls Panel - Compact */}
+                    <div className="sticky top-4 space-y-4 p-5 rounded-2xl bg-card border border-border shadow-sm">
+                      <GridSelector
+                        selectedGrid={selectedGrid}
+                        onGridSelect={handleGridSelect}
+                      />
                       
                       <div className="h-px bg-border" />
                       
-                      {/* Edit actions before download */}
+                      {/* Edit actions */}
                       <div className="flex gap-2">
                         <button
                           onClick={handleEditCrop}
-                          className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30"
+                          className="flex-1 py-2 text-xs font-medium text-foreground hover:text-primary transition-colors border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30"
                         >
                           ✂️ Crop
                         </button>
                         <button
                           onClick={handleClear}
-                          className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30"
+                          className="flex-1 py-2 text-xs font-medium text-foreground hover:text-primary transition-colors border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30"
                         >
                           📤 New
                         </button>

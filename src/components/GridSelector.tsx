@@ -56,22 +56,20 @@ export const GridSelector = memo(forwardRef<HTMLDivElement, GridSelectorProps>(f
 
   return (
     <div ref={ref} className="w-full">
-      <h3 className="text-sm font-medium text-muted-foreground mb-3">Grid Size</h3>
-      
       {/* Preset options - Instagram friendly 3-column grids */}
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-4">
+      <div className="grid grid-cols-5 gap-1.5 mb-3">
         {gridOptions.map((option) => (
           <button
             key={option.value}
             onClick={() => handlePresetSelect(option.value)}
             className={cn(
-              "relative p-3 rounded-xl border transition-colors",
+              "relative p-2 rounded-lg border transition-colors",
               selectedGrid === option.value && !showCustom
                 ? "border-primary bg-primary/10"
                 : "border-border bg-card hover:border-muted-foreground/50"
             )}
           >
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center gap-1">
               {/* Mini grid preview */}
               <div 
                 className="grid gap-0.5"
@@ -84,7 +82,7 @@ export const GridSelector = memo(forwardRef<HTMLDivElement, GridSelectorProps>(f
                   <div
                     key={i}
                     className={cn(
-                      "w-2.5 h-2.5 rounded-sm transition-colors",
+                      "w-2 h-2 rounded-sm transition-colors",
                       selectedGrid === option.value && !showCustom
                         ? "bg-primary"
                         : "bg-muted-foreground/40"
@@ -94,7 +92,7 @@ export const GridSelector = memo(forwardRef<HTMLDivElement, GridSelectorProps>(f
               </div>
               
               <span className={cn(
-                "text-xs font-medium transition-colors",
+                "text-[10px] font-medium transition-colors",
                 selectedGrid === option.value && !showCustom
                   ? "text-primary"
                   : "text-muted-foreground"
@@ -106,65 +104,59 @@ export const GridSelector = memo(forwardRef<HTMLDivElement, GridSelectorProps>(f
         ))}
       </div>
 
-      {/* Custom grid with +/- buttons */}
+      {/* Custom grid with +/- buttons - Compact */}
       <div className={cn(
-        "border rounded-xl p-3 bg-card transition-colors",
+        "border rounded-lg p-2.5 bg-card transition-colors",
         showCustom && !isPresetSelected ? "border-primary" : "border-border"
       )}>
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-medium text-muted-foreground">Custom Size</p>
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Custom</span>
           {showCustom && !isPresetSelected && (
-            <span className="text-xs text-primary font-medium">
+            <span className="text-[10px] text-primary font-medium">
               {selectedGrid}
             </span>
           )}
         </div>
         
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-3 mt-2">
           {/* Columns control */}
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Cols</span>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => { activateCustom(); decrementCols(); }}
-                disabled={customCols <= MIN_COLS}
-                className="w-8 h-8 rounded-lg border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-              >
-                <Minus className="w-3.5 h-3.5" />
-              </button>
-              <span className="w-8 text-center font-medium text-sm">{customCols}</span>
-              <button
-                onClick={() => { activateCustom(); incrementCols(); }}
-                disabled={customCols >= MAX_COLS}
-                className="w-8 h-8 rounded-lg border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
-            </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => { activateCustom(); decrementCols(); }}
+              disabled={customCols <= MIN_COLS}
+              className="w-6 h-6 rounded border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+            >
+              <Minus className="w-3 h-3" />
+            </button>
+            <span className="w-5 text-center font-medium text-xs">{customCols}</span>
+            <button
+              onClick={() => { activateCustom(); incrementCols(); }}
+              disabled={customCols >= MAX_COLS}
+              className="w-6 h-6 rounded border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+            >
+              <Plus className="w-3 h-3" />
+            </button>
           </div>
 
-          <span className="text-muted-foreground font-medium text-lg">×</span>
+          <span className="text-muted-foreground font-medium text-sm">×</span>
 
           {/* Rows control */}
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Rows</span>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => { activateCustom(); decrementRows(); }}
-                disabled={customRows <= MIN_ROWS}
-                className="w-8 h-8 rounded-lg border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-              >
-                <Minus className="w-3.5 h-3.5" />
-              </button>
-              <span className="w-8 text-center font-medium text-sm">{customRows}</span>
-              <button
-                onClick={() => { activateCustom(); incrementRows(); }}
-                disabled={customRows >= MAX_ROWS}
-                className="w-8 h-8 rounded-lg border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
-            </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => { activateCustom(); decrementRows(); }}
+              disabled={customRows <= MIN_ROWS}
+              className="w-6 h-6 rounded border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+            >
+              <Minus className="w-3 h-3" />
+            </button>
+            <span className="w-5 text-center font-medium text-xs">{customRows}</span>
+            <button
+              onClick={() => { activateCustom(); incrementRows(); }}
+              disabled={customRows >= MAX_ROWS}
+              className="w-6 h-6 rounded border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+            >
+              <Plus className="w-3 h-3" />
+            </button>
           </div>
         </div>
       </div>
