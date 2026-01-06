@@ -208,26 +208,20 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
   const saveAllToDevice = useCallback(async () => {
     if (!splitImages.length) return;
 
-    // Browsers often block multiple automatic downloads from a single click.
-    // To reliably download ALL tiles in one user action, we package them into a single ZIP.
-    if (splitImages.length > 1) {
-      const zip = new JSZip();
-
-      splitImages.forEach((img) => {
-        const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
-        zip.file(fileName, img.blob);
-      });
-
-      const zipBlob = await zip.generateAsync({ type: 'blob' });
-      saveAs(zipBlob, `grid_${cols}x${rows}_tiles.zip`);
-      toast.success(`Downloaded ZIP with ${splitImages.length} images`);
-      return;
+    // Download each image individually with a small delay to avoid browser blocking
+    for (let i = 0; i < splitImages.length; i++) {
+      const img = splitImages[i];
+      const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
+      saveAs(img.blob, fileName);
+      
+      // Small delay between downloads to help browser handle multiple downloads
+      if (i < splitImages.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
     }
-
-    const only = splitImages[0];
-    saveAs(only.blob, `tile_${only.postOrder.toString().padStart(2, '0')}.${fileExtension}`);
-    toast.success('Downloaded!');
-  }, [cols, fileExtension, rows, splitImages]);
+    
+    toast.success(`Downloaded ${splitImages.length} images`);
+  }, [fileExtension, splitImages]);
 
   const downloadSingle = useCallback((img: SplitResult) => {
     if (isMobile && isSharingSupported) {
@@ -361,7 +355,7 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
             className="w-full"
             onClick={saveAllToDevice}
           >
-            {isMobile && isSharingSupported ? 'Save to Gallery' : 'Download All'}
+            Download All
           </Button>
 
           <div className="pt-2">
