@@ -17,13 +17,35 @@ interface DownloadSectionProps {
   grid: string;
 }
 
-type ExportFormat = 'png' | 'jpeg';
-type QualityPreset = 'hd' | 'standard' | 'compressed';
+type ExportOption = 'jpeg' | 'png-standard' | 'png-hd';
 
-const qualityPresets: Record<QualityPreset, { label: string; description: string; quality: number; maxSize?: number }> = {
-  hd: { label: 'HD', description: 'Original quality', quality: 1.0 },
-  standard: { label: 'Standard', description: 'Good balance', quality: 0.85, maxSize: 1080 },
-  compressed: { label: 'Compressed', description: 'Smaller files', quality: 0.6, maxSize: 1080 },
+const exportOptions: Record<ExportOption, { 
+  label: string; 
+  description: string; 
+  format: 'jpeg' | 'png';
+  quality: number; 
+  maxSize?: number 
+}> = {
+  'jpeg': { 
+    label: 'JPEG', 
+    description: 'Compressed, smaller files', 
+    format: 'jpeg',
+    quality: 0.85, 
+    maxSize: 1080 
+  },
+  'png-standard': { 
+    label: 'PNG Standard', 
+    description: 'Good quality, balanced size', 
+    format: 'png',
+    quality: 1.0, 
+    maxSize: 1080 
+  },
+  'png-hd': { 
+    label: 'PNG HD', 
+    description: 'Maximum quality, larger files', 
+    format: 'png',
+    quality: 1.0 
+  },
 };
 
 // Check if Web Share API with files is supported
@@ -43,9 +65,7 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
   const [isProcessing, setIsProcessing] = useState(false);
   const [splitImages, setSplitImages] = useState<SplitResult[]>([]);
   const [isComplete, setIsComplete] = useState(false);
-  const [format, setFormat] = useState<ExportFormat>('jpeg');
-  const [qualityPreset, setQualityPreset] = useState<QualityPreset>('standard');
-  const [showSettings, setShowSettings] = useState(false);
+  const [exportOption, setExportOption] = useState<ExportOption>('jpeg');
   const [progress, setProgress] = useState(0);
   const [isSharingSupported, setIsSharingSupported] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -72,8 +92,9 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
     return { cols: c, rows: r };
   }, [grid]);
 
-  const fileExtension = format === 'png' ? 'png' : 'jpg';
-  const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
+  const currentExport = exportOptions[exportOption];
+  const fileExtension = currentExport.format === 'png' ? 'png' : 'jpg';
+  const mimeType = currentExport.format === 'png' ? 'image/png' : 'image/jpeg';
 
   const splitImage = useCallback(async () => {
     if (!isMountedRef.current) return;
@@ -84,7 +105,7 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
 
     try {
       const totalTiles = cols * rows;
-      const preset = qualityPresets[qualityPreset];
+      const preset = currentExport;
 
       const img = new Image();
       img.crossOrigin = 'anonymous';
@@ -180,7 +201,7 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
         setIsProcessing(false);
       }
     }
-  }, [imageUrl, cols, rows, mimeType, qualityPreset]);
+  }, [imageUrl, cols, rows, mimeType, currentExport]);
 
   const shareToGallery = useCallback(async (img: SplitResult) => {
     const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
@@ -235,78 +256,44 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
     <div ref={ref} className="w-full space-y-4">
       {!isComplete ? (
         <div className="space-y-4">
-          {/* Export Settings */}
-          <div className="rounded-xl border border-border bg-card p-4 space-y-4">
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="w-full flex items-center justify-between text-sm"
-            >
-              <div className="flex items-center gap-2">
-                <Settings2 className="w-4 h-4 text-muted-foreground" />
-                <span className="font-medium">Export Settings</span>
-              </div>
-              <span className="text-muted-foreground text-xs">
-                {format.toUpperCase()} • {qualityPresets[qualityPreset].label}
-              </span>
-            </button>
-
-            {showSettings && (
-              <div className="space-y-4 pt-2 border-t border-border">
-                {/* Format Selection */}
-                <div>
-                  <p className="text-xs text-muted-foreground mb-2">Format</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {(['png', 'jpeg'] as ExportFormat[]).map((f) => (
-                      <button
-                        key={f}
-                        onClick={() => setFormat(f)}
-                        className={cn(
-                          "py-2 px-3 rounded-lg border text-sm font-medium transition-colors",
-                          format === f
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-border bg-background hover:border-muted-foreground/50"
-                        )}
-                      >
-                        {f.toUpperCase()}
-                        <span className="block text-[10px] font-normal text-muted-foreground">
-                          {f === 'png' ? 'Lossless, larger' : 'Compressed, smaller'}
-                        </span>
-                      </button>
-                    ))}
+          {/* Export Settings - Always visible and prominent */}
+          <div className="rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-4 space-y-3">
+            <div className="flex items-center gap-2 mb-1">
+              <Settings2 className="w-4 h-4 text-primary" />
+              <span className="font-medium text-sm">Export Format</span>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-2">
+              {(Object.keys(exportOptions) as ExportOption[]).map((option) => (
+                <button
+                  key={option}
+                  onClick={() => setExportOption(option)}
+                  className={cn(
+                    "py-3 px-4 rounded-lg border text-left transition-all",
+                    exportOption === option
+                      ? "border-primary bg-primary/10 shadow-sm"
+                      : "border-border bg-card hover:border-primary/50 hover:bg-muted/50"
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className={cn(
+                        "font-medium text-sm",
+                        exportOption === option ? "text-primary" : "text-foreground"
+                      )}>
+                        {exportOptions[option].label}
+                      </span>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {exportOptions[option].description}
+                      </p>
+                    </div>
+                    {exportOption === option && (
+                      <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                    )}
                   </div>
-                </div>
-
-                {/* Quality Selection */}
-                <div>
-                  <p className="text-xs text-muted-foreground mb-2">Quality</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(Object.keys(qualityPresets) as QualityPreset[]).map((preset) => (
-                      <button
-                        key={preset}
-                        onClick={() => setQualityPreset(preset)}
-                        className={cn(
-                          "py-2 px-2 rounded-lg border text-sm font-medium transition-colors",
-                          qualityPreset === preset
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-border bg-background hover:border-muted-foreground/50"
-                        )}
-                      >
-                        {qualityPresets[preset].label}
-                        <span className="block text-[10px] font-normal text-muted-foreground">
-                          {qualityPresets[preset].description}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {qualityPreset === 'hd' && (
-                  <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded-lg">
-                    💡 HD exports at original resolution for maximum quality. File sizes will be larger.
-                  </p>
-                )}
-              </div>
-            )}
+                </button>
+              ))}
+            </div>
           </div>
 
           <Button
@@ -344,7 +331,7 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
             <Check className="w-4 h-4" />
             <span className="font-medium">Ready to {isMobile ? 'save' : 'download'}</span>
             <span className="text-muted-foreground">
-              ({format.toUpperCase()} • {qualityPresets[qualityPreset].label})
+              ({exportOptions[exportOption].label})
             </span>
           </div>
           
@@ -385,7 +372,6 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
             onClick={() => {
               setSplitImages([]);
               setIsComplete(false);
-              setShowSettings(false);
               setProgress(0);
             }}
           >
