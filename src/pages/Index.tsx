@@ -64,12 +64,14 @@ const Index = () => {
   const handleGridSelect = useCallback((grid: string) => {
     setSelectedGrid(grid);
     // Clear cropped image when grid changes since it was cropped for a different aspect ratio
-    if (croppedImage?.startsWith('blob:')) {
-      URL.revokeObjectURL(croppedImage);
-      urlsToCleanupRef.current.delete(croppedImage);
-    }
-    setCroppedImage(null);
-  }, [croppedImage]);
+    setCroppedImage(prev => {
+      if (prev?.startsWith('blob:')) {
+        URL.revokeObjectURL(prev);
+        urlsToCleanupRef.current.delete(prev);
+      }
+      return null;
+    });
+  }, []);
 
   const handleCropComplete = useCallback((croppedUrl: string) => {
     // Cleanup previous cropped image

@@ -1,14 +1,46 @@
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, useMemo, memo } from 'react';
 
 interface GridPreviewProps {
   imageUrl: string;
   grid: string;
 }
 
-export const GridPreview = forwardRef<HTMLDivElement, GridPreviewProps>(function GridPreview({ imageUrl, grid }, ref) {
-  const { cols, rows, totalTiles, aspect } = useMemo(() => {
+interface TileProps {
+  index: number;
+  row: number;
+  col: number;
+  cols: number;
+  rows: number;
+  postOrder: number;
+  imageUrl: string;
+}
+
+// Memoized individual tile to prevent unnecessary re-renders
+const GridTile = memo(function GridTile({ row, col, cols, rows, postOrder, imageUrl }: TileProps) {
+  const style = useMemo(() => ({
+    backgroundImage: `url(${imageUrl})`,
+    backgroundSize: `${cols * 100}% ${rows * 100}%`,
+    backgroundPosition: cols > 1 || rows > 1 
+      ? `${cols > 1 ? (col / (cols - 1)) * 100 : 50}% ${rows > 1 ? (row / (rows - 1)) * 100 : 50}%`
+      : '50% 50%'
+  }), [imageUrl, cols, rows, col, row]);
+
+  return (
+    <div
+      className="relative aspect-square overflow-hidden"
+      style={style}
+    >
+      <div className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center text-[10px] font-bold text-foreground shadow-sm">
+        {postOrder}
+      </div>
+    </div>
+  );
+});
+
+export const GridPreview = memo(forwardRef<HTMLDivElement, GridPreviewProps>(function GridPreview({ imageUrl, grid }, ref) {
+  const { cols, rows, totalTiles } = useMemo(() => {
     const [c, r] = grid.split('x').map(Number);
-    return { cols: c, rows: r, totalTiles: c * r, aspect: c / r };
+    return { cols: c, rows: r, totalTiles: c * r };
   }, [grid]);
 
   const tiles = useMemo(() => {
@@ -21,7 +53,6 @@ export const GridPreview = forwardRef<HTMLDivElement, GridPreviewProps>(function
 
   return (
     <div ref={ref} className="w-full">
-      {/* Instagram-style card preview */}
       <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         {/* Instagram header */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-border/50">
@@ -36,19 +67,11 @@ export const GridPreview = forwardRef<HTMLDivElement, GridPreviewProps>(function
         
         {/* Image preview area */}
         <div className="relative w-full bg-muted/30">
-          {/* Container with correct aspect ratio for the full grid */}
           <div 
             className="relative w-full"
             style={{ aspectRatio: `${cols} / ${rows}` }}
           >
-            {/* Full image covering the entire grid area */}
-            <img
-              src={imageUrl}
-              alt="Grid preview"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            
-            {/* Grid overlay showing tile divisions */}
+            {/* Grid with prominent lines */}
             <div 
               className="absolute inset-0 grid"
               style={{ 
@@ -58,20 +81,16 @@ export const GridPreview = forwardRef<HTMLDivElement, GridPreviewProps>(function
               }}
             >
               {tiles.map(({ index, row, col, postOrder }) => (
-                <div
+                <GridTile
                   key={index}
-                  className="relative aspect-square overflow-hidden"
-                  style={{
-                    backgroundImage: `url(${imageUrl})`,
-                    backgroundSize: `${cols * 100}% ${rows * 100}%`,
-                    backgroundPosition: `${(col / (cols - 1)) * 100}% ${(row / (rows - 1)) * 100}%`
-                  }}
-                >
-                  {/* Number indicator */}
-                  <div className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center text-[10px] font-bold text-foreground shadow-sm">
-                    {postOrder}
-                  </div>
-                </div>
+                  index={index}
+                  row={row}
+                  col={col}
+                  cols={cols}
+                  rows={rows}
+                  postOrder={postOrder}
+                  imageUrl={imageUrl}
+                />
               ))}
             </div>
           </div>
@@ -89,4 +108,4 @@ export const GridPreview = forwardRef<HTMLDivElement, GridPreviewProps>(function
       </div>
     </div>
   );
-});
+}));
