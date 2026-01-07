@@ -53,8 +53,8 @@ export const GridPreview = forwardRef<HTMLDivElement, GridPreviewProps>(function
               className="absolute inset-0 grid"
               style={{ 
                 gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                gap: '3px',
-                background: 'hsl(var(--foreground) / 0.85)'
+                gap: '1px',
+                background: 'hsl(var(--background) / 0.3)'
               }}
             >
               {tiles.map(({ index, postOrder }) => (
