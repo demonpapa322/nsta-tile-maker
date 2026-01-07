@@ -19,26 +19,24 @@ export const GridPreview = forwardRef<HTMLDivElement, GridPreviewProps>(function
     });
   }, [totalTiles, cols]);
 
+  // Limit preview size based on grid complexity
+  const maxPreviewWidth = cols > 3 ? 'max-w-md' : 'max-w-sm';
+
   return (
     <div ref={ref} className="w-full">
-      {/* Instagram-style card preview */}
-      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-        {/* Instagram header */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-border/50">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary via-accent to-primary p-[2px]">
-            <div className="w-full h-full rounded-full bg-card" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold">your_profile</p>
-            <p className="text-xs text-muted-foreground">Instagram Grid</p>
+      <h3 className="text-sm font-medium text-muted-foreground mb-3">Preview</h3>
+      <div className="rounded-xl border border-border bg-card p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent" />
+          <div>
+            <p className="text-sm font-medium">your_profile</p>
           </div>
         </div>
         
-        {/* Image preview area */}
-        <div className="relative w-full bg-muted/30">
+        <div className={`mx-auto ${maxPreviewWidth}`}>
           {/* Container with correct aspect ratio for the full grid */}
           <div 
-            className="relative w-full"
+            className="relative w-full rounded-lg overflow-hidden bg-border"
             style={{ aspectRatio: `${cols} / ${rows}` }}
           >
             {/* Full image covering the entire grid area */}
@@ -50,20 +48,16 @@ export const GridPreview = forwardRef<HTMLDivElement, GridPreviewProps>(function
             
             {/* Grid overlay showing tile divisions */}
             <div 
-              className="absolute inset-0 grid"
-              style={{ 
-                gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                gap: '1px',
-                background: 'hsl(var(--background) / 0.3)'
-              }}
+              className="absolute inset-0 grid gap-px"
+              style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
             >
               {tiles.map(({ index, postOrder }) => (
                 <div
                   key={index}
-                  className="relative aspect-square bg-transparent"
+                  className="relative aspect-square border border-background/20"
                 >
                   {/* Number indicator */}
-                  <div className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center text-[10px] font-bold text-foreground shadow-sm">
+                  <div className="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-[8px] font-bold">
                     {postOrder}
                   </div>
                 </div>
@@ -72,15 +66,9 @@ export const GridPreview = forwardRef<HTMLDivElement, GridPreviewProps>(function
           </div>
         </div>
         
-        {/* Footer info */}
-        <div className="px-4 py-3 border-t border-border/50 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">
-            {cols} × {rows} grid
-          </span>
-          <span className="text-xs font-medium text-foreground">
-            {totalTiles} posts
-          </span>
-        </div>
+        <p className="text-center text-xs text-muted-foreground mt-3">
+          Post order: <span className="text-foreground font-medium">{totalTiles} → 1</span>
+        </p>
       </div>
     </div>
   );

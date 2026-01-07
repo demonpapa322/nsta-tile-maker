@@ -107,34 +107,40 @@ const Index = () => {
       {/* Subtle background gradient */}
       <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
 
-      <div className="relative z-10 h-screen flex flex-col">
-        {/* Main Content - flex-1 to fill available space */}
-        <main className={`flex-1 container ${originalImage ? 'py-4 lg:py-6' : 'py-8 md:py-12'}`}>
-          {/* Hero Section - Ultra compact when editing */}
-          {!originalImage ? (
-            <div className="text-center mb-10">
+      <div className="relative z-10">
+        {/* Main Content */}
+        <main className="container py-8 md:py-12 lg:py-8">
+          {/* Hero Section - Compact on desktop when image is present */}
+          <div className={`text-center transition-all duration-300 ${originalImage ? 'mb-6 lg:mb-4' : 'mb-12'}`}>
+            {!originalImage && (
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6">
                 <Sparkles className="w-3.5 h-3.5 text-primary" />
                 <span className="text-xs font-medium text-primary">Free & Private</span>
               </div>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground mb-4">
-                Split Your Image Into
-                <span className="gradient-text block mt-1">Beautiful Grid Posts</span>
-              </h1>
+            )}
+            <h1 className={`font-bold tracking-tight text-foreground transition-all duration-300 ${
+              originalImage 
+                ? 'text-xl md:text-2xl lg:text-xl mb-2' 
+                : 'text-3xl md:text-4xl lg:text-5xl mb-4'
+            }`}>
+              {originalImage ? (
+                'Customize & Download'
+              ) : (
+                <>
+                  Split Your Image Into
+                  <span className="gradient-text block mt-1">Beautiful Grid Posts</span>
+                </>
+              )}
+            </h1>
+            {!originalImage && (
               <p className="text-base text-muted-foreground max-w-md mx-auto">
                 Create stunning Instagram grids in seconds
               </p>
-            </div>
-          ) : (
-            <div className="text-center mb-3 lg:mb-4">
-              <h1 className="text-lg font-semibold text-foreground">
-                Customize & Export
-              </h1>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* App Interface */}
-          <div className="max-w-6xl mx-auto h-full">
+          <div className="max-w-6xl mx-auto">
             <AnimatePresence mode="wait">
               {currentStep === 'upload' && (
                 <motion.div
@@ -150,20 +156,6 @@ const Index = () => {
                     uploadedImage={null}
                     onClear={handleClear}
                   />
-                  
-                  {/* How it works */}
-                  <div className="mt-12 grid grid-cols-3 gap-6 text-center">
-                    {[
-                      { icon: '📤', title: 'Upload' },
-                      { icon: '✂️', title: 'Crop' },
-                      { icon: '⬇️', title: 'Download' },
-                    ].map((item) => (
-                      <div key={item.title} className="flex flex-col items-center gap-2">
-                        <span className="text-2xl">{item.icon}</span>
-                        <span className="text-sm font-medium text-muted-foreground">{item.title}</span>
-                      </div>
-                    ))}
-                  </div>
                 </motion.div>
               )}
 
@@ -196,105 +188,79 @@ const Index = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
-                  className="h-full"
                 >
-                  {/* Desktop: Enhanced side-by-side layout */}
-                  <div className="hidden lg:flex lg:gap-6 lg:items-start lg:h-[calc(100vh-140px)]">
-                    {/* Left: Large Preview - Takes remaining space */}
-                    <div className="flex-1 min-w-0 h-full flex items-center justify-center">
-                      <div className="w-full max-w-2xl">
-                        <GridPreview
-                          imageUrl={activeImage}
-                          grid={selectedGrid}
-                        />
-                      </div>
+                  {/* Desktop: Side-by-side layout */}
+                  <div className="hidden lg:grid lg:grid-cols-[1fr,340px] lg:gap-6 lg:items-start">
+                    {/* Left: Large Preview */}
+                    <div>
+                      <GridPreview
+                        imageUrl={activeImage}
+                        grid={selectedGrid}
+                      />
                     </div>
 
-                    {/* Right: Sleek Controls Panel */}
-                    <div className="w-[320px] shrink-0 rounded-2xl bg-card/80 backdrop-blur-sm border border-border shadow-lg overflow-hidden">
-                      {/* Panel Header */}
-                      <div className="px-5 py-4 border-b border-border bg-muted/30">
-                        <h2 className="font-semibold text-sm">Settings</h2>
+                    {/* Right: Controls Panel - Compact */}
+                    <div className="sticky top-4 space-y-4 p-5 rounded-2xl bg-card border border-border shadow-sm">
+                      <GridSelector
+                        selectedGrid={selectedGrid}
+                        onGridSelect={handleGridSelect}
+                      />
+                      
+                      <div className="h-px bg-border" />
+                      
+                      {/* Edit actions */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleEditCrop}
+                          className="flex-1 py-2 text-xs font-medium text-foreground hover:text-primary transition-colors border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30"
+                        >
+                          ✂️ Crop
+                        </button>
+                        <button
+                          onClick={handleClear}
+                          className="flex-1 py-2 text-xs font-medium text-foreground hover:text-primary transition-colors border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30"
+                        >
+                          📤 New
+                        </button>
                       </div>
                       
-                      <div className="p-5 space-y-5">
-                        {/* Grid Selection */}
-                        <div>
-                          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3 block">
-                            Grid Layout
-                          </label>
-                          <GridSelector
-                            selectedGrid={selectedGrid}
-                            onGridSelect={handleGridSelect}
-                          />
-                        </div>
-                        
-                        {/* Quick Actions */}
-                        <div className="grid grid-cols-2 gap-2">
-                          <button
-                            onClick={handleEditCrop}
-                            className="group py-3 px-3 text-xs font-medium text-foreground transition-all border border-border rounded-xl hover:bg-primary/5 hover:border-primary/40 hover:text-primary flex items-center justify-center gap-2"
-                          >
-                            <span>✂️</span>
-                            <span>Crop</span>
-                          </button>
-                          <button
-                            onClick={handleClear}
-                            className="group py-3 px-3 text-xs font-medium text-foreground transition-all border border-border rounded-xl hover:bg-primary/5 hover:border-primary/40 hover:text-primary flex items-center justify-center gap-2"
-                          >
-                            <span>📤</span>
-                            <span>New Image</span>
-                          </button>
-                        </div>
-                        
-                        <div className="h-px bg-border" />
-                        
-                        {/* Export Section */}
-                        <div>
-                          <DownloadSection
-                            imageUrl={activeImage}
-                            grid={selectedGrid}
-                          />
-                        </div>
-                      </div>
+                      <div className="h-px bg-border" />
+                      
+                      <DownloadSection
+                        imageUrl={activeImage}
+                        grid={selectedGrid}
+                      />
                     </div>
                   </div>
 
-                  {/* Mobile/Tablet: Compact stacked layout */}
-                  <div className="lg:hidden space-y-4 max-w-lg mx-auto pb-6">
-                    {/* Inline grid + actions row */}
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1">
-                        <GridSelector
-                          selectedGrid={selectedGrid}
-                          onGridSelect={handleGridSelect}
-                        />
-                      </div>
-                    </div>
+                  {/* Mobile/Tablet: Stacked layout */}
+                  <div className="lg:hidden space-y-6 max-w-xl mx-auto">
+                    <GridSelector
+                      selectedGrid={selectedGrid}
+                      onGridSelect={handleGridSelect}
+                    />
 
-                    {/* Preview */}
                     <GridPreview
                       imageUrl={activeImage}
                       grid={selectedGrid}
                     />
 
-                    {/* Actions row */}
+                    {/* Edit actions before download */}
                     <div className="flex gap-2">
                       <button
                         onClick={handleEditCrop}
-                        className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors border border-border rounded-xl hover:bg-primary/5 hover:border-primary/40"
+                        className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30"
                       >
-                        ✂️ Crop
+                        ✂️ Crop & Adjust
                       </button>
                       <button
                         onClick={handleClear}
-                        className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors border border-border rounded-xl hover:bg-primary/5 hover:border-primary/40"
+                        className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30"
                       >
-                        📤 New
+                        Upload New
                       </button>
                     </div>
 
-                    {/* Export */}
                     <DownloadSection
                       imageUrl={activeImage}
                       grid={selectedGrid}
@@ -304,16 +270,32 @@ const Index = () => {
               )}
             </AnimatePresence>
           </div>
+
+          {/* How it works - Minimal */}
+          {!originalImage && (
+            <section className="mt-16 max-w-2xl mx-auto">
+              <div className="grid grid-cols-3 gap-6 text-center">
+                {[
+                  { icon: '📤', title: 'Upload' },
+                  { icon: '✂️', title: 'Crop' },
+                  { icon: '⬇️', title: 'Download' },
+                ].map((item) => (
+                  <div key={item.title} className="flex flex-col items-center gap-2">
+                    <span className="text-2xl">{item.icon}</span>
+                    <span className="text-sm font-medium text-muted-foreground">{item.title}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </main>
 
-        {/* Minimal Footer - Only on upload screen */}
-        {!originalImage && (
-          <footer className="py-4">
-            <p className="text-center text-xs text-muted-foreground/60">
-              Your images stay on your device
-            </p>
-          </footer>
-        )}
+        {/* Footer */}
+        <footer className="py-8 mt-12">
+          <p className="text-center text-xs text-muted-foreground/70">
+            Your images stay on your device
+          </p>
+        </footer>
       </div>
     </div>
   );
