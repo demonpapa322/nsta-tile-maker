@@ -1,5 +1,4 @@
 import { useState, useCallback, useMemo, useEffect, useRef, forwardRef } from 'react';
-import { saveAs } from 'file-saver';
 import { Download, Loader2, Check, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -9,6 +8,7 @@ interface SplitResult {
   blob: Blob;
   index: number;
   postOrder: number;
+  url?: string; // Store object URL for reliable downloads
 }
 
 interface DownloadSectionProps {
@@ -57,6 +57,25 @@ const isMobileDevice = () => {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 };
 
+// Reliable single file download using native anchor
+const downloadFile = (blob: Blob, fileName: string): Promise<void> => {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    // Clean up after a short delay
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      resolve();
+    }, 100);
+  });
+};
+
 export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(function DownloadSection({ 
   imageUrl, 
   grid 
@@ -68,8 +87,11 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
   const [progress, setProgress] = useState(0);
   const [isSharingSupported, setIsSharingSupported] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState({ current: 0, total: 0 });
   
   const isMountedRef = useRef(true);
+  const downloadAbortRef = useRef(false);
   
   useEffect(() => {
     isMountedRef.current = true;
@@ -77,6 +99,7 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
     setIsMobile(isMobileDevice());
     return () => {
       isMountedRef.current = false;
+      downloadAbortRef.current = true;
     };
   }, []);
 
@@ -84,6 +107,8 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
     setSplitImages([]);
     setIsComplete(false);
     setProgress(0);
+    setIsDownloading(false);
+    setDownloadProgress({ current: 0, total: 0 });
   }, [imageUrl, grid]);
 
   const { cols, rows } = useMemo(() => {
@@ -202,53 +227,78 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
     }
   }, [imageUrl, cols, rows, mimeType, currentExport]);
 
-  const shareToGallery = useCallback(async (img: SplitResult) => {
-    const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
-    const file = new File([img.blob], fileName, { type: mimeType });
+  // Sequential download with progress tracking - most reliable approach
+  const saveAllToDevice = useCallback(async () => {
+    if (!splitImages.length || isDownloading) return;
+
+    downloadAbortRef.current = false;
+    setIsDownloading(true);
     
-    try {
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: 'Grid Tile',
-        });
-        toast.success('Image shared/saved!');
-      } else {
-        saveAs(img.blob, fileName);
-        toast.success('Downloaded!');
-      }
-    } catch (error) {
-      if ((error as Error).name !== 'AbortError') {
-        saveAs(img.blob, fileName);
-        toast.success('Downloaded!');
-      }
-    }
-  }, [fileExtension, mimeType]);
-
-  const saveAllToDevice = useCallback(() => {
-    if (!splitImages.length) return;
-
-    // Some browsers only allow multiple downloads if they happen immediately after a user gesture.
-    // So we trigger all downloads synchronously (no awaits/timeouts).
-    toast.message('If prompted, allow multiple downloads to save all tiles.');
-
     const ordered = [...splitImages].sort((a, b) => a.postOrder - b.postOrder);
+    const total = ordered.length;
+    
+    setDownloadProgress({ current: 0, total });
+    toast.info(`Downloading ${total} images...`);
 
-    for (const img of ordered) {
+    let successCount = 0;
+
+    for (let i = 0; i < ordered.length; i++) {
+      if (downloadAbortRef.current || !isMountedRef.current) break;
+      
+      const img = ordered[i];
       const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
-      saveAs(img.blob, fileName);
+      
+      try {
+        await downloadFile(img.blob, fileName);
+        successCount++;
+        
+        if (isMountedRef.current) {
+          setDownloadProgress({ current: i + 1, total });
+        }
+        
+        // Wait between downloads to prevent browser blocking
+        if (i < ordered.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 400));
+        }
+      } catch (error) {
+        console.error(`Failed to download ${fileName}:`, error);
+      }
     }
 
-    toast.success(`Downloading ${ordered.length} images...`);
-  }, [fileExtension, splitImages]);
+    if (isMountedRef.current) {
+      setIsDownloading(false);
+      setDownloadProgress({ current: 0, total: 0 });
+      
+      if (successCount === total) {
+        toast.success(`All ${total} images downloaded!`);
+      } else if (successCount > 0) {
+        toast.warning(`Downloaded ${successCount} of ${total} images`);
+      } else {
+        toast.error('Download failed. Try downloading individually.');
+      }
+    }
+  }, [fileExtension, splitImages, isDownloading]);
 
-  const downloadSingle = useCallback((img: SplitResult) => {
+  const downloadSingle = useCallback(async (img: SplitResult) => {
+    const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
+    
     if (isMobile && isSharingSupported) {
-      shareToGallery(img);
-    } else {
-      saveAs(img.blob, `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`);
+      const file = new File([img.blob], fileName, { type: mimeType });
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'Grid Tile' });
+          toast.success('Image saved!');
+          return;
+        }
+      } catch (error) {
+        if ((error as Error).name === 'AbortError') return;
+      }
     }
-  }, [fileExtension, isMobile, isSharingSupported, shareToGallery]);
+    
+    // Fallback to direct download
+    await downloadFile(img.blob, fileName);
+    toast.success('Downloaded!');
+  }, [fileExtension, isMobile, isSharingSupported, mimeType]);
 
   return (
     <div ref={ref} className="w-full space-y-3">
@@ -326,15 +376,35 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
             </span>
           </div>
           
-          {/* Primary action - Save all directly */}
+          {/* Primary action - Save all with progress */}
           <Button
             variant="gradient"
             size="lg"
             className="w-full"
             onClick={saveAllToDevice}
+            disabled={isDownloading}
           >
-            Download All
+            {isDownloading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Downloading {downloadProgress.current}/{downloadProgress.total}...
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
+                Download All ({splitImages.length} images)
+              </>
+            )}
           </Button>
+          
+          {isDownloading && (
+            <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-300 ease-out"
+                style={{ width: `${(downloadProgress.current / downloadProgress.total) * 100}%` }}
+              />
+            </div>
+          )}
 
           <div className="pt-2">
             <p className="text-xs text-muted-foreground text-center mb-3">
@@ -348,7 +418,8 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
                 <button
                   key={img.index}
                   onClick={() => downloadSingle(img)}
-                  className="aspect-square rounded-lg bg-card border border-border hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-center"
+                  disabled={isDownloading}
+                  className="aspect-square rounded-lg bg-card border border-border hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-center disabled:opacity-50"
                 >
                   <span className="text-xs font-medium">{img.postOrder}</span>
                 </button>
@@ -361,10 +432,13 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
             size="sm"
             className="w-full"
             onClick={() => {
+              downloadAbortRef.current = true;
               setSplitImages([]);
               setIsComplete(false);
               setProgress(0);
+              setIsDownloading(false);
             }}
+            disabled={isDownloading}
           >
             Split Again
           </Button>
