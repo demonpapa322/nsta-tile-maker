@@ -62,7 +62,7 @@ export const ImageUploader = forwardRef<HTMLDivElement, ImageUploaderProps>(func
             : "border-muted-foreground/30 hover:border-primary/50 bg-card/50"
         )}
       >
-        <input {...getInputProps()} />
+        <input {...getInputProps()} aria-label="Upload image file" />
         
         {uploadedImage ? (
           <div className="relative aspect-video max-h-[400px] w-full flex items-center justify-center bg-muted/20">
