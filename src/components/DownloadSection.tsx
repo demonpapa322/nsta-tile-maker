@@ -225,22 +225,21 @@ export const DownloadSection = forwardRef<HTMLDivElement, DownloadSectionProps>(
     }
   }, [fileExtension, mimeType]);
 
-  const saveAllToDevice = useCallback(async () => {
+  const saveAllToDevice = useCallback(() => {
     if (!splitImages.length) return;
 
-    // Download each image individually with a small delay to avoid browser blocking
-    for (let i = 0; i < splitImages.length; i++) {
-      const img = splitImages[i];
+    // Some browsers only allow multiple downloads if they happen immediately after a user gesture.
+    // So we trigger all downloads synchronously (no awaits/timeouts).
+    toast.message('If prompted, allow multiple downloads to save all tiles.');
+
+    const ordered = [...splitImages].sort((a, b) => a.postOrder - b.postOrder);
+
+    for (const img of ordered) {
       const fileName = `tile_${img.postOrder.toString().padStart(2, '0')}.${fileExtension}`;
       saveAs(img.blob, fileName);
-      
-      // Small delay between downloads to help browser handle multiple downloads
-      if (i < splitImages.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
     }
-    
-    toast.success(`Downloaded ${splitImages.length} images`);
+
+    toast.success(`Downloading ${ordered.length} images...`);
   }, [fileExtension, splitImages]);
 
   const downloadSingle = useCallback((img: SplitResult) => {
