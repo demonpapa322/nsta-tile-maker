@@ -1,5 +1,4 @@
 import { useState, useCallback, useMemo, useEffect, useRef, forwardRef } from 'react';
-import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { Download, Loader2, Check, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
