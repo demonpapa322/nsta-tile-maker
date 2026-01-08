@@ -102,9 +102,9 @@ export const ImageUploader = forwardRef<HTMLDivElement, ImageUploaderProps>(func
               )} />
             </div>
             
-            <h3 className="text-lg font-semibold mb-1">
+            <h2 className="text-lg font-semibold mb-1">
               {isDragging ? "Drop your image" : "Upload your image"}
-            </h3>
+            </h2>
             <p className="text-sm text-muted-foreground">
               Drag and drop or click to browse. PNG, JPG, WebP.
             </p>
