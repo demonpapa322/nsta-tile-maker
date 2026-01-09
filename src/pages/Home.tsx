@@ -41,26 +41,34 @@ const tools = [
 const Home = () => {
   return (
     <div className="min-h-screen bg-background">
-      {/* Theme Toggle */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between">
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-2"
+        >
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/20">
+            <Sparkles className="w-4.5 h-4.5 text-primary-foreground" />
+          </div>
+          <span className="text-xl font-bold tracking-tight text-foreground">
+            Social<span className="gradient-text">Tools</span>
+          </span>
+        </motion.div>
         <ThemeToggle />
-      </div>
+      </header>
 
       {/* Background gradient */}
       <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
 
       <div className="relative z-10">
-        <main className="container py-12 md:py-20">
+        <main className="container pt-28 pb-12 md:pt-32 md:pb-20">
           {/* Hero Section */}
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6">
-              <Sparkles className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-medium text-primary">Free Tools</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-4">
-              Social<span className="gradient-text">Tools</span>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground mb-3">
+              Create better content, <span className="gradient-text">faster</span>
             </h1>
-            <p className="text-lg text-muted-foreground max-w-md mx-auto">
+            <p className="text-base text-muted-foreground max-w-md mx-auto">
               Free tools to supercharge your social media presence
             </p>
           </div>
