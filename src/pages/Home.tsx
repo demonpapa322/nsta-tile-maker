@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Grid3X3, Hash, MessageSquare, Image, Sparkles } from 'lucide-react';
+import { Grid3X3, Hash, MessageSquare, Image } from 'lucide-react';
 
 const tools = [
   {
@@ -46,13 +46,16 @@ const Home = () => {
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2.5"
         >
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/20">
-            <Sparkles className="w-4.5 h-4.5 text-primary-foreground" />
+          <div className="flex items-center gap-0.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500" />
+            <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-fuchsia-500 to-rose-500" />
+            <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-rose-500 to-orange-400" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-foreground">
-            Social<span className="gradient-text">Tools</span>
+          <span className="text-xl font-semibold tracking-tight">
+            <span className="text-foreground/90">Social</span>
+            <span className="bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent">Tools</span>
           </span>
         </motion.div>
         <ThemeToggle />
