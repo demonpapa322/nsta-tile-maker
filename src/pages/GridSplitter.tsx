@@ -1,16 +1,17 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { ImageUploader } from '@/components/ImageUploader';
 import { ImageCropper } from '@/components/ImageCropper';
 import { GridSelector } from '@/components/GridSelector';
 import { GridPreview } from '@/components/GridPreview';
 import { DownloadSection } from '@/components/DownloadSection';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Sparkles } from 'lucide-react';
+import { ArrowLeft, Sparkles } from 'lucide-react';
 
 type Step = 'upload' | 'crop' | 'preview';
 
-const Index = () => {
+const GridSplitter = () => {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
   const [selectedGrid, setSelectedGrid] = useState('3x3');
@@ -99,7 +100,16 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Theme Toggle - Top Right */}
+      {/* Header */}
+      <div className="fixed top-4 left-4 z-50">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted/50"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="hidden sm:inline">SocialTools</span>
+        </Link>
+      </div>
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
       </div>
@@ -109,7 +119,7 @@ const Index = () => {
 
       <div className="relative z-10">
         {/* Main Content */}
-        <main className="container py-8 md:py-12 lg:py-8">
+        <main className="container py-8 md:py-12 lg:py-8 pt-16">
           {/* Hero Section - Compact on desktop when image is present */}
           <div className={`text-center transition-all duration-300 ${originalImage ? 'mb-6 lg:mb-4' : 'mb-12'}`}>
             {!originalImage && (
@@ -301,4 +311,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default GridSplitter;
