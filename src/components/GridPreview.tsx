@@ -1,11 +1,13 @@
 import { forwardRef, useMemo } from 'react';
+import { Grid3X3, Bookmark, User } from 'lucide-react';
 
 interface GridPreviewProps {
   imageUrl: string;
   grid: string;
+  showNumbers?: boolean;
 }
 
-export const GridPreview = forwardRef<HTMLDivElement, GridPreviewProps>(function GridPreview({ imageUrl, grid }, ref) {
+export const GridPreview = forwardRef<HTMLDivElement, GridPreviewProps>(function GridPreview({ imageUrl, grid, showNumbers = true }, ref) {
   const { cols, rows, totalTiles } = useMemo(() => {
     const [c, r] = grid.split('x').map(Number);
     return { cols: c, rows: r, totalTiles: c * r };
@@ -21,8 +23,22 @@ export const GridPreview = forwardRef<HTMLDivElement, GridPreviewProps>(function
 
   return (
     <div ref={ref} className="w-full flex justify-center">
-      {/* Clean Instagram-style grid */}
-      <div className="rounded-xl overflow-hidden bg-background shadow-lg border border-border/50 max-w-md w-full">
+      {/* Instagram-style profile mock */}
+      <div className="rounded-xl overflow-hidden bg-card shadow-lg border border-border/50 max-w-sm w-full">
+        {/* Instagram tab icons */}
+        <div className="flex items-center justify-center gap-12 py-3 border-b border-border/30">
+          <button className="p-2 text-foreground">
+            <Grid3X3 className="w-5 h-5" />
+          </button>
+          <button className="p-2 text-muted-foreground/50 hover:text-muted-foreground transition-colors">
+            <Bookmark className="w-5 h-5" />
+          </button>
+          <button className="p-2 text-muted-foreground/50 hover:text-muted-foreground transition-colors">
+            <User className="w-5 h-5" />
+          </button>
+        </div>
+        
+        {/* Grid */}
         <div 
           className="grid w-full"
           style={{ 
@@ -47,9 +63,11 @@ export const GridPreview = forwardRef<HTMLDivElement, GridPreviewProps>(function
               />
               
               {/* Post order number badge */}
-              <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center shadow-md">
-                <span className="text-xs font-semibold text-white">{postOrder}</span>
-              </div>
+              {showNumbers && (
+                <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center shadow-md">
+                  <span className="text-xs font-semibold text-white">{postOrder}</span>
+                </div>
+              )}
             </div>
           ))}
         </div>
