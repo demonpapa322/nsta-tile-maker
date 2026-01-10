@@ -7,13 +7,12 @@ interface GridSelectorProps {
   onGridSelect: (grid: string) => void;
 }
 
-// Instagram-friendly 3-column grids only
+// Instagram-friendly 3-column grids only (removed 3x5)
 const gridOptions = [
   { value: '3x1', label: '3×1', cols: 3, rows: 1 },
   { value: '3x2', label: '3×2', cols: 3, rows: 2 },
   { value: '3x3', label: '3×3', cols: 3, rows: 3 },
   { value: '3x4', label: '3×4', cols: 3, rows: 4 },
-  { value: '3x5', label: '3×5', cols: 3, rows: 5 },
 ];
 
 const MIN_COLS = 1;
@@ -55,21 +54,26 @@ export const GridSelector = memo(forwardRef<HTMLDivElement, GridSelectorProps>(f
   }, [customCols, customRows, handleCustomChange]);
 
   return (
-    <div ref={ref} className="w-full">
+    <div ref={ref} className="w-full space-y-3">
+      {/* Section header */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Grid Size</span>
+      </div>
+      
       {/* Preset options - Instagram friendly 3-column grids */}
-      <div className="grid grid-cols-5 gap-1.5 mb-3">
+      <div className="grid grid-cols-4 gap-2">
         {gridOptions.map((option) => (
           <button
             key={option.value}
             onClick={() => handlePresetSelect(option.value)}
             className={cn(
-              "relative p-2 rounded-lg border transition-colors",
+              "relative p-3 rounded-xl border-2 transition-all duration-200",
               selectedGrid === option.value && !showCustom
-                ? "border-primary bg-primary/10"
-                : "border-border bg-card hover:border-muted-foreground/50"
+                ? "border-primary bg-primary/10 shadow-sm shadow-primary/20"
+                : "border-border bg-card hover:border-primary/40 hover:bg-muted/50"
             )}
           >
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center gap-1.5">
               {/* Mini grid preview */}
               <div 
                 className="grid gap-0.5"
@@ -82,7 +86,7 @@ export const GridSelector = memo(forwardRef<HTMLDivElement, GridSelectorProps>(f
                   <div
                     key={i}
                     className={cn(
-                      "w-2 h-2 rounded-sm transition-colors",
+                      "w-2.5 h-2.5 rounded-sm transition-colors",
                       selectedGrid === option.value && !showCustom
                         ? "bg-primary"
                         : "bg-muted-foreground/40"
@@ -92,7 +96,7 @@ export const GridSelector = memo(forwardRef<HTMLDivElement, GridSelectorProps>(f
               </div>
               
               <span className={cn(
-                "text-[10px] font-medium transition-colors",
+                "text-xs font-semibold transition-colors",
                 selectedGrid === option.value && !showCustom
                   ? "text-primary"
                   : "text-muted-foreground"

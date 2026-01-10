@@ -150,7 +150,7 @@ const GridSplitter = () => {
           </div>
 
           {/* App Interface */}
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-7xl mx-auto">
             <AnimatePresence mode="wait">
               {currentStep === 'upload' && (
                 <motion.div
@@ -176,7 +176,7 @@ const GridSplitter = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
-                  className="max-w-3xl mx-auto space-y-6"
+                  className="max-w-4xl mx-auto space-y-6"
                 >
                   <GridSelector
                     selectedGrid={selectedGrid}
@@ -199,18 +199,18 @@ const GridSplitter = () => {
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
                 >
-                  {/* Desktop: Side-by-side layout */}
-                  <div className="hidden lg:grid lg:grid-cols-[1fr,340px] lg:gap-6 lg:items-start">
-                    {/* Left: Large Preview */}
-                    <div>
+                  {/* Desktop: Side-by-side layout - Larger and more balanced */}
+                  <div className="hidden lg:grid lg:grid-cols-[1fr,400px] lg:gap-8 lg:items-start">
+                    {/* Left: Large Instagram-style Preview */}
+                    <div className="max-w-2xl">
                       <GridPreview
                         imageUrl={activeImage}
                         grid={selectedGrid}
                       />
                     </div>
 
-                    {/* Right: Controls Panel - Compact */}
-                    <div className="sticky top-4 space-y-4 p-5 rounded-2xl bg-card border border-border shadow-sm">
+                    {/* Right: Controls Panel - More spacious */}
+                    <div className="sticky top-20 space-y-5 p-6 rounded-2xl bg-card/80 backdrop-blur-sm border border-border shadow-lg">
                       <GridSelector
                         selectedGrid={selectedGrid}
                         onGridSelect={handleGridSelect}
@@ -218,20 +218,28 @@ const GridSplitter = () => {
                       
                       <div className="h-px bg-border" />
                       
-                      {/* Edit actions */}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={handleEditCrop}
-                          className="flex-1 py-2 text-xs font-medium text-foreground hover:text-primary transition-colors border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30"
-                        >
-                          ✂️ Crop
-                        </button>
-                        <button
-                          onClick={handleClear}
-                          className="flex-1 py-2 text-xs font-medium text-foreground hover:text-primary transition-colors border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30"
-                        >
-                          📤 New
-                        </button>
+                      {/* Edit actions with branded styling */}
+                      <div className="space-y-2">
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Actions</span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleEditCrop}
+                            className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-all border border-border rounded-xl hover:bg-muted/50 hover:border-primary/40 hover:shadow-sm"
+                          >
+                            ✂️ Crop
+                          </button>
+                          <button
+                            onClick={handleClear}
+                            className="flex-1 py-2.5 text-sm font-medium transition-all border border-border rounded-xl hover:border-primary/40 hover:shadow-sm group flex items-center justify-center gap-2"
+                          >
+                            {/* Mini logo */}
+                            <span className="flex items-center gap-0.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500" />
+                              <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-br from-fuchsia-500 to-rose-500" />
+                            </span>
+                            <span className="group-hover:text-primary transition-colors">Change Photo</span>
+                          </button>
+                        </div>
                       </div>
                       
                       <div className="h-px bg-border" />
@@ -259,15 +267,20 @@ const GridSplitter = () => {
                     <div className="flex gap-2">
                       <button
                         onClick={handleEditCrop}
-                        className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30"
+                        className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors border border-border rounded-xl hover:bg-muted/50 hover:border-primary/30"
                       >
                         ✂️ Crop & Adjust
                       </button>
                       <button
                         onClick={handleClear}
-                        className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30"
+                        className="flex-1 py-2.5 text-sm font-medium transition-colors border border-border rounded-xl hover:bg-muted/50 hover:border-primary/30 group flex items-center justify-center gap-2"
                       >
-                        Upload New
+                        {/* Mini logo */}
+                        <span className="flex items-center gap-0.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-br from-fuchsia-500 to-rose-500" />
+                        </span>
+                        <span className="group-hover:text-primary transition-colors">Change Photo</span>
                       </button>
                     </div>
 
