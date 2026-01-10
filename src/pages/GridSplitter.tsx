@@ -7,7 +7,7 @@ import { GridSelector } from '@/components/GridSelector';
 import { GridPreview } from '@/components/GridPreview';
 import { DownloadSection } from '@/components/DownloadSection';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowLeft, Sparkles, Eye, EyeOff } from 'lucide-react';
 
 type Step = 'upload' | 'crop' | 'preview';
 
@@ -16,6 +16,7 @@ const GridSplitter = () => {
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
   const [selectedGrid, setSelectedGrid] = useState('3x3');
   const [currentStep, setCurrentStep] = useState<Step>('upload');
+  const [showNumbers, setShowNumbers] = useState(true);
   
   // Track URLs for cleanup
   const urlsToCleanupRef = useRef<Set<string>>(new Set());
@@ -202,15 +203,30 @@ const GridSplitter = () => {
                   {/* Desktop: Side-by-side layout - Larger and more balanced */}
                   <div className="hidden lg:grid lg:grid-cols-[1fr,400px] lg:gap-8 lg:items-start">
                     {/* Left: Large Instagram-style Preview */}
-                    <div className="max-w-2xl">
+                    <div className="flex-1">
                       <GridPreview
                         imageUrl={activeImage}
                         grid={selectedGrid}
+                        showNumbers={showNumbers}
                       />
                     </div>
 
                     {/* Right: Controls Panel - More spacious */}
                     <div className="sticky top-20 space-y-5 p-6 rounded-2xl bg-card/80 backdrop-blur-sm border border-border shadow-lg">
+                      {/* Show/Hide Numbers Toggle */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Preview</span>
+                        <button
+                          onClick={() => setShowNumbers(!showNumbers)}
+                          className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted/50 border border-border"
+                        >
+                          {showNumbers ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          {showNumbers ? 'Hide Numbers' : 'Show Numbers'}
+                        </button>
+                      </div>
+                      
+                      <div className="h-px bg-border" />
+                      
                       <GridSelector
                         selectedGrid={selectedGrid}
                         onGridSelect={handleGridSelect}
@@ -261,6 +277,7 @@ const GridSplitter = () => {
                     <GridPreview
                       imageUrl={activeImage}
                       grid={selectedGrid}
+                      showNumbers={showNumbers}
                     />
 
                     {/* Edit actions before download */}
