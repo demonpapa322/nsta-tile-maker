@@ -1,9 +1,19 @@
+import { memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Grid3X3, Hash, MessageSquare, Image } from 'lucide-react';
+import { Grid3X3, Hash, MessageSquare, Image, LucideIcon } from 'lucide-react';
 
-const tools = [
+interface Tool {
+  id: string;
+  name: string;
+  description: string;
+  icon: LucideIcon;
+  path: string;
+  ready: boolean;
+}
+
+const tools: Tool[] = [
   {
     id: 'grid-splitter',
     name: 'Grid Splitter',
@@ -38,14 +48,86 @@ const tools = [
   },
 ];
 
-const Home = () => {
+// Pre-computed animation variants for better performance
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3, delay: i * 0.1 },
+  }),
+};
+
+const headerVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: { opacity: 1, x: 0 },
+};
+
+// Memoized tool card to prevent unnecessary re-renders
+const ToolCard = memo(function ToolCard({ 
+  tool, 
+  index 
+}: { 
+  tool: Tool; 
+  index: number;
+}) {
+  const Icon = tool.icon;
+  
+  return (
+    <motion.div
+      custom={index}
+      initial="hidden"
+      animate="visible"
+      variants={cardVariants}
+    >
+      <Link
+        to={tool.path}
+        className={`group block p-6 rounded-2xl border bg-card transition-all duration-300 ${
+          tool.ready
+            ? 'border-border hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5'
+            : 'border-border/50 opacity-60 cursor-default pointer-events-none'
+        }`}
+      >
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors ${
+          tool.ready 
+            ? 'bg-primary/10 group-hover:bg-primary/20' 
+            : 'bg-muted'
+        }`}>
+          <Icon className={`w-6 h-6 ${tool.ready ? 'text-primary' : 'text-muted-foreground'}`} />
+        </div>
+        <h3 className="font-semibold text-foreground mb-1">
+          {tool.name}
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          {tool.description}
+        </p>
+        {!tool.ready && (
+          <span className="inline-block mt-3 text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
+            Coming Soon
+          </span>
+        )}
+      </Link>
+    </motion.div>
+  );
+});
+
+const Home = memo(function Home() {
+  // Memoize the tool cards to prevent re-creation on each render
+  const toolCards = useMemo(() => 
+    tools.map((tool, index) => (
+      <ToolCard key={tool.id} tool={tool} index={index} />
+    )), 
+    []
+  );
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between">
         <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial="hidden"
+          animate="visible"
+          variants={headerVariants}
           className="flex items-center gap-2.5"
         >
           <div className="flex items-center gap-0.5">
@@ -78,42 +160,7 @@ const Home = () => {
 
           {/* Tool Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
-            {tools.map((tool, index) => (
-              <motion.div
-                key={tool.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-              >
-                <Link
-                  to={tool.path}
-                  className={`group block p-6 rounded-2xl border bg-card transition-all duration-300 ${
-                    tool.ready
-                      ? 'border-border hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5'
-                      : 'border-border/50 opacity-60 cursor-default pointer-events-none'
-                  }`}
-                >
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors ${
-                    tool.ready 
-                      ? 'bg-primary/10 group-hover:bg-primary/20' 
-                      : 'bg-muted'
-                  }`}>
-                    <tool.icon className={`w-6 h-6 ${tool.ready ? 'text-primary' : 'text-muted-foreground'}`} />
-                  </div>
-                  <h3 className="font-semibold text-foreground mb-1">
-                    {tool.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {tool.description}
-                  </p>
-                  {!tool.ready && (
-                    <span className="inline-block mt-3 text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
-                      Coming Soon
-                    </span>
-                  )}
-                </Link>
-              </motion.div>
-            ))}
+            {toolCards}
           </div>
         </main>
 
@@ -126,6 +173,6 @@ const Home = () => {
       </div>
     </div>
   );
-};
+});
 
 export default Home;

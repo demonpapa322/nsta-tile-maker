@@ -1,4 +1,4 @@
-import { useCallback, useState, forwardRef } from 'react';
+import { useCallback, useState, forwardRef, memo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, X, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -10,7 +10,7 @@ interface ImageUploaderProps {
   onClear: () => void;
 }
 
-export const ImageUploader = forwardRef<HTMLDivElement, ImageUploaderProps>(function ImageUploader({ 
+export const ImageUploader = memo(forwardRef<HTMLDivElement, ImageUploaderProps>(function ImageUploader({ 
   onImageUpload, 
   uploadedImage, 
   onClear 
@@ -20,11 +20,9 @@ export const ImageUploader = forwardRef<HTMLDivElement, ImageUploaderProps>(func
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        onImageUpload(file, reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      // Use createObjectURL instead of FileReader - much faster, no base64 encoding
+      const preview = URL.createObjectURL(file);
+      onImageUpload(file, preview);
     }
     setIsDragging(false);
   }, [onImageUpload]);
@@ -71,6 +69,7 @@ export const ImageUploader = forwardRef<HTMLDivElement, ImageUploaderProps>(func
               alt="Uploaded preview"
               className="max-w-full max-h-[400px] object-contain"
               loading="eager"
+              decoding="async"
             />
             <button
               onClick={handleClear}
@@ -118,4 +117,4 @@ export const ImageUploader = forwardRef<HTMLDivElement, ImageUploaderProps>(func
       </div>
     </div>
   );
-});
+}));
