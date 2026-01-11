@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, forwardRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useCallback, forwardRef, useEffect, useMemo, memo } from 'react';
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,94 @@ function centerAspectCrop(
   );
 }
 
-export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(function ImageCropper({
+// Memoized controls component
+const ZoomRotateControls = memo(function ZoomRotateControls({
+  zoom,
+  rotation,
+  isProcessing,
+  onZoomChange,
+  onZoomIn,
+  onZoomOut,
+  onRotateLeft,
+  onRotateRight,
+}: {
+  zoom: number;
+  rotation: number;
+  isProcessing: boolean;
+  onZoomChange: (value: number[]) => void;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onRotateLeft: () => void;
+  onRotateRight: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-4 p-3 rounded-lg bg-muted/30 border border-border">
+      {/* Zoom Controls */}
+      <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+        <ZoomIn className="w-4 h-4 text-muted-foreground shrink-0" />
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-7 w-7"
+          onClick={onZoomOut}
+          disabled={zoom <= 0.5 || isProcessing}
+        >
+          <Minus className="w-3 h-3" />
+        </Button>
+        <Slider
+          value={[zoom]}
+          onValueChange={onZoomChange}
+          min={0.5}
+          max={3}
+          step={0.1}
+          className="flex-1"
+          disabled={isProcessing}
+        />
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-7 w-7"
+          onClick={onZoomIn}
+          disabled={zoom >= 3 || isProcessing}
+        >
+          <Plus className="w-3 h-3" />
+        </Button>
+        <span className="text-xs text-muted-foreground w-12 text-right">
+          {Math.round(zoom * 100)}%
+        </span>
+      </div>
+
+      {/* Rotation Controls */}
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onRotateLeft}
+          className="gap-1"
+          disabled={isProcessing}
+        >
+          <RotateCcw className="w-4 h-4" />
+          -90°
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onRotateRight}
+          className="gap-1"
+          disabled={isProcessing}
+        >
+          <RotateCw className="w-4 h-4" />
+          +90°
+        </Button>
+        <span className="text-xs text-muted-foreground w-10 text-center">
+          {rotation % 360}°
+        </span>
+      </div>
+    </div>
+  );
+});
+
+export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(function ImageCropper({
   imageUrl,
   grid,
   onCropComplete,
@@ -77,16 +164,13 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
     img.onload = () => {
       if (cancelled) return;
       
-      // Use requestIdleCallback or setTimeout for non-blocking processing
       const processImage = () => {
         if (cancelled) return;
         
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          setIsTransforming(false);
-          return;
-        }
+        // Use OffscreenCanvas if available
+        const useOffscreen = typeof OffscreenCanvas !== 'undefined';
+        let canvas: HTMLCanvasElement | OffscreenCanvas;
+        let ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
 
         const radians = (debouncedRotation * Math.PI) / 180;
         const sin = Math.abs(Math.sin(radians));
@@ -95,23 +179,37 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
         const rotatedWidth = img.width * cos + img.height * sin;
         const rotatedHeight = img.width * sin + img.height * cos;
 
-        canvas.width = rotatedWidth * debouncedZoom;
-        canvas.height = rotatedHeight * debouncedZoom;
+        const width = rotatedWidth * debouncedZoom;
+        const height = rotatedHeight * debouncedZoom;
 
-        ctx.translate(canvas.width / 2, canvas.height / 2);
+        if (useOffscreen) {
+          canvas = new OffscreenCanvas(width, height);
+          ctx = canvas.getContext('2d');
+        } else {
+          canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          ctx = canvas.getContext('2d');
+        }
+
+        if (!ctx) {
+          setIsTransforming(false);
+          return;
+        }
+
+        ctx.translate(width / 2, height / 2);
         ctx.rotate(radians);
         ctx.scale(debouncedZoom, debouncedZoom);
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, -img.width / 2, -img.height / 2);
 
-        canvas.toBlob((blob) => {
+        const handleBlob = (blob: Blob | null) => {
           if (cancelled || !blob) {
             setIsTransforming(false);
             return;
           }
           
-          // Revoke previous URL before creating new one
           if (transformedImageUrl !== imageUrl) {
             revokeUrl(transformedImageUrl);
           }
@@ -119,10 +217,16 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
           const url = createUrl(blob);
           setTransformedImageUrl(url);
           setIsTransforming(false);
-        }, 'image/png');
+        };
+
+        if (useOffscreen && canvas instanceof OffscreenCanvas) {
+          canvas.convertToBlob({ type: 'image/png' }).then(handleBlob);
+        } else {
+          (canvas as HTMLCanvasElement).toBlob(handleBlob, 'image/png');
+        }
       };
 
-      // Use requestIdleCallback if available, otherwise setTimeout
+      // Use requestIdleCallback if available
       if ('requestIdleCallback' in window) {
         requestIdleCallback(processImage, { timeout: 500 });
       } else {
@@ -139,7 +243,7 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
     return () => {
       cancelled = true;
     };
-  }, [imageUrl, debouncedZoom, debouncedRotation, createUrl, revokeUrl]);
+  }, [imageUrl, debouncedZoom, debouncedRotation, createUrl, revokeUrl, transformedImageUrl]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -178,19 +282,33 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
         return;
       }
 
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        setIsApplying(false);
-        return;
-      }
-
+      // Use OffscreenCanvas if available
+      const useOffscreen = typeof OffscreenCanvas !== 'undefined';
+      
       const scaleX = image.naturalWidth / image.width;
       const scaleY = image.naturalHeight / image.height;
       const pixelRatio = window.devicePixelRatio || 1;
 
-      canvas.width = Math.floor(completedCrop.width * scaleX * pixelRatio);
-      canvas.height = Math.floor(completedCrop.height * scaleY * pixelRatio);
+      const width = Math.floor(completedCrop.width * scaleX * pixelRatio);
+      const height = Math.floor(completedCrop.height * scaleY * pixelRatio);
+
+      let canvas: HTMLCanvasElement | OffscreenCanvas;
+      let ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
+
+      if (useOffscreen) {
+        canvas = new OffscreenCanvas(width, height);
+        ctx = canvas.getContext('2d');
+      } else {
+        canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        ctx = canvas.getContext('2d');
+      }
+
+      if (!ctx) {
+        setIsApplying(false);
+        return;
+      }
 
       ctx.scale(pixelRatio, pixelRatio);
       ctx.imageSmoothingEnabled = true;
@@ -213,19 +331,19 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
         cropHeight,
       );
 
-      canvas.toBlob(
-        (blob) => {
-          setIsApplying(false);
-          if (blob) {
-            // Create URL directly without using the manager since this URL
-            // will be owned by the parent component and shouldn't be revoked on unmount
-            const croppedUrl = URL.createObjectURL(blob);
-            onCropComplete(croppedUrl);
-          }
-        },
-        'image/png',
-        1.0
-      );
+      const handleBlob = (blob: Blob | null) => {
+        setIsApplying(false);
+        if (blob) {
+          const croppedUrl = URL.createObjectURL(blob);
+          onCropComplete(croppedUrl);
+        }
+      };
+
+      if (useOffscreen && canvas instanceof OffscreenCanvas) {
+        canvas.convertToBlob({ type: 'image/png', quality: 1.0 }).then(handleBlob);
+      } else {
+        (canvas as HTMLCanvasElement).toBlob(handleBlob, 'image/png', 1.0);
+      }
     }, 10);
   }, [completedCrop, onCropComplete]);
 
@@ -243,6 +361,7 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
   const handleRotateRight = useCallback(() => setRotation((r) => r + 90), []);
   const handleZoomIn = useCallback(() => setZoom((z) => Math.min(z + 0.1, 3)), []);
   const handleZoomOut = useCallback(() => setZoom((z) => Math.max(z - 0.1, 0.5)), []);
+  const handleZoomChange = useCallback((value: number[]) => setZoom(value[0]), []);
 
   const isProcessing = isTransforming || isApplying;
 
@@ -258,70 +377,16 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
         </div>
       </div>
 
-      {/* Zoom & Rotation Controls */}
-      <div className="flex flex-wrap items-center gap-4 p-3 rounded-lg bg-muted/30 border border-border">
-        {/* Zoom Controls */}
-        <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-          <ZoomIn className="w-4 h-4 text-muted-foreground shrink-0" />
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-7 w-7"
-            onClick={handleZoomOut}
-            disabled={zoom <= 0.5 || isProcessing}
-          >
-            <Minus className="w-3 h-3" />
-          </Button>
-          <Slider
-            value={[zoom]}
-            onValueChange={([v]) => setZoom(v)}
-            min={0.5}
-            max={3}
-            step={0.1}
-            className="flex-1"
-            disabled={isProcessing}
-          />
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-7 w-7"
-            onClick={handleZoomIn}
-            disabled={zoom >= 3 || isProcessing}
-          >
-            <Plus className="w-3 h-3" />
-          </Button>
-          <span className="text-xs text-muted-foreground w-12 text-right">
-            {Math.round(zoom * 100)}%
-          </span>
-        </div>
-
-        {/* Rotation Controls */}
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRotateLeft}
-            className="gap-1"
-            disabled={isProcessing}
-          >
-            <RotateCcw className="w-4 h-4" />
-            -90°
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRotateRight}
-            className="gap-1"
-            disabled={isProcessing}
-          >
-            <RotateCw className="w-4 h-4" />
-            +90°
-          </Button>
-          <span className="text-xs text-muted-foreground w-10 text-center">
-            {rotation % 360}°
-          </span>
-        </div>
-      </div>
+      <ZoomRotateControls
+        zoom={zoom}
+        rotation={rotation}
+        isProcessing={isProcessing}
+        onZoomChange={handleZoomChange}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onRotateLeft={handleRotateLeft}
+        onRotateRight={handleRotateRight}
+      />
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="flex items-center justify-center p-4 bg-muted/30 max-h-[500px] relative">
@@ -345,6 +410,7 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
               onLoad={onImageLoad}
               className="max-h-[450px] w-auto"
               crossOrigin="anonymous"
+              decoding="async"
             />
           </ReactCrop>
         </div>
@@ -387,4 +453,4 @@ export const ImageCropper = forwardRef<HTMLDivElement, ImageCropperProps>(functi
       </div>
     </div>
   );
-});
+}));

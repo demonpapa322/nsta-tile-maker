@@ -122,7 +122,9 @@
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  * {
+  /* Hardware acceleration only for animated elements, not all elements */
+  .will-animate {
+    will-change: transform, opacity;
     backface-visibility: hidden;
   }
 }
