@@ -7,7 +7,7 @@ import { GridSelector } from '@/components/GridSelector';
 import { GridPreview } from '@/components/GridPreview';
 import { DownloadSection } from '@/components/DownloadSection';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { ArrowLeft, Sparkles, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Sparkles, Eye, EyeOff, Pencil } from 'lucide-react';
 
 type Step = 'upload' | 'crop' | 'preview';
 
@@ -213,19 +213,14 @@ const GridSplitter = () => {
 
                     {/* Right: Controls Panel - More spacious */}
                     <div className="sticky top-20 space-y-5 p-6 rounded-2xl bg-card/80 backdrop-blur-sm border border-border shadow-lg">
-                      {/* Show/Hide Numbers Toggle */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Preview</span>
-                        <button
-                          onClick={() => setShowNumbers(!showNumbers)}
-                          className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted/50 border border-border"
-                        >
-                          {showNumbers ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                          {showNumbers ? 'Hide Numbers' : 'Show Numbers'}
-                        </button>
-                      </div>
-                      
-                      <div className="h-px bg-border" />
+                      {/* Show/Hide Numbers Toggle - Compact */}
+                      <button
+                        onClick={() => setShowNumbers(!showNumbers)}
+                        className="inline-flex items-center gap-1.5 px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted/50"
+                      >
+                        {showNumbers ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                        {showNumbers ? 'Hide #' : 'Show #'}
+                      </button>
                       
                       <GridSelector
                         selectedGrid={selectedGrid}
@@ -240,9 +235,10 @@ const GridSplitter = () => {
                         <div className="flex gap-2">
                           <button
                             onClick={handleEditCrop}
-                            className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-all border border-border rounded-xl hover:bg-muted/50 hover:border-primary/40 hover:shadow-sm"
+                            className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-all border border-border rounded-xl hover:bg-muted/50 hover:border-primary/40 hover:shadow-sm flex items-center justify-center gap-1.5"
                           >
-                            ✂️ Crop
+                            <Pencil className="w-3.5 h-3.5" />
+                            Edit
                           </button>
                           <button
                             onClick={handleClear}
@@ -284,9 +280,10 @@ const GridSplitter = () => {
                     <div className="flex gap-2">
                       <button
                         onClick={handleEditCrop}
-                        className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors border border-border rounded-xl hover:bg-muted/50 hover:border-primary/30"
+                        className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors border border-border rounded-xl hover:bg-muted/50 hover:border-primary/30 flex items-center justify-center gap-1.5"
                       >
-                        ✂️ Crop & Adjust
+                        <Pencil className="w-3.5 h-3.5" />
+                        Edit
                       </button>
                       <button
                         onClick={handleClear}
@@ -317,7 +314,7 @@ const GridSplitter = () => {
               <div className="grid grid-cols-3 gap-6 text-center">
                 {[
                   { icon: '📤', title: 'Upload' },
-                  { icon: '✂️', title: 'Crop' },
+                  { icon: '✏️', title: 'Edit' },
                   { icon: '⬇️', title: 'Download' },
                 ].map((item) => (
                   <div key={item.title} className="flex flex-col items-center gap-2">
