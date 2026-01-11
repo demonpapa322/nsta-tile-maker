@@ -211,8 +211,8 @@ const GridSplitter = () => {
                       />
                     </div>
 
-                    {/* Right: Controls Panel - More spacious */}
-                    <div className="sticky top-20 space-y-5 p-6 rounded-2xl bg-card/80 backdrop-blur-sm border border-border shadow-lg">
+                    {/* Right: Controls Panel - Compact */}
+                    <div className="sticky top-20 space-y-3 p-4 rounded-2xl bg-card/80 backdrop-blur-sm border border-border shadow-lg">
                       {/* Show/Hide Numbers Toggle - Compact */}
                       <button
                         onClick={() => setShowNumbers(!showNumbers)}
@@ -227,34 +227,27 @@ const GridSplitter = () => {
                         onGridSelect={handleGridSelect}
                       />
                       
-                      <div className="h-px bg-border" />
-                      
                       {/* Edit actions with branded styling */}
-                      <div className="space-y-2">
-                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Actions</span>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={handleEditCrop}
-                            className="flex-1 py-2.5 text-sm font-medium text-foreground hover:text-primary transition-all border border-border rounded-xl hover:bg-muted/50 hover:border-primary/40 hover:shadow-sm flex items-center justify-center gap-1.5"
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
-                            Edit
-                          </button>
-                          <button
-                            onClick={handleClear}
-                            className="flex-1 py-2.5 text-sm font-medium transition-all border border-border rounded-xl hover:border-primary/40 hover:shadow-sm group flex items-center justify-center gap-2"
-                          >
-                            {/* Mini logo */}
-                            <span className="flex items-center gap-0.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500" />
-                              <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-br from-fuchsia-500 to-rose-500" />
-                            </span>
-                            <span className="group-hover:text-primary transition-colors">Change Photo</span>
-                          </button>
-                        </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleEditCrop}
+                          className="flex-1 py-2 text-sm font-medium text-foreground hover:text-primary transition-all border border-border rounded-xl hover:bg-muted/50 hover:border-primary/40 hover:shadow-sm flex items-center justify-center gap-1.5"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={handleClear}
+                          className="flex-1 py-2 text-sm font-medium transition-all border border-border rounded-xl hover:border-primary/40 hover:shadow-sm group flex items-center justify-center gap-2"
+                        >
+                          {/* Mini logo */}
+                          <span className="flex items-center gap-0.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-br from-fuchsia-500 to-rose-500" />
+                          </span>
+                          <span className="group-hover:text-primary transition-colors">Change</span>
+                        </button>
                       </div>
-                      
-                      <div className="h-px bg-border" />
                       
                       <DownloadSection
                         imageUrl={activeImage}

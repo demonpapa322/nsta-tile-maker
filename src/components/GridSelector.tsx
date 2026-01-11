@@ -123,29 +123,9 @@ export const GridSelector = memo(forwardRef<HTMLDivElement, GridSelectorProps>(f
         </div>
         
         <div className="flex items-center justify-center gap-3 mt-2">
-          {/* Columns control */}
+          {/* Rows control - First */}
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => { activateCustom(); decrementCols(); }}
-              disabled={customCols <= MIN_COLS}
-              className="w-6 h-6 rounded border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-            >
-              <Minus className="w-3 h-3" />
-            </button>
-            <span className="w-5 text-center font-medium text-xs">{customCols}</span>
-            <button
-              onClick={() => { activateCustom(); incrementCols(); }}
-              disabled={customCols >= MAX_COLS}
-              className="w-6 h-6 rounded border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-            >
-              <Plus className="w-3 h-3" />
-            </button>
-          </div>
-
-          <span className="text-muted-foreground font-medium text-sm">×</span>
-
-          {/* Rows control */}
-          <div className="flex items-center gap-1">
+            <span className="text-[10px] text-muted-foreground mr-0.5">R</span>
             <button
               onClick={() => { activateCustom(); decrementRows(); }}
               disabled={customRows <= MIN_ROWS}
@@ -157,6 +137,28 @@ export const GridSelector = memo(forwardRef<HTMLDivElement, GridSelectorProps>(f
             <button
               onClick={() => { activateCustom(); incrementRows(); }}
               disabled={customRows >= MAX_ROWS}
+              className="w-6 h-6 rounded border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+            >
+              <Plus className="w-3 h-3" />
+            </button>
+          </div>
+
+          <span className="text-muted-foreground font-medium text-sm">×</span>
+
+          {/* Columns control - Second */}
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] text-muted-foreground mr-0.5">C</span>
+            <button
+              onClick={() => { activateCustom(); decrementCols(); }}
+              disabled={customCols <= MIN_COLS}
+              className="w-6 h-6 rounded border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+            >
+              <Minus className="w-3 h-3" />
+            </button>
+            <span className="w-5 text-center font-medium text-xs">{customCols}</span>
+            <button
+              onClick={() => { activateCustom(); incrementCols(); }}
+              disabled={customCols >= MAX_COLS}
               className="w-6 h-6 rounded border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
             >
               <Plus className="w-3 h-3" />
