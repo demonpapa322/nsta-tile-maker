@@ -11,15 +11,6 @@ import { ArrowLeft, Sparkles, Eye, EyeOff, Pencil } from 'lucide-react';
 
 type Step = 'upload' | 'crop' | 'preview';
 
-// Pre-defined animation variants for performance
-const pageVariants = {
-  initial: { opacity: 0, y: 10 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -10 },
-};
-
-const pageTransition = { duration: 0.2 };
-
 // Memoized header component
 const Header = memo(function Header() {
   return (
@@ -237,15 +228,14 @@ const GridSplitter = memo(function GridSplitter() {
 
           {/* App Interface */}
           <div className="max-w-7xl mx-auto">
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="sync">
               {currentStep === 'upload' && (
                 <motion.div
                   key="upload"
-                  variants={pageVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  transition={pageTransition}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
                   className="max-w-xl mx-auto"
                 >
                   <ImageUploader
@@ -259,11 +249,10 @@ const GridSplitter = memo(function GridSplitter() {
               {currentStep === 'crop' && originalImage && (
                 <motion.div
                   key="crop"
-                  variants={pageVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  transition={pageTransition}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
                   className="max-w-4xl mx-auto space-y-6"
                 >
                   <GridSelector
@@ -282,11 +271,10 @@ const GridSplitter = memo(function GridSplitter() {
               {currentStep === 'preview' && activeImage && (
                 <motion.div
                   key="preview"
-                  variants={pageVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  transition={pageTransition}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
                 >
                   {/* Desktop: Side-by-side layout */}
                   <div className="hidden lg:grid lg:grid-cols-[1fr,400px] lg:gap-8 lg:items-start">
@@ -299,7 +287,7 @@ const GridSplitter = memo(function GridSplitter() {
                     </div>
 
                     {/* Controls Panel */}
-                    <div className="sticky top-20 space-y-3 p-4 rounded-2xl bg-card/80 backdrop-blur-sm border border-border shadow-lg">
+                    <div className="sticky top-20 space-y-3 p-4 rounded-2xl bg-card border border-border shadow-lg">
                       <button
                         onClick={toggleNumbers}
                         className="inline-flex items-center gap-1.5 px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted/50"

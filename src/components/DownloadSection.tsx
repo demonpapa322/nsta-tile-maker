@@ -229,16 +229,21 @@ export const DownloadSection = memo(function DownloadSection({
         }
       };
 
-      // Process in small batches with yielding to main thread
-      const batchSize = 2;
+      // Process tiles one at a time on mobile, batch on desktop for smoother UX
+      const isMobileProcessing = isMobileDevice();
+      const batchSize = isMobileProcessing ? 1 : 3;
+      
       for (let i = 0; i < totalTiles; i += batchSize) {
+        if (!isMountedRef.current) return;
+        
         const batch = [];
         for (let j = i; j < Math.min(i + batchSize, totalTiles); j++) {
           batch.push(processTile(j));
         }
         await Promise.all(batch);
-        // Yield to main thread
-        await new Promise(resolve => setTimeout(resolve, 0));
+        
+        // Longer yield on mobile to prevent frame drops
+        await new Promise(resolve => setTimeout(resolve, isMobileProcessing ? 16 : 0));
       }
 
       if (!isMountedRef.current) return;
@@ -356,11 +361,11 @@ export const DownloadSection = memo(function DownloadSection({
   }), [downloadProgress]);
 
   return (
-    <div className="w-full space-y-3">
+    <div className="w-full space-y-3" style={{ transform: 'translateZ(0)' }}>
       {!isComplete ? (
         <div className="space-y-3">
           {/* Export Settings */}
-          <div className="rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-3">
+          <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-3">
             <div className="flex items-center gap-2 mb-2">
               <Settings2 className="w-3.5 h-3.5 text-primary" />
               <span className="font-medium text-xs">Export Format</span>
