@@ -1,4 +1,4 @@
-import { memo, useMemo, useState, useEffect } from 'react';
+import { memo, useMemo, useCallback, useState, useEffect } from 'react';
 import { Grid3X3, Bookmark, User } from 'lucide-react';
 
 interface GridPreviewProps {
@@ -7,75 +7,32 @@ interface GridPreviewProps {
   showNumbers?: boolean;
 }
 
-interface ImageDimensions {
-  width: number;
-  height: number;
-  loaded: boolean;
-}
-
-// Hook to get image natural dimensions
-function useImageDimensions(imageUrl: string): ImageDimensions {
-  const [dimensions, setDimensions] = useState<ImageDimensions>({
-    width: 0,
-    height: 0,
-    loaded: false,
-  });
-
-  useEffect(() => {
-    const img = new Image();
-    img.onload = () => {
-      setDimensions({
-        width: img.naturalWidth,
-        height: img.naturalHeight,
-        loaded: true,
-      });
-    };
-    img.src = imageUrl;
-    
-    return () => {
-      img.onload = null;
-    };
-  }, [imageUrl]);
-
-  return dimensions;
-}
-
-// Lightweight tile component - uses object-fit: cover with proper positioning
-// to avoid stretching while maintaining visual consistency
+// Lightweight tile component - uses CSS transform for GPU acceleration
 const GridTile = memo(function GridTile({ 
   index, 
   postOrder, 
   cols, 
   rows, 
-  imageUrl,
-  imageDimensions,
+  imageUrl, 
   showNumbers 
 }: { 
   index: number; 
   postOrder: number; 
   cols: number; 
   rows: number; 
-  imageUrl: string;
-  imageDimensions: ImageDimensions;
+  imageUrl: string; 
   showNumbers: boolean;
 }) {
-  // Calculate proper background position that maintains aspect ratio
+  // Pre-compute all values at mount, avoid recalc on scroll
   const style = useMemo(() => {
-    const col = index % cols;
-    const row = Math.floor(index / cols);
-    
-    // Calculate the portion of the image this tile shows
-    // Use percentage-based positioning for contain-style behavior
-    const bgPosX = cols > 1 ? (col / (cols - 1)) * 100 : 50;
-    const bgPosY = rows > 1 ? (row / (rows - 1)) * 100 : 50;
+    const bgPosX = cols > 1 ? (index % cols) * (100 / (cols - 1)) : 50;
+    const bgPosY = rows > 1 ? Math.floor(index / cols) * (100 / (rows - 1)) : 50;
     
     return {
       backgroundImage: `url(${imageUrl})`,
-      // Use cover to fill each tile without distortion
-      backgroundSize: 'cover',
+      backgroundSize: `${cols * 100}% ${rows * 100}%`,
       backgroundPosition: `${bgPosX}% ${bgPosY}%`,
-      backgroundRepeat: 'no-repeat',
-      // GPU acceleration
+      // Use transform for GPU layer - critical for mobile
       transform: 'translateZ(0)',
       willChange: 'auto' as const,
     };
@@ -92,13 +49,13 @@ const GridTile = memo(function GridTile({
     </div>
   );
 }, (prevProps, nextProps) => {
+  // Custom comparison - only re-render if these specific props change
   return (
     prevProps.index === nextProps.index &&
     prevProps.postOrder === nextProps.postOrder &&
     prevProps.cols === nextProps.cols &&
     prevProps.rows === nextProps.rows &&
     prevProps.imageUrl === nextProps.imageUrl &&
-    prevProps.imageDimensions.loaded === nextProps.imageDimensions.loaded &&
     prevProps.showNumbers === nextProps.showNumbers
   );
 });
@@ -128,8 +85,6 @@ export const GridPreview = memo(function GridPreview({
   grid, 
   showNumbers = true 
 }: GridPreviewProps) {
-  const imageDimensions = useImageDimensions(imageUrl);
-  
   const { cols, rows, totalTiles } = useMemo(() => {
     const [c, r] = grid.split('x').map(Number);
     return { cols: c, rows: r, totalTiles: c * r };
@@ -173,7 +128,6 @@ export const GridPreview = memo(function GridPreview({
               cols={cols}
               rows={rows}
               imageUrl={imageUrl}
-              imageDimensions={imageDimensions}
               showNumbers={showNumbers}
             />
           ))}

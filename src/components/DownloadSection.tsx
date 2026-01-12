@@ -159,44 +159,14 @@ export const DownloadSection = memo(function DownloadSection({
 
       if (!isMountedRef.current) return;
 
-      // Calculate the optimal fitting that preserves aspect ratio
-      const imageAspect = img.width / img.height;
-      const gridAspect = cols / rows;
+      const tileWidth = Math.floor(img.width / cols);
+      const tileHeight = Math.floor(img.height / rows);
+      const tileSize = Math.min(tileWidth, tileHeight);
       
-      let sourceWidth: number;
-      let sourceHeight: number;
-      let sourceOffsetX: number;
-      let sourceOffsetY: number;
+      const outputSize = preset.maxSize ? Math.min(tileSize, preset.maxSize) : tileSize;
       
-      // Smart fitting: maximize visible area while maintaining grid aspect ratio
-      if (Math.abs(imageAspect - gridAspect) < 0.01) {
-        // Aspects match closely - use full image
-        sourceWidth = img.width;
-        sourceHeight = img.height;
-        sourceOffsetX = 0;
-        sourceOffsetY = 0;
-      } else if (imageAspect > gridAspect) {
-        // Image is wider than grid - use full height, crop width
-        sourceHeight = img.height;
-        sourceWidth = img.height * gridAspect;
-        sourceOffsetX = (img.width - sourceWidth) / 2;
-        sourceOffsetY = 0;
-      } else {
-        // Image is taller than grid - use full width, crop height
-        sourceWidth = img.width;
-        sourceHeight = img.width / gridAspect;
-        sourceOffsetX = 0;
-        sourceOffsetY = (img.height - sourceHeight) / 2;
-      }
-      
-      // Calculate tile dimensions from the fitted source area
-      const tileSourceWidth = sourceWidth / cols;
-      const tileSourceHeight = sourceHeight / rows;
-      
-      // For Instagram, output tiles should be square
-      // Calculate the output size based on the source tile dimensions
-      const rawTileSize = Math.min(tileSourceWidth, tileSourceHeight);
-      const outputSize = preset.maxSize ? Math.min(rawTileSize, preset.maxSize) : Math.floor(rawTileSize);
+      const offsetX = Math.floor((img.width - tileSize * cols) / 2);
+      const offsetY = Math.floor((img.height - tileSize * rows) / 2);
 
       const results: SplitResult[] = [];
       
@@ -227,17 +197,12 @@ export const DownloadSection = memo(function DownloadSection({
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
 
-        // Calculate source coordinates for this tile
-        const srcX = sourceOffsetX + col * tileSourceWidth;
-        const srcY = sourceOffsetY + row * tileSourceHeight;
-        
-        // Draw tile maintaining aspect ratio - no stretching
         ctx.drawImage(
           img,
-          srcX,
-          srcY,
-          tileSourceWidth,
-          tileSourceHeight,
+          offsetX + col * tileSize,
+          offsetY + row * tileSize,
+          tileSize,
+          tileSize,
           0,
           0,
           outputSize,
