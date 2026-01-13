@@ -50,16 +50,16 @@ const tools: Tool[] = [
 
 // Pre-computed animation variants for better performance
 const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 16 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.3, delay: i * 0.1 },
+    transition: { duration: 0.32, delay: i * 0.08 },
   }),
 };
 
 const headerVariants = {
-  hidden: { opacity: 0, x: -20 },
+  hidden: { opacity: 0, x: -16 },
   visible: { opacity: 1, x: 0 },
 };
 
@@ -79,6 +79,7 @@ const ToolCard = memo(function ToolCard({
       initial="hidden"
       animate="visible"
       variants={cardVariants}
+      className="will-animate"
     >
       <Link
         to={tool.path}
@@ -128,7 +129,7 @@ const Home = memo(function Home() {
           initial="hidden"
           animate="visible"
           variants={headerVariants}
-          className="flex items-center gap-2.5"
+          className="flex items-center gap-2.5 will-animate"
         >
           <div className="flex items-center gap-0.5">
             <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500" />
