@@ -25,7 +25,11 @@ export const ThemeToggle = memo(function ThemeToggle() {
             initial={{ y: -18, opacity: 0, rotate: -70 }}
             animate={{ y: 0, opacity: 1, rotate: 0 }}
             exit={{ y: 18, opacity: 0, rotate: 70 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
+            transition={{ 
+              duration: 0.4, 
+              ease: [0.4, 0, 0.2, 1],
+              opacity: { duration: 0.3 }
+            }}
           >
             <Moon className="w-4 h-4 text-foreground" />
           </motion.div>
@@ -36,7 +40,11 @@ export const ThemeToggle = memo(function ThemeToggle() {
             initial={{ y: 18, opacity: 0, rotate: 70 }}
             animate={{ y: 0, opacity: 1, rotate: 0 }}
             exit={{ y: -18, opacity: 0, rotate: -70 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
+            transition={{ 
+              duration: 0.4, 
+              ease: [0.4, 0, 0.2, 1],
+              opacity: { duration: 0.3 }
+            }}
           >
             <Sun className="w-4 h-4 text-foreground" />
           </motion.div>
