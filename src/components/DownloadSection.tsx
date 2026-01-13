@@ -159,14 +159,32 @@ export const DownloadSection = memo(function DownloadSection({
 
       if (!isMountedRef.current) return;
 
-      const tileWidth = Math.floor(img.width / cols);
-      const tileHeight = Math.floor(img.height / rows);
-      const tileSize = Math.min(tileWidth, tileHeight);
+      // Calculate tile dimensions respecting natural aspect ratio with cover behavior
+      const imageAspect = img.width / img.height;
+      const gridAspect = cols / rows;
       
-      const outputSize = preset.maxSize ? Math.min(tileSize, preset.maxSize) : tileSize;
+      let sourceWidth: number;
+      let sourceHeight: number;
       
-      const offsetX = Math.floor((img.width - tileSize * cols) / 2);
-      const offsetY = Math.floor((img.height - tileSize * rows) / 2);
+      if (imageAspect > gridAspect) {
+        // Image is wider - fit by height, crop width
+        sourceHeight = img.height;
+        sourceWidth = sourceHeight * gridAspect;
+      } else {
+        // Image is taller - fit by width, crop height
+        sourceWidth = img.width;
+        sourceHeight = sourceWidth / gridAspect;
+      }
+      
+      const tileWidth = Math.floor(sourceWidth / cols);
+      const tileHeight = Math.floor(sourceHeight / rows);
+      
+      const outputWidth = preset.maxSize ? Math.min(tileWidth, preset.maxSize) : tileWidth;
+      const outputHeight = preset.maxSize ? Math.min(tileHeight, preset.maxSize) : tileHeight;
+      
+      // Center the crop area
+      const offsetX = Math.floor((img.width - sourceWidth) / 2);
+      const offsetY = Math.floor((img.height - sourceHeight) / 2);
 
       const results: SplitResult[] = [];
       
@@ -183,12 +201,12 @@ export const DownloadSection = memo(function DownloadSection({
         let ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
         
         if (useOffscreen) {
-          canvas = new OffscreenCanvas(outputSize, outputSize);
+          canvas = new OffscreenCanvas(outputWidth, outputHeight);
           ctx = canvas.getContext('2d');
         } else {
           canvas = document.createElement('canvas');
-          canvas.width = outputSize;
-          canvas.height = outputSize;
+          canvas.width = outputWidth;
+          canvas.height = outputHeight;
           ctx = canvas.getContext('2d', { willReadFrequently: false });
         }
         
@@ -199,14 +217,14 @@ export const DownloadSection = memo(function DownloadSection({
 
         ctx.drawImage(
           img,
-          offsetX + col * tileSize,
-          offsetY + row * tileSize,
-          tileSize,
-          tileSize,
+          offsetX + col * tileWidth,
+          offsetY + row * tileHeight,
+          tileWidth,
+          tileHeight,
           0,
           0,
-          outputSize,
-          outputSize
+          outputWidth,
+          outputHeight
         );
 
         let blob: Blob;
