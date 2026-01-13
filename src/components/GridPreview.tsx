@@ -1,4 +1,4 @@
-import { memo, useMemo, useCallback, useState, useEffect } from 'react';
+import { memo, useMemo, useState, useEffect } from 'react';
 import { Grid3X3, Bookmark, User } from 'lucide-react';
 
 interface GridPreviewProps {
@@ -14,7 +14,9 @@ const GridTile = memo(function GridTile({
   cols, 
   rows, 
   imageUrl, 
-  showNumbers 
+  showNumbers,
+  imageAspect,
+  gridAspect,
 }: { 
   index: number; 
   postOrder: number; 
@@ -22,21 +24,48 @@ const GridTile = memo(function GridTile({
   rows: number; 
   imageUrl: string; 
   showNumbers: boolean;
+  imageAspect: number;
+  gridAspect: number;
 }) {
   // Pre-compute all values at mount, avoid recalc on scroll
   const style = useMemo(() => {
-    const bgPosX = cols > 1 ? (index % cols) * (100 / (cols - 1)) : 50;
-    const bgPosY = rows > 1 ? Math.floor(index / cols) * (100 / (rows - 1)) : 50;
+    const colIndex = index % cols;
+    const rowIndex = Math.floor(index / cols);
+    
+    // Calculate background size to cover while maintaining aspect ratio
+    let bgWidth: number;
+    let bgHeight: number;
+    
+    if (imageAspect > gridAspect) {
+      // Image is wider than grid - fit by height, overflow width
+      bgHeight = rows * 100;
+      bgWidth = bgHeight * imageAspect / gridAspect;
+    } else {
+      // Image is taller than grid - fit by width, overflow height
+      bgWidth = cols * 100;
+      bgHeight = bgWidth * gridAspect / imageAspect;
+    }
+    
+    // Calculate position based on tile index, centered
+    const offsetX = (bgWidth - cols * 100) / 2;
+    const offsetY = (bgHeight - rows * 100) / 2;
+    
+    const bgPosX = cols > 1 
+      ? (offsetX + colIndex * 100) / (bgWidth - 100) * 100
+      : 50;
+    const bgPosY = rows > 1 
+      ? (offsetY + rowIndex * 100) / (bgHeight - 100) * 100
+      : 50;
     
     return {
       backgroundImage: `url(${imageUrl})`,
-      backgroundSize: `${cols * 100}% ${rows * 100}%`,
+      backgroundSize: `${bgWidth}% ${bgHeight}%`,
       backgroundPosition: `${bgPosX}% ${bgPosY}%`,
       // Use transform for GPU layer - critical for mobile
       transform: 'translateZ(0)',
       willChange: 'auto' as const,
     };
-  }, [index, cols, rows, imageUrl]);
+  }, [index, cols, rows, imageUrl, imageAspect, gridAspect]);
   
   return (
     <div className="relative aspect-square overflow-hidden">
@@ -56,7 +85,9 @@ const GridTile = memo(function GridTile({
     prevProps.cols === nextProps.cols &&
     prevProps.rows === nextProps.rows &&
     prevProps.imageUrl === nextProps.imageUrl &&
-    prevProps.showNumbers === nextProps.showNumbers
+    prevProps.showNumbers === nextProps.showNumbers &&
+    prevProps.imageAspect === nextProps.imageAspect &&
+    prevProps.gridAspect === nextProps.gridAspect
   );
 });
 
@@ -85,9 +116,20 @@ export const GridPreview = memo(function GridPreview({
   grid, 
   showNumbers = true 
 }: GridPreviewProps) {
-  const { cols, rows, totalTiles } = useMemo(() => {
+  const [imageAspect, setImageAspect] = useState<number>(1);
+
+  // Load image to get natural dimensions
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      setImageAspect(img.naturalWidth / img.naturalHeight);
+    };
+    img.src = imageUrl;
+  }, [imageUrl]);
+
+  const { cols, rows, totalTiles, gridAspect } = useMemo(() => {
     const [c, r] = grid.split('x').map(Number);
-    return { cols: c, rows: r, totalTiles: c * r };
+    return { cols: c, rows: r, totalTiles: c * r, gridAspect: c / r };
   }, [grid]);
 
   // Pre-compute tiles array once
@@ -129,6 +171,8 @@ export const GridPreview = memo(function GridPreview({
               rows={rows}
               imageUrl={imageUrl}
               showNumbers={showNumbers}
+              imageAspect={imageAspect}
+              gridAspect={gridAspect}
             />
           ))}
         </div>
