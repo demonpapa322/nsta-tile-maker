@@ -13,28 +13,30 @@ export const ThemeToggle = memo(function ThemeToggle() {
   return (
     <motion.button
       onClick={toggleTheme}
-      className="relative p-2.5 rounded-full bg-secondary hover:bg-muted transition-colors border border-border overflow-hidden"
+      className="relative p-2.5 rounded-full bg-secondary hover:bg-muted transition-colors border border-border overflow-hidden will-animate touch-manipulation"
       aria-label="Toggle theme"
       whileTap={{ scale: 0.9 }}
     >
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="sync" initial={false}>
         {theme === 'dark' ? (
           <motion.div
             key="moon"
-            initial={{ y: -20, opacity: 0, rotate: -90 }}
+            className="will-animate"
+            initial={{ y: -18, opacity: 0, rotate: -70 }}
             animate={{ y: 0, opacity: 1, rotate: 0 }}
-            exit={{ y: 20, opacity: 0, rotate: 90 }}
-            transition={{ duration: 0.2 }}
+            exit={{ y: 18, opacity: 0, rotate: 70 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
           >
             <Moon className="w-4 h-4 text-foreground" />
           </motion.div>
         ) : (
           <motion.div
             key="sun"
-            initial={{ y: 20, opacity: 0, rotate: 90 }}
+            className="will-animate"
+            initial={{ y: 18, opacity: 0, rotate: 70 }}
             animate={{ y: 0, opacity: 1, rotate: 0 }}
-            exit={{ y: -20, opacity: 0, rotate: -90 }}
-            transition={{ duration: 0.2 }}
+            exit={{ y: -18, opacity: 0, rotate: -70 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
           >
             <Sun className="w-4 h-4 text-foreground" />
           </motion.div>
