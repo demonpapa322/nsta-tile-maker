@@ -51,58 +51,39 @@ const tools: Tool[] = [
 
 // Pre-computed animation variants for better performance
 const pageVariants: any = {
-  initial: { opacity: 0, scale: 0.96 },
+  initial: { opacity: 0, y: 10 },
   animate: { 
     opacity: 1, 
-    scale: 1,
+    y: 0,
     transition: {
       type: "spring",
-      stiffness: 450,
-      damping: 35,
-      mass: 0.8,
-      restDelta: 0.001,
-      restSpeed: 0.001
+      stiffness: 300,
+      damping: 30
     }
   },
   exit: { 
-    opacity: 0, 
-    scale: 1.02,
-    transition: {
-      duration: 0.15,
-      ease: [0.2, 0, 0, 1]
-    }
+    opacity: 0,
+    transition: { duration: 0.2 }
   }
 };
 
 const cardVariants: any = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: { opacity: 0, y: 10 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
     transition: { 
-      type: "spring",
-      stiffness: 450,
-      damping: 35,
-      mass: 0.8,
-      delay: i * 0.08,
-      restDelta: 0.001,
-      restSpeed: 0.001
+      duration: 0.3,
+      delay: i * 0.05
     },
   }),
 };
 
 const headerVariants: any = {
-  hidden: { opacity: 0, x: -16 },
+  hidden: { opacity: 0 },
   visible: { 
-    opacity: 1, 
-    x: 0,
-    transition: {
-      type: "spring",
-      stiffness: 450,
-      damping: 35,
-      restDelta: 0.001,
-      restSpeed: 0.001
-    }
+    opacity: 1,
+    transition: { duration: 0.4 }
   },
 };
 
@@ -156,22 +137,16 @@ const ToolCard = memo(function ToolCard({
 });
 
 const Home = memo(function Home() {
-  // Memoize the tool cards to prevent re-creation on each render
   const toolCards = useMemo(() => 
     tools.map((tool, index) => (
       <motion.div
         key={tool.id}
-        initial={{ opacity: 0, x: index % 2 === 0 ? 30 : -30, filter: "blur(8px)" }}
-        whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+        initial={{ opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ 
-          type: "spring",
-          stiffness: 450,
-          damping: 35,
-          mass: 0.8,
-          delay: index * 0.08,
-          restDelta: 0.001,
-          restSpeed: 0.001
+          duration: 0.4,
+          delay: index * 0.05
         }}
       >
         <ToolCard tool={tool} index={index} />
@@ -300,15 +275,11 @@ const Home = memo(function Home() {
               {"Create better content,".split(" ").map((word, i) => (
                 <motion.span
                   key={i}
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ 
-                    type: "spring",
-                    stiffness: 450,
-                    damping: 35,
-                    delay: i * 0.1,
-                    restDelta: 0.001,
-                    restSpeed: 0.001
+                    duration: 0.3,
+                    delay: i * 0.08
                   }}
                   className="inline-block"
                 >
