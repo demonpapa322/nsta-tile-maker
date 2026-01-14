@@ -167,7 +167,7 @@ const RotationHandle = memo(function RotationHandle({
   return (
     <div
       ref={handleRef}
-      className="absolute -top-3 -right-3 z-20 cursor-grab active:cursor-grabbing touch-none"
+      className="relative z-20 cursor-grab active:cursor-grabbing touch-none flex flex-col items-center"
       onMouseDown={(e) => handleStart(e.clientX, e.clientY)}
       onTouchStart={(e) => {
         if (e.touches.length === 1) {
@@ -176,12 +176,12 @@ const RotationHandle = memo(function RotationHandle({
       }}
     >
       <div 
-        className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg border-2 border-background transition-transform hover:scale-110 active:scale-95"
+        className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg border-2 border-background transition-transform hover:scale-110 active:scale-95 mb-1"
         style={{ transform: `rotate(${rotation}deg)` }}
       >
         <RotateCw className="w-4 h-4" />
       </div>
-      <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-medium text-muted-foreground bg-background/90 px-1.5 py-0.5 rounded whitespace-nowrap">
+      <div className="text-[10px] font-medium text-muted-foreground bg-background/90 px-1.5 py-0.5 rounded whitespace-nowrap">
         {rotation % 360}°
       </div>
     </div>
@@ -485,11 +485,13 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
           <div className="rounded-2xl border border-border bg-card/50 overflow-hidden shadow-sm">
             <div className="flex items-center justify-center p-4 min-h-[280px] bg-muted/20 relative">
               {/* Rotation Handle - positioned on image */}
-              <RotationHandle
-                rotation={rotation}
-                onRotationChange={handleRotationChange}
-                isProcessing={isProcessing}
-              />
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2">
+                <RotationHandle
+                  rotation={rotation}
+                  onRotationChange={handleRotationChange}
+                  isProcessing={isProcessing}
+                />
+              </div>
               
               <div className="w-full h-full flex items-center justify-center">
                 <ReactCrop
@@ -518,7 +520,7 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
           {/* Hint text */}
           <div className="flex items-center justify-center gap-2 mt-2 text-xs text-muted-foreground">
             <Move className="w-3 h-3" />
-            <span>Drag to reposition • Drag corner icon to rotate</span>
+            <span>Drag to reposition • Drag top icon to rotate</span>
           </div>
         </div>
 
