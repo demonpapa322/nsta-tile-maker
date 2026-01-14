@@ -1,55 +1,52 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const ThemeToggle = memo(function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Avoid hydration mismatch
+  useEffect(() => setMounted(true), []);
 
   const toggleTheme = useCallback(() => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  }, [theme, setTheme]);
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  }, [resolvedTheme, setTheme]);
+
+  if (!mounted) return <div className="p-2.5 w-[38px] h-[38px]" />;
+
+  const isDark = resolvedTheme === 'dark';
 
   return (
-    <motion.button
+    <button
       onClick={toggleTheme}
-      className="relative p-2.5 rounded-full bg-secondary hover:bg-muted transition-colors border border-border overflow-hidden will-animate touch-manipulation"
+      className="relative p-2.5 rounded-full bg-secondary hover:bg-muted transition-colors border border-border overflow-hidden touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95 transition-transform"
       aria-label="Toggle theme"
-      whileTap={{ scale: 0.9 }}
     >
-      <AnimatePresence mode="sync" initial={false}>
-        {theme === 'dark' ? (
+      <AnimatePresence mode="wait" initial={false}>
+        {isDark ? (
           <motion.div
             key="moon"
-            className="will-animate"
-            initial={{ y: -18, opacity: 0, rotate: -70 }}
-            animate={{ y: 0, opacity: 1, rotate: 0 }}
-            exit={{ y: 18, opacity: 0, rotate: 70 }}
-            transition={{ 
-              duration: 0.4, 
-              ease: [0.4, 0, 0.2, 1],
-              opacity: { duration: 0.3 }
-            }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
           >
             <Moon className="w-4 h-4 text-foreground" />
           </motion.div>
         ) : (
           <motion.div
             key="sun"
-            className="will-animate"
-            initial={{ y: 18, opacity: 0, rotate: 70 }}
-            animate={{ y: 0, opacity: 1, rotate: 0 }}
-            exit={{ y: -18, opacity: 0, rotate: -70 }}
-            transition={{ 
-              duration: 0.4, 
-              ease: [0.4, 0, 0.2, 1],
-              opacity: { duration: 0.3 }
-            }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
           >
             <Sun className="w-4 h-4 text-foreground" />
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.button>
+    </button>
   );
 });
