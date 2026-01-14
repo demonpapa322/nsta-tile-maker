@@ -17,7 +17,7 @@ export function FeedbackForm() {
 
     const formData = new FormData(e.currentTarget);
     const data = {
-      email: formData.get('email'),
+      name: formData.get('name'),
       message: formData.get('message'),
       _to: 'nunchuckspro123@gmail.com',
       _subject: 'New Feedback from SocialTool.co',
@@ -92,21 +92,21 @@ export function FeedbackForm() {
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-1.5">
-                    <label htmlFor="email" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
-                      Email Address
+                    <label htmlFor="name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                      Your Name
                     </label>
                     <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="alex@example.com"
+                      id="name"
+                      name="name"
+                      type="text"
+                      placeholder="Alex"
                       required
                       className="rounded-2xl bg-muted/30 border-none h-11 focus-visible:ring-1 focus-visible:ring-primary/20"
                     />
                   </div>
                   <div className="space-y-1.5">
                     <label htmlFor="message" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
-                      Your Message
+                      Your Feedback
                     </label>
                     <Textarea
                       id="message"
