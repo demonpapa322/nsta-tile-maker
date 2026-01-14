@@ -304,12 +304,12 @@ const GridSplitter = memo(function GridSplitter() {
               {currentStep === 'preview' && activeImage && (
                 <motion.div
                   key="preview"
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
+                  initial={{ opacity: 0, y: 12, scale: 0.985 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -12, scale: 0.985 }}
                   transition={{ 
-                    duration: 0.25, 
-                    ease: [0.23, 1, 0.32, 1] 
+                    duration: 0.35, 
+                    ease: [0.16, 1, 0.3, 1] 
                   }}
                   className="will-animate"
                 >

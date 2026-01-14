@@ -62,7 +62,7 @@ const GridTile = memo(function GridTile({
       backgroundSize: `${bgWidth}% ${bgHeight}%`,
       backgroundPosition: `${bgPosX}% ${bgPosY}%`,
       // Use transform for GPU layer - critical for mobile
-      transform: 'translate3d(0, 0, 0)',
+      transform: 'translate3d(0, 0, 0) scale(1.001)',
       backfaceVisibility: 'hidden' as const,
       perspective: 1000,
       willChange: 'transform' as const,
