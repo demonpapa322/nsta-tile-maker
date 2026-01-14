@@ -57,17 +57,19 @@ const pageVariants: any = {
     scale: 1,
     transition: {
       type: "spring",
-      stiffness: 380,
-      damping: 30,
-      mass: 1
+      stiffness: 450,
+      damping: 35,
+      mass: 0.8,
+      restDelta: 0.001,
+      restSpeed: 0.001
     }
   },
   exit: { 
     opacity: 0, 
     scale: 1.02,
     transition: {
-      duration: 0.2,
-      ease: [0.4, 0, 1, 1]
+      duration: 0.15,
+      ease: [0.2, 0, 0, 1]
     }
   }
 };
@@ -77,13 +79,31 @@ const cardVariants = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.32, delay: i * 0.08 },
+    transition: { 
+      type: "spring",
+      stiffness: 450,
+      damping: 35,
+      mass: 0.8,
+      delay: i * 0.08,
+      restDelta: 0.001,
+      restSpeed: 0.001
+    },
   }),
 };
 
 const headerVariants = {
   hidden: { opacity: 0, x: -16 },
-  visible: { opacity: 1, x: 0 },
+  visible: { 
+    opacity: 1, 
+    x: 0,
+    transition: {
+      type: "spring",
+      stiffness: 450,
+      damping: 35,
+      restDelta: 0.001,
+      restSpeed: 0.001
+    }
+  },
 };
 
 // Memoized tool card to prevent unnecessary re-renders
@@ -141,13 +161,17 @@ const Home = memo(function Home() {
     tools.map((tool, index) => (
       <motion.div
         key={tool.id}
-        initial={{ opacity: 0, x: index % 2 === 0 ? 50 : -50 }}
-        whileInView={{ opacity: 1, x: 0 }}
+        initial={{ opacity: 0, x: index % 2 === 0 ? 30 : -30, filter: "blur(8px)" }}
+        whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
         viewport={{ once: true }}
         transition={{ 
-          duration: 0.8, 
-          delay: index * 0.1,
-          ease: [0.16, 1, 0.3, 1]
+          type: "spring",
+          stiffness: 450,
+          damping: 35,
+          mass: 0.8,
+          delay: index * 0.08,
+          restDelta: 0.001,
+          restSpeed: 0.001
         }}
       >
         <ToolCard tool={tool} index={index} />
@@ -279,9 +303,12 @@ const Home = memo(function Home() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ 
-                    duration: 0.5, 
-                    delay: i * 0.15,
-                    ease: [0.16, 1, 0.3, 1] 
+                    type: "spring",
+                    stiffness: 450,
+                    damping: 35,
+                    delay: i * 0.1,
+                    restDelta: 0.001,
+                    restSpeed: 0.001
                   }}
                   className="inline-block"
                 >
