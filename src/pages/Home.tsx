@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Grid3X3, Hash, MessageSquare, Image, LucideIcon } from 'lucide-react';
+import { FeedbackForm } from '@/components/feedback/FeedbackForm';
 
 interface Tool {
   id: string;
@@ -321,6 +322,7 @@ const Home = memo(function Home() {
           </p>
         </footer>
       </div>
+      <FeedbackForm />
     </motion.div>
   );
 });
