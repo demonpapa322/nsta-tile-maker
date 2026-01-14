@@ -73,10 +73,10 @@ const GridTile = memo(function GridTile({
   }, [index, cols, rows, imageUrl, imageAspect, gridAspect]);
   
   return (
-    <div className="relative aspect-square overflow-hidden">
+    <div className="relative aspect-square overflow-hidden" style={{ contain: 'layout style paint' }}>
       <div className="absolute inset-0" style={style} />
       {showNumbers && (
-        <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/70 flex items-center justify-center">
+        <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/70 flex items-center justify-center" style={{ contain: 'layout paint' }}>
           <span className="text-[10px] font-semibold text-white">{postOrder}</span>
         </div>
       )}
@@ -159,14 +159,14 @@ export const GridPreview = memo(function GridPreview({
 
   return (
     <div className="w-full flex justify-center">
-      <div className="rounded-xl overflow-hidden bg-card shadow-lg border border-border/50 max-w-sm w-full">
+      <div className="rounded-xl overflow-hidden bg-card shadow-lg border border-border/50 max-w-sm w-full" style={{ contain: 'layout style paint', isolation: 'isolate' }}>
         {/* Instagram tab icons - static, never re-renders */}
         <div className="flex items-center justify-center gap-12 py-3 border-b border-border/30">
           <TabButton icon={Grid3X3} isActive={true} label="Grid view" />
           <TabButton icon={Bookmark} isActive={false} label="Saved" />
           <TabButton icon={User} isActive={false} label="Tagged" />
         </div>
-        
+
         {/* Grid - GPU accelerated container */}
         <div style={gridStyle}>
           {tiles.map(({ index, postOrder }) => (
