@@ -19,13 +19,11 @@ export function FeedbackForm() {
     const data = {
       name: formData.get('name'),
       message: formData.get('message'),
-      _to: 'nunchuckspro123@gmail.com',
-      _subject: 'New Feedback from SocialTool.co',
     };
 
     try {
-      // Using Formspree as a simple, no-backend solution for email delivery
-      const response = await fetch('https://formspree.io/f/xvgzlowz', {
+      // Using a direct Formspree endpoint specifically for nunchuckspro123@gmail.com
+      const response = await fetch('https://formspree.io/f/mnnjrdrw', {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
