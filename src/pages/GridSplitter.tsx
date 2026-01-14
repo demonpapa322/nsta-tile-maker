@@ -93,7 +93,7 @@ const ActionButtons = memo(function ActionButtons({
   );
 });
 
-const pageVariants = {
+const pageVariants: any = {
   initial: { opacity: 0, scale: 0.94 },
   animate: { 
     opacity: 1, 

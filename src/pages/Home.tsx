@@ -49,7 +49,7 @@ const tools: Tool[] = [
 ];
 
 // Pre-computed animation variants for better performance
-const pageVariants = {
+const pageVariants: any = {
   initial: { opacity: 0, scale: 0.94 },
   animate: { 
     opacity: 1, 
