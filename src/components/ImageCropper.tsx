@@ -38,7 +38,7 @@ function centerAspectCrop(
   );
 }
 
-// Mobile-optimized zoom controls - compact inline design
+// Mobile-optimized zoom controls - professional integrated slider
 const MobileZoomControls = memo(function MobileZoomControls({
   zoom,
   isProcessing,
@@ -53,40 +53,44 @@ const MobileZoomControls = memo(function MobileZoomControls({
   onZoomOut: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 px-2 py-2 bg-card/90 backdrop-blur-sm rounded-xl border border-border shadow-sm">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-9 w-9 shrink-0"
-        onClick={onZoomOut}
-        disabled={zoom <= 0.5 || isProcessing}
-      >
-        <Minus className="w-4 h-4" />
-      </Button>
-      <div className="flex-1 flex items-center gap-2">
-        <ZoomIn className="w-4 h-4 text-muted-foreground shrink-0" />
-        <Slider
-          value={[zoom]}
-          onValueChange={onZoomChange}
-          min={0.5}
-          max={3}
-          step={0.1}
-          disabled={isProcessing}
-          className="flex-1"
-        />
+    <div className="space-y-3 px-2">
+      <div className="flex justify-between items-center mb-1">
+        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Perspective Zoom</span>
+        <span className="text-xs font-bold tabular-nums text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+          {Math.round(zoom * 100)}%
+        </span>
       </div>
-      <span className="text-xs font-medium tabular-nums text-muted-foreground w-10 text-center">
-        {Math.round(zoom * 100)}%
-      </span>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-9 w-9 shrink-0"
-        onClick={onZoomIn}
-        disabled={zoom >= 3 || isProcessing}
-      >
-        <Plus className="w-4 h-4" />
-      </Button>
+      <div className="flex items-center gap-4 bg-background/50 p-3 rounded-2xl border border-border/50 shadow-inner">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 shrink-0 hover:bg-primary/10 hover:text-primary transition-colors"
+          onClick={onZoomOut}
+          disabled={zoom <= 0.5 || isProcessing}
+        >
+          <Minus className="w-4 h-4" />
+        </Button>
+        <div className="flex-1 px-1">
+          <Slider
+            value={[zoom]}
+            onValueChange={onZoomChange}
+            min={0.5}
+            max={3}
+            step={0.01}
+            disabled={isProcessing}
+            className="cursor-pointer"
+          />
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 shrink-0 hover:bg-primary/10 hover:text-primary transition-colors"
+          onClick={onZoomIn}
+          disabled={zoom >= 3 || isProcessing}
+        >
+          <Plus className="w-4 h-4" />
+        </Button>
+      </div>
     </div>
   );
 });
@@ -161,7 +165,7 @@ const RotationHandle = memo(function RotationHandle({
   return (
     <div
       ref={handleRef}
-      className="relative z-20 cursor-grab active:cursor-grabbing touch-none flex flex-col items-center"
+      className="relative z-20 cursor-grab active:cursor-grabbing touch-none flex flex-col items-center group/dial"
       onMouseDown={(e) => handleStart(e.clientX, e.clientY)}
       onTouchStart={(e) => {
         if (e.touches.length === 1) {
@@ -170,12 +174,12 @@ const RotationHandle = memo(function RotationHandle({
       }}
     >
       <div 
-        className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg border-2 border-background transition-transform hover:scale-110 active:scale-95 mb-1"
+        className="w-12 h-12 rounded-full bg-background/80 backdrop-blur-xl text-primary flex items-center justify-center shadow-2xl border-2 border-primary/20 transition-all duration-300 group-hover/dial:scale-110 group-hover/dial:border-primary/50 group-active/dial:scale-90 group-active/dial:bg-primary group-active/dial:text-white mb-1.5"
         style={{ transform: `rotate(${rotation}deg)` }}
       >
-        <RotateCw className="w-4 h-4" />
+        <RotateCw className="w-5 h-5" />
       </div>
-      <div className="text-[10px] font-medium text-muted-foreground bg-background/90 px-1.5 py-0.5 rounded whitespace-nowrap">
+      <div className="text-[9px] font-black tracking-tighter text-muted-foreground bg-background/90 px-2 py-0.5 rounded-full border border-border shadow-sm uppercase">
         {rotation % 360}°
       </div>
     </div>
@@ -484,18 +488,46 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
   return (
     <div ref={ref} className="w-full">
       {/* Mobile Layout */}
-      <div className="lg:hidden space-y-4">
+      <div className="lg:hidden space-y-6">
         {/* Image with rotation handle */}
-        <div className="relative">
-          <div className="rounded-2xl border border-border bg-card/50 overflow-hidden shadow-sm">
-            <div className="flex items-center justify-center p-4 min-h-[280px] bg-muted/20 relative">
-              {/* Rotation Handle - positioned on image */}
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2">
-                <RotationHandle
-                  rotation={rotation}
-                  onRotationChange={handleRotationChange}
-                  isProcessing={isProcessing}
-                />
+        <div className="relative group">
+          <div className="rounded-3xl border-2 border-primary/10 bg-card shadow-2xl overflow-hidden transition-all duration-500 hover:border-primary/20">
+            <div className="flex items-center justify-center p-6 min-h-[340px] bg-muted/30 relative">
+              {/* Professional Floating Controls */}
+              <div className="absolute top-4 inset-x-4 z-20 flex justify-between items-start">
+                <div className="bg-background/80 backdrop-blur-md rounded-2xl p-2 border border-border shadow-xl flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-xl"
+                    onClick={handleRotateLeft}
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </Button>
+                  <div className="w-px h-4 bg-border" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-xl"
+                    onClick={handleRotateRight}
+                  >
+                    <RotateCw className="w-4 h-4" />
+                  </Button>
+                </div>
+                
+                <div className="flex flex-col items-center gap-1.5">
+                  <RotationHandle
+                    rotation={rotation}
+                    onRotationChange={handleRotationChange}
+                    isProcessing={isProcessing}
+                  />
+                </div>
+
+                <div className="bg-background/80 backdrop-blur-md rounded-2xl p-2 border border-border shadow-xl">
+                  <span className="text-[10px] font-bold tracking-widest text-primary uppercase px-1">
+                    {grid}
+                  </span>
+                </div>
               </div>
               
               <div className="w-full h-full flex items-center justify-center">
@@ -504,7 +536,7 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
                   onChange={(_, percentCrop) => setCrop(percentCrop)}
                   onComplete={(c) => setCompletedCrop(c)}
                   aspect={aspect}
-                  className="max-w-full max-h-[320px] transition-transform duration-200"
+                  className="max-w-full max-h-[380px] transition-all duration-300"
                   disabled={isProcessing}
                 >
                   <img
@@ -513,7 +545,7 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
                     alt="Crop preview"
                     onLoad={onImageLoad}
                     style={imageStyle}
-                    className="max-w-full max-h-[320px] w-auto h-auto object-contain select-none"
+                    className="max-w-full max-h-[380px] w-auto h-auto object-contain select-none shadow-sm"
                     crossOrigin="anonymous"
                     decoding="async"
                   />
@@ -522,61 +554,56 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
             </div>
           </div>
           
-          {/* Hint text */}
-          <div className="flex items-center justify-center gap-2 mt-2 text-xs text-muted-foreground">
-            <Move className="w-3 h-3" />
-            <span>Drag to reposition • Drag top icon to rotate</span>
+          {/* Pro Hint Bar */}
+          <div className="flex items-center justify-center gap-4 mt-4">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/50 border border-border text-[10px] font-medium text-muted-foreground uppercase tracking-wider shadow-sm">
+              <Move className="w-3 h-3 text-primary" />
+              Pan & Scale
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/50 border border-border text-[10px] font-medium text-muted-foreground uppercase tracking-wider shadow-sm">
+              <RotateCw className="w-3 h-3 text-primary" />
+              Rotate Dial
+            </div>
           </div>
         </div>
 
-        {/* Zoom controls - directly below image */}
-        <MobileZoomControls
-          zoom={zoom}
-          isProcessing={isProcessing}
-          onZoomChange={handleZoomChange}
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
-        />
+        {/* Professional Control Stack */}
+        <div className="space-y-4 bg-card/50 backdrop-blur-sm p-4 rounded-3xl border border-border/50">
+          <MobileZoomControls
+            zoom={zoom}
+            isProcessing={isProcessing}
+            onZoomChange={handleZoomChange}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+          />
 
-        {/* Action buttons - Apply / Reset */}
-        <div className="flex gap-3">
-          {hasChanges && (
+          <div className="flex gap-3">
             <Button
               variant="outline"
               size="lg"
-              onClick={handleReset}
-              className="flex-1 rounded-xl"
+              onClick={onCancel}
+              className="flex-1 rounded-2xl h-14 border-2 font-semibold transition-all active:scale-95"
               disabled={isProcessing}
             >
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Reset
+              Cancel
             </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="lg"
-            onClick={onCancel}
-            className={`rounded-xl ${hasChanges ? 'w-auto px-6' : 'flex-1'}`}
-            disabled={isProcessing}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="gradient"
-            size="lg"
-            onClick={handleCropComplete}
-            className="flex-[2] rounded-xl"
-            disabled={!completedCrop || isProcessing}
-          >
-            {isApplying ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                <Check className="w-5 h-5 mr-2" />
-                Apply
-              </>
-            )}
-          </Button>
+            <Button
+              variant="gradient"
+              size="lg"
+              onClick={handleCropComplete}
+              className="flex-[2] rounded-2xl h-14 shadow-lg shadow-primary/20 font-bold text-base transition-all active:scale-95 group"
+              disabled={!completedCrop || isProcessing}
+            >
+              {isApplying ? (
+                <Loader2 className="w-6 h-6 animate-spin" />
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Check className="w-5 h-5 transition-transform group-hover:scale-125" />
+                  Save Edits
+                </span>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
 
