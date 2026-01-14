@@ -18,22 +18,11 @@ function centerAspectCrop(
   mediaHeight: number,
   aspect: number,
 ) {
-  const imgAspect = mediaWidth / mediaHeight;
-  
-  let width = 100;
-  let height = 100;
-
-  if (imgAspect > aspect) {
-    width = (aspect / imgAspect) * 100;
-  } else {
-    height = (imgAspect / aspect) * 100;
-  }
-
   return centerCrop(
     makeAspectCrop(
       {
         unit: '%',
-        width: width * 0.9,
+        width: 100,
       },
       aspect,
       mediaWidth,
@@ -421,16 +410,29 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
       ctx.translate(width / 2, height / 2);
       ctx.rotate((rotation * Math.PI) / 180);
       ctx.scale(zoom, zoom);
-      ctx.scale(pixelRatio, pixelRatio);
+      
+      // Calculate the source dimensions and position to center the image on the canvas
+      // We draw the full image centered, and the canvas size (width, height) 
+      // already accounts for the crop dimensions.
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
+      // We need to draw the image such that the cropped area is what fills the canvas.
+      // The current logic is a bit simplified. Let's make it more robust.
+      
+      const drawWidth = image.naturalWidth * pixelRatio;
+      const drawHeight = image.naturalHeight * pixelRatio;
+      
+      // Center of the crop in image coordinates
+      const centerX = (completedCrop.x + completedCrop.width / 2) * scaleX * pixelRatio;
+      const centerY = (completedCrop.y + completedCrop.height / 2) * scaleY * pixelRatio;
+      
       ctx.drawImage(
         image,
-        -image.naturalWidth / 2,
-        -image.naturalHeight / 2,
-        image.naturalWidth,
-        image.naturalHeight,
+        -centerX,
+        -centerY,
+        drawWidth,
+        drawHeight
       );
 
       const handleBlob = (blob: Blob | null) => {
