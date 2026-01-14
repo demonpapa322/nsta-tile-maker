@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -151,6 +152,9 @@ const Home = memo(function Home() {
       variants={pageVariants}
       className="min-h-screen bg-background"
     >
+      <Helmet>
+        <title>SocialTool</title>
+      </Helmet>
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between">
         <motion.div 
