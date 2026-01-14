@@ -74,7 +74,7 @@ const pageVariants: any = {
   }
 };
 
-const cardVariants = {
+const cardVariants: any = {
   hidden: { opacity: 0, y: 16 },
   visible: (i: number) => ({
     opacity: 1,
@@ -91,7 +91,7 @@ const cardVariants = {
   }),
 };
 
-const headerVariants = {
+const headerVariants: any = {
   hidden: { opacity: 0, x: -16 },
   visible: { 
     opacity: 1, 
