@@ -22,7 +22,7 @@ const Header = memo(function Header() {
           className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted/50"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span className="hidden sm:inline">SocialTools</span>
+          <span className="hidden sm:inline">SocialTool</span>
         </Link>
       </div>
       <div className="fixed top-4 right-4 z-50">
@@ -221,8 +221,8 @@ const GridSplitter = memo(function GridSplitter() {
     >
       <Helmet>
         {/* Primary Meta Tags */}
-        <title>Free Instagram Grid Splitter | Split Images for Instagram Posts | SocialTools</title>
-        <meta name="title" content="Free Instagram Grid Splitter | Split Images for Instagram Posts | SocialTools" />
+        <title>Image Splitter & Grid Maker for Instagram - 100% Online</title>
+        <meta name="title" content="Image Splitter & Grid Maker for Instagram - 100% Online" />
         <meta name="description" content="Split your images into perfect Instagram grid posts for free. Create stunning 3x3, 3x2, 3x1 carousel grids in seconds. No signup, 100% private - works entirely in your browser." />
         <meta name="keywords" content="instagram grid splitter, instagram grid maker, split image for instagram, instagram carousel maker, instagram photo splitter, grid post maker, instagram puzzle feed, split photo into grid, instagram grid layout, photo grid splitter online, free instagram grid tool, instagram multi-post, instagram seamless grid, 9 grid photo splitter, instagram profile grid" />
         <meta name="robots" content="index, follow" />

@@ -154,8 +154,8 @@ const Home = memo(function Home() {
     >
       <Helmet>
         {/* Primary Meta Tags */}
-        <title>SocialTools - Free Instagram Grid Splitter & Social Media Tools</title>
-        <meta name="title" content="SocialTools - Free Instagram Grid Splitter & Social Media Tools" />
+        <title>SocialTool</title>
+        <meta name="title" content="SocialTool" />
         <meta name="description" content="Free online tools for social media creators. Split images into Instagram grids, generate captions, find trending hashtags, and resize images. No signup required, 100% private." />
         <meta name="keywords" content="social media tools, instagram tools, free instagram grid splitter, image splitter, grid maker, caption generator, hashtag finder, image resizer, instagram post splitter, social media creator tools, content creation tools, instagram carousel maker, SocialTools" />
         <meta name="robots" content="index, follow" />
@@ -185,7 +185,7 @@ const Home = memo(function Home() {
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Organization",
-            "name": "SocialTools",
+            "name": "SocialTool",
             "url": "https://www.socialtool.co",
             "description": "Free online tools for social media creators",
             "sameAs": []
@@ -197,12 +197,12 @@ const Home = memo(function Home() {
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebSite",
-            "name": "SocialTools",
+            "name": "SocialTool",
             "url": "https://www.socialtool.co",
             "description": "Free online tools for social media creators. Instagram grid splitter, caption generator, hashtag finder, and image resizer.",
             "publisher": {
               "@type": "Organization",
-              "name": "SocialTools"
+              "name": "SocialTool"
             }
           })}
         </script>
@@ -212,7 +212,7 @@ const Home = memo(function Home() {
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
-            "name": "SocialTools",
+            "name": "SocialTool",
             "applicationCategory": "UtilitiesApplication",
             "operatingSystem": "Any",
             "offers": {
@@ -247,7 +247,7 @@ const Home = memo(function Home() {
         >
           <span className="text-xl font-semibold tracking-tight">
             <span className="text-foreground/90">Social</span>
-            <span className="bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent">Tools</span>
+            <span className="bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent">Tool</span>
           </span>
         </motion.div>
         <ThemeToggle />
