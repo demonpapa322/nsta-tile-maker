@@ -220,8 +220,138 @@ const GridSplitter = memo(function GridSplitter() {
       className="min-h-screen bg-background"
     >
       <Helmet>
-        <title>Image Splitter & Grid Maker for Instagram - 100% Online</title>
-        <meta name="description" content="Transform one image into a stunning multi-post Instagram grid. Free, fast, and works entirely in your browser." />
+        {/* Primary Meta Tags */}
+        <title>Free Instagram Grid Splitter | Split Images for Instagram Posts | SocialTools</title>
+        <meta name="title" content="Free Instagram Grid Splitter | Split Images for Instagram Posts | SocialTools" />
+        <meta name="description" content="Split your images into perfect Instagram grid posts for free. Create stunning 3x3, 3x2, 3x1 carousel grids in seconds. No signup, 100% private - works entirely in your browser." />
+        <meta name="keywords" content="instagram grid splitter, instagram grid maker, split image for instagram, instagram carousel maker, instagram photo splitter, grid post maker, instagram puzzle feed, split photo into grid, instagram grid layout, photo grid splitter online, free instagram grid tool, instagram multi-post, instagram seamless grid, 9 grid photo splitter, instagram profile grid" />
+        <meta name="robots" content="index, follow" />
+        <meta name="language" content="English" />
+        <meta name="author" content="SocialTools" />
+        
+        {/* Canonical URL */}
+        <link rel="canonical" href="https://www.socialtool.co/grid-splitter" />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.socialtool.co/grid-splitter" />
+        <meta property="og:title" content="Free Instagram Grid Splitter | Create Stunning Grid Posts" />
+        <meta property="og:description" content="Transform any image into a beautiful Instagram grid. Split photos into 3x3, 3x2, or custom grids. Free, fast, and 100% private." />
+        <meta property="og:site_name" content="SocialTools" />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content="https://www.socialtool.co/grid-splitter" />
+        <meta name="twitter:title" content="Free Instagram Grid Splitter | SocialTools" />
+        <meta name="twitter:description" content="Split images into perfect Instagram grid posts. Free, private, no signup required." />
+        
+        {/* Structured Data - WebApplication */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "Instagram Grid Splitter",
+            "url": "https://www.socialtool.co/grid-splitter",
+            "description": "Free online tool to split images into Instagram grid posts. Create stunning carousel and puzzle feeds.",
+            "applicationCategory": "UtilitiesApplication",
+            "operatingSystem": "Any",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "featureList": [
+              "Split images into grid posts",
+              "Support for 3x1, 3x2, 3x3, 3x4 grids",
+              "Custom grid sizes up to 10x10",
+              "Crop and adjust images",
+              "Download as JPEG, PNG, or HD PNG",
+              "100% browser-based processing",
+              "No signup required",
+              "Privacy-focused - images never uploaded"
+            ],
+            "browserRequirements": "Requires JavaScript",
+            "softwareVersion": "1.0"
+          })}
+        </script>
+        
+        {/* Structured Data - HowTo */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "HowTo",
+            "name": "How to Split an Image for Instagram Grid",
+            "description": "Learn how to create stunning Instagram grid posts by splitting a single image into multiple tiles.",
+            "step": [
+              {
+                "@type": "HowToStep",
+                "name": "Upload Your Image",
+                "text": "Drag and drop or click to upload the image you want to split for Instagram."
+              },
+              {
+                "@type": "HowToStep",
+                "name": "Choose Grid Size",
+                "text": "Select your preferred grid layout: 3x1, 3x2, 3x3, 3x4, or custom dimensions."
+              },
+              {
+                "@type": "HowToStep",
+                "name": "Crop and Adjust",
+                "text": "Optionally crop and adjust your image to perfectly fit the grid."
+              },
+              {
+                "@type": "HowToStep",
+                "name": "Download Grid Tiles",
+                "text": "Download all grid tiles and post them to Instagram in reverse order for a seamless look."
+              }
+            ],
+            "tool": {
+              "@type": "HowToTool",
+              "name": "SocialTools Grid Splitter"
+            }
+          })}
+        </script>
+        
+        {/* Structured Data - FAQPage */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is an Instagram grid splitter?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "An Instagram grid splitter is a tool that divides a single image into multiple tiles that, when posted to Instagram in sequence, create a seamless panoramic or puzzle effect on your profile grid."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Is this Instagram grid splitter free?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes, SocialTools Grid Splitter is completely free to use with no hidden fees, watermarks, or signup required."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Are my images safe and private?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Absolutely. All image processing happens directly in your browser. Your images are never uploaded to any server, ensuring complete privacy."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What grid sizes are available?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "We offer Instagram-optimized presets like 3x1 (3 posts), 3x2 (6 posts), 3x3 (9 posts), 3x4 (12 posts), plus custom grids up to 10x10."
+                }
+              }
+            ]
+          })}
+        </script>
       </Helmet>
       <Header />
 
