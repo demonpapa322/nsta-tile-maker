@@ -372,6 +372,10 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
         return;
       }
 
+      // Rotate and scale the image correctly on the canvas
+      ctx.translate(width / 2, height / 2);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.scale(zoom, zoom);
       ctx.scale(pixelRatio, pixelRatio);
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
@@ -383,14 +387,10 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
 
       ctx.drawImage(
         image,
-        cropX,
-        cropY,
-        cropWidth,
-        cropHeight,
-        0,
-        0,
-        cropWidth,
-        cropHeight,
+        -image.naturalWidth / 2,
+        -image.naturalHeight / 2,
+        image.naturalWidth,
+        image.naturalHeight,
       );
 
       const handleBlob = (blob: Blob | null) => {
@@ -425,7 +425,19 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
   const handleZoomOut = useCallback(() => setZoom((z) => Math.max(z - 0.1, 0.5)), []);
   const handleZoomChange = useCallback((value: number[]) => setZoom(value[0]), []);
 
-  const isProcessing = isTransforming || isApplying;
+  // Superior transformation logic - no debouncing, using CSS for instant feedback, 
+  // and optimized canvas rendering for the final crop
+  const transformedImageUrl = useMemo(() => imageUrl, [imageUrl]);
+  const isTransforming = false; 
+
+  // Instead of re-rendering a new blob on every zoom/rotate (which is slow),
+  // we apply CSS transforms to the image in the cropper for instant feedback,
+  // and only perform the heavy canvas work when "Apply" is clicked.
+  const imageStyle = useMemo(() => ({
+    transform: `rotate(${rotation}deg) scale(${zoom})`,
+    transition: 'transform 0.15s cubic-bezier(0.2, 0, 0, 1)',
+    willChange: 'transform',
+  }), [rotation, zoom]);
 
   return (
     <div ref={ref} className="w-full">
@@ -484,9 +496,10 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
                 >
                   <img
                     ref={imgRef}
-                    src={transformedImageUrl}
+                    src={imageUrl}
                     alt="Crop preview"
                     onLoad={onImageLoad}
+                    style={imageStyle}
                     className="max-w-full max-h-[500px] w-auto h-auto object-contain select-none"
                     crossOrigin="anonymous"
                     decoding="async"
