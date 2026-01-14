@@ -430,14 +430,16 @@ const GridSplitter = memo(function GridSplitter() {
               {currentStep === 'preview' && activeImage && (
                 <motion.div
                   key="preview"
-                  initial={{ opacity: 0, y: 12, scale: 0.985 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -12, scale: 0.985 }}
+                  initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)", rotateY: -10 }}
+                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)", rotateY: 0 }}
+                  exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)", rotateY: 10 }}
                   transition={{ 
-                    duration: 0.35, 
-                    ease: [0.16, 1, 0.3, 1] 
+                    duration: 0.5, 
+                    ease: [0.16, 1, 0.3, 1],
+                    layout: { duration: 0.3 }
                   }}
-                  className="will-animate"
+                  className="will-animate origin-center"
+                  style={{ perspective: "1000px" }}
                 >
                   {/* Desktop: Side-by-side layout */}
                   <div className="hidden lg:grid lg:grid-cols-[1fr,400px] lg:gap-8 lg:items-start">

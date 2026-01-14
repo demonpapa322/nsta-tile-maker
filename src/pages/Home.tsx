@@ -261,7 +261,28 @@ const Home = memo(function Home() {
           {/* Hero Section */}
           <div className="text-center mb-16">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground mb-3">
-              Create better content, <span className="gradient-text">faster</span>
+              <motion.span
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="inline-block"
+              >
+                Create better content,
+              </motion.span>{" "}
+              <motion.span 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ 
+                  duration: 0.8, 
+                  delay: 0.3,
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 15
+                }}
+                className="gradient-text inline-block"
+              >
+                faster
+              </motion.span>
             </h1>
             <p className="text-base text-muted-foreground max-w-md mx-auto">
               Free tools to supercharge your social media presence
