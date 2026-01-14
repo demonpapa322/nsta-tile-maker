@@ -33,17 +33,19 @@ const GridTile = memo(function GridTile({
     const rowIndex = Math.floor(index / cols);
     
     // Calculate background size to cover while maintaining aspect ratio
+    // This logic ensures the image fills the grid naturally without being
+    // unnaturally zoomed in or out, regardless of the original aspect ratio.
     let bgWidth: number;
     let bgHeight: number;
     
     if (imageAspect > gridAspect) {
-      // Image is wider than grid - fit by height, overflow width
+      // Image is wider than grid - fit by height, overflow width (natural cover)
       bgHeight = rows * 100;
-      bgWidth = bgHeight * imageAspect / gridAspect;
+      bgWidth = (bgHeight * imageAspect) / gridAspect;
     } else {
-      // Image is taller than grid - fit by width, overflow height
+      // Image is taller than grid - fit by width, overflow height (natural cover)
       bgWidth = cols * 100;
-      bgHeight = bgWidth * gridAspect / imageAspect;
+      bgHeight = (bgWidth * gridAspect) / imageAspect;
     }
     
     // Calculate position based on tile index, centered

@@ -160,31 +160,32 @@ export const DownloadSection = memo(function DownloadSection({
       if (!isMountedRef.current) return;
 
       // Calculate tile dimensions respecting natural aspect ratio with cover behavior
-      const imageAspect = img.width / img.height;
+      // This ensures the final output is never stretched or compressed.
+      const imageAspect = img.naturalWidth / img.naturalHeight;
       const gridAspect = cols / rows;
       
       let sourceWidth: number;
       let sourceHeight: number;
       
       if (imageAspect > gridAspect) {
-        // Image is wider - fit by height, crop width
-        sourceHeight = img.height;
+        // Image is wider than grid - fit by height, crop width (natural cover)
+        sourceHeight = img.naturalHeight;
         sourceWidth = sourceHeight * gridAspect;
       } else {
-        // Image is taller - fit by width, crop height
-        sourceWidth = img.width;
+        // Image is taller than grid - fit by width, crop height (natural cover)
+        sourceWidth = img.naturalWidth;
         sourceHeight = sourceWidth / gridAspect;
       }
       
-      const tileWidth = Math.floor(sourceWidth / cols);
-      const tileHeight = Math.floor(sourceHeight / rows);
+      const tileWidth = sourceWidth / cols;
+      const tileHeight = sourceHeight / rows;
       
       const outputWidth = preset.maxSize ? Math.min(tileWidth, preset.maxSize) : tileWidth;
       const outputHeight = preset.maxSize ? Math.min(tileHeight, preset.maxSize) : tileHeight;
       
-      // Center the crop area
-      const offsetX = Math.floor((img.width - sourceWidth) / 2);
-      const offsetY = Math.floor((img.height - sourceHeight) / 2);
+      // Center the crop area perfectly
+      const offsetX = (img.naturalWidth - sourceWidth) / 2;
+      const offsetY = (img.naturalHeight - sourceHeight) / 2;
 
       const results: SplitResult[] = [];
       

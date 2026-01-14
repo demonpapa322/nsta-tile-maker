@@ -18,11 +18,27 @@ function centerAspectCrop(
   mediaHeight: number,
   aspect: number,
 ) {
+  // Naturally adjust the initial crop to fit the image
+  // If image is wider than target aspect, height should be 100%
+  // If image is taller than target aspect, width should be 100%
+  const imgAspect = mediaWidth / mediaHeight;
+  
+  let width = 100;
+  let height = 100;
+
+  if (imgAspect > aspect) {
+    // Image is wider than needed
+    width = (aspect / imgAspect) * 100;
+  } else {
+    // Image is taller than needed
+    height = (imgAspect / aspect) * 100;
+  }
+
   return centerCrop(
     makeAspectCrop(
       {
         unit: '%',
-        width: 90,
+        width: width * 0.9, // Leave a small margin for better UX
       },
       aspect,
       mediaWidth,
