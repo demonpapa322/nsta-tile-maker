@@ -18,19 +18,14 @@ function centerAspectCrop(
   mediaHeight: number,
   aspect: number,
 ) {
-  // Naturally adjust the initial crop to fit the image
-  // If image is wider than target aspect, height should be 100%
-  // If image is taller than target aspect, width should be 100%
   const imgAspect = mediaWidth / mediaHeight;
   
   let width = 100;
   let height = 100;
 
   if (imgAspect > aspect) {
-    // Image is wider than needed
     width = (aspect / imgAspect) * 100;
   } else {
-    // Image is taller than needed
     height = (imgAspect / aspect) * 100;
   }
 
@@ -38,7 +33,7 @@ function centerAspectCrop(
     makeAspectCrop(
       {
         unit: '%',
-        width: width * 0.9, // Leave a small margin for better UX
+        width: width * 0.9,
       },
       aspect,
       mediaWidth,
@@ -49,7 +44,151 @@ function centerAspectCrop(
   );
 }
 
-// Memoized controls component for sidebar
+// Mobile-optimized zoom controls - compact inline design
+const MobileZoomControls = memo(function MobileZoomControls({
+  zoom,
+  isProcessing,
+  onZoomChange,
+  onZoomIn,
+  onZoomOut,
+}: {
+  zoom: number;
+  isProcessing: boolean;
+  onZoomChange: (value: number[]) => void;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-3 px-2 py-2 bg-card/90 backdrop-blur-sm rounded-xl border border-border shadow-sm">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-9 w-9 shrink-0"
+        onClick={onZoomOut}
+        disabled={zoom <= 0.5 || isProcessing}
+      >
+        <Minus className="w-4 h-4" />
+      </Button>
+      <div className="flex-1 flex items-center gap-2">
+        <ZoomIn className="w-4 h-4 text-muted-foreground shrink-0" />
+        <Slider
+          value={[zoom]}
+          onValueChange={onZoomChange}
+          min={0.5}
+          max={3}
+          step={0.1}
+          disabled={isProcessing}
+          className="flex-1"
+        />
+      </div>
+      <span className="text-xs font-medium tabular-nums text-muted-foreground w-10 text-center">
+        {Math.round(zoom * 100)}%
+      </span>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-9 w-9 shrink-0"
+        onClick={onZoomIn}
+        disabled={zoom >= 3 || isProcessing}
+      >
+        <Plus className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+});
+
+// Rotation handle component - visual dial on the image
+const RotationHandle = memo(function RotationHandle({
+  rotation,
+  onRotationChange,
+  isProcessing,
+}: {
+  rotation: number;
+  onRotationChange: (rotation: number) => void;
+  isProcessing: boolean;
+}) {
+  const handleRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const startAngle = useRef(0);
+  const startRotation = useRef(0);
+
+  const getAngleFromCenter = useCallback((clientX: number, clientY: number) => {
+    if (!handleRef.current) return 0;
+    const rect = handleRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    return Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
+  }, []);
+
+  const handleStart = useCallback((clientX: number, clientY: number) => {
+    if (isProcessing) return;
+    isDragging.current = true;
+    startAngle.current = getAngleFromCenter(clientX, clientY);
+    startRotation.current = rotation;
+  }, [getAngleFromCenter, rotation, isProcessing]);
+
+  const handleMove = useCallback((clientX: number, clientY: number) => {
+    if (!isDragging.current) return;
+    const currentAngle = getAngleFromCenter(clientX, clientY);
+    const angleDiff = currentAngle - startAngle.current;
+    let newRotation = startRotation.current + angleDiff;
+    // Snap to 15-degree increments for easier alignment
+    newRotation = Math.round(newRotation / 15) * 15;
+    onRotationChange(newRotation);
+  }, [getAngleFromCenter, onRotationChange]);
+
+  const handleEnd = useCallback(() => {
+    isDragging.current = false;
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => handleMove(e.clientX, e.clientY);
+    const handleMouseUp = () => handleEnd();
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        handleMove(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    };
+    const handleTouchEnd = () => handleEnd();
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [handleMove, handleEnd]);
+
+  return (
+    <div
+      ref={handleRef}
+      className="absolute -top-3 -right-3 z-20 cursor-grab active:cursor-grabbing touch-none"
+      onMouseDown={(e) => handleStart(e.clientX, e.clientY)}
+      onTouchStart={(e) => {
+        if (e.touches.length === 1) {
+          handleStart(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }}
+    >
+      <div 
+        className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg border-2 border-background transition-transform hover:scale-110 active:scale-95"
+        style={{ transform: `rotate(${rotation}deg)` }}
+      >
+        <RotateCw className="w-4 h-4" />
+      </div>
+      <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-medium text-muted-foreground bg-background/90 px-1.5 py-0.5 rounded whitespace-nowrap">
+        {rotation % 360}°
+      </div>
+    </div>
+  );
+});
+
+// Desktop sidebar controls
 const SidebarControls = memo(function SidebarControls({
   zoom,
   rotation,
@@ -218,7 +357,6 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
     return { cols: c, rows: r, aspect: c / r };
   }, [grid]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       revokeAll();
@@ -231,7 +369,6 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
     setCrop(newCrop);
   }, [aspect]);
 
-  // Reset crop when grid changes
   useEffect(() => {
     if (imgRef.current) {
       const { width, height } = imgRef.current;
@@ -247,7 +384,6 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
 
     setIsApplying(true);
 
-    // Use setTimeout to prevent UI freeze
     setTimeout(() => {
       const image = imgRef.current;
       if (!image) {
@@ -255,7 +391,6 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
         return;
       }
 
-      // Use OffscreenCanvas if available
       const useOffscreen = typeof OffscreenCanvas !== 'undefined';
       
       const scaleX = image.naturalWidth / image.width;
@@ -283,7 +418,6 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
         return;
       }
 
-      // Rotate and scale the image correctly on the canvas
       ctx.translate(width / 2, height / 2);
       ctx.rotate((rotation * Math.PI) / 180);
       ctx.scale(zoom, zoom);
@@ -330,64 +464,40 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
   const handleZoomIn = useCallback(() => setZoom((z) => Math.min(z + 0.1, 3)), []);
   const handleZoomOut = useCallback(() => setZoom((z) => Math.max(z - 0.1, 0.5)), []);
   const handleZoomChange = useCallback((value: number[]) => setZoom(value[0]), []);
+  const handleRotationChange = useCallback((newRotation: number) => setRotation(newRotation), []);
 
-  // Superior transformation logic - no debouncing, using CSS for instant feedback, 
-  // and optimized canvas rendering for the final crop
   const isProcessing = isApplying; 
 
-  // Instead of re-rendering a new blob on every zoom/rotate (which is slow),
-  // we apply CSS transforms to the image in the cropper for instant feedback,
-  // and only perform the heavy canvas work when "Apply" is clicked.
   const imageStyle = useMemo(() => ({
     transform: `rotate(${rotation}deg) scale(${zoom})`,
     transition: 'transform 0.15s cubic-bezier(0.2, 0, 0, 1)',
     willChange: 'transform',
   }), [rotation, zoom]);
 
+  const hasChanges = zoom !== 1 || rotation !== 0;
+
   return (
     <div ref={ref} className="w-full">
-      {/* Mobile-only header info */}
-      <div className="flex lg:hidden items-center justify-between mb-4 px-1">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Move className="w-3.5 h-3.5" />
-          <span>Drag to reposition</span>
-        </div>
-        <div className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-          Grid: {cols}:{rows}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-[240px,1fr] gap-6">
-        {/* Sidebar Controls - Desktop Left, Mobile Top */}
-        <aside className="order-2 lg:order-1 bg-card border border-border rounded-2xl shadow-sm lg:sticky lg:top-24 h-fit max-h-[calc(100vh-120px)] overflow-y-auto no-scrollbar">
-          <SidebarControls
-            zoom={zoom}
-            rotation={rotation}
-            isProcessing={isProcessing}
-            onZoomChange={handleZoomChange}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            onRotateLeft={handleRotateLeft}
-            onRotateRight={handleRotateRight}
-            onReset={handleReset}
-            onCancel={onCancel}
-            onApply={handleCropComplete}
-            canApply={!!completedCrop}
-            isApplying={isApplying}
-          />
-        </aside>
-
-        {/* Main Crop Area */}
-        <div className="order-1 lg:order-2 space-y-4">
-          <div className="rounded-2xl border border-border bg-card/50 overflow-hidden shadow-sm relative group">
-            <div className="flex items-center justify-center p-4 min-h-[300px] lg:min-h-[500px] bg-muted/20 relative">
+      {/* Mobile Layout */}
+      <div className="lg:hidden space-y-4">
+        {/* Image with rotation handle */}
+        <div className="relative">
+          <div className="rounded-2xl border border-border bg-card/50 overflow-hidden shadow-sm">
+            <div className="flex items-center justify-center p-4 min-h-[280px] bg-muted/20 relative">
+              {/* Rotation Handle - positioned on image */}
+              <RotationHandle
+                rotation={rotation}
+                onRotationChange={handleRotationChange}
+                isProcessing={isProcessing}
+              />
+              
               <div className="w-full h-full flex items-center justify-center">
                 <ReactCrop
                   crop={crop}
                   onChange={(_, percentCrop) => setCrop(percentCrop)}
                   onComplete={(c) => setCompletedCrop(c)}
                   aspect={aspect}
-                  className="max-w-full max-h-[500px] transition-transform duration-200"
+                  className="max-w-full max-h-[320px] transition-transform duration-200"
                   disabled={isProcessing}
                 >
                   <img
@@ -396,55 +506,135 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
                     alt="Crop preview"
                     onLoad={onImageLoad}
                     style={imageStyle}
-                    className="max-w-full max-h-[500px] w-auto h-auto object-contain select-none"
+                    className="max-w-full max-h-[320px] w-auto h-auto object-contain select-none"
                     crossOrigin="anonymous"
                     decoding="async"
                   />
                 </ReactCrop>
               </div>
-
-              {/* Desktop-only hint overlay */}
-              <div className="hidden lg:group-hover:flex absolute bottom-4 left-1/2 -translate-x-1/2 items-center gap-4 px-4 py-2 rounded-full bg-background/80 backdrop-blur-sm border border-border text-xs text-muted-foreground shadow-sm pointer-events-none transition-all animate-in fade-in slide-in-from-bottom-2">
-                <div className="flex items-center gap-1.5">
-                  <Move className="w-3 h-3" />
-                  Drag image to reposition
-                </div>
-                <div className="w-px h-3 bg-border" />
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 border border-muted-foreground rounded-[2px]" />
-                  Corners to resize
-                </div>
-              </div>
             </div>
           </div>
           
-          {/* Mobile-only action buttons footer */}
-          <div className="flex lg:hidden gap-3 mt-4">
+          {/* Hint text */}
+          <div className="flex items-center justify-center gap-2 mt-2 text-xs text-muted-foreground">
+            <Move className="w-3 h-3" />
+            <span>Drag to reposition • Drag corner icon to rotate</span>
+          </div>
+        </div>
+
+        {/* Zoom controls - directly below image */}
+        <MobileZoomControls
+          zoom={zoom}
+          isProcessing={isProcessing}
+          onZoomChange={handleZoomChange}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+        />
+
+        {/* Action buttons - Apply / Reset */}
+        <div className="flex gap-3">
+          {hasChanges && (
             <Button
               variant="outline"
               size="lg"
-              onClick={onCancel}
+              onClick={handleReset}
               className="flex-1 rounded-xl"
               disabled={isProcessing}
             >
-              Cancel
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Reset
             </Button>
-            <Button
-              variant="gradient"
-              size="lg"
-              onClick={handleCropComplete}
-              className="flex-[2] rounded-xl"
-              disabled={!completedCrop || isProcessing}
-            >
-              {isApplying ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <>
-                  <Check className="w-5 h-5 mr-2" />
-                  Apply Changes
-                </>
-              )}
-            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="lg"
+            onClick={onCancel}
+            className={`rounded-xl ${hasChanges ? 'w-auto px-6' : 'flex-1'}`}
+            disabled={isProcessing}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="gradient"
+            size="lg"
+            onClick={handleCropComplete}
+            className="flex-[2] rounded-xl"
+            disabled={!completedCrop || isProcessing}
+          >
+            {isApplying ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <>
+                <Check className="w-5 h-5 mr-2" />
+                Apply
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Desktop Layout */}
+      <div className="hidden lg:block">
+        <div className="grid grid-cols-[240px,1fr] gap-6">
+          {/* Sidebar Controls */}
+          <aside className="bg-card border border-border rounded-2xl shadow-sm sticky top-24 h-fit max-h-[calc(100vh-120px)] overflow-y-auto no-scrollbar">
+            <SidebarControls
+              zoom={zoom}
+              rotation={rotation}
+              isProcessing={isProcessing}
+              onZoomChange={handleZoomChange}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              onRotateLeft={handleRotateLeft}
+              onRotateRight={handleRotateRight}
+              onReset={handleReset}
+              onCancel={onCancel}
+              onApply={handleCropComplete}
+              canApply={!!completedCrop}
+              isApplying={isApplying}
+            />
+          </aside>
+
+          {/* Main Crop Area */}
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-border bg-card/50 overflow-hidden shadow-sm relative group">
+              <div className="flex items-center justify-center p-4 min-h-[500px] bg-muted/20 relative">
+                <div className="w-full h-full flex items-center justify-center">
+                  <ReactCrop
+                    crop={crop}
+                    onChange={(_, percentCrop) => setCrop(percentCrop)}
+                    onComplete={(c) => setCompletedCrop(c)}
+                    aspect={aspect}
+                    className="max-w-full max-h-[500px] transition-transform duration-200"
+                    disabled={isProcessing}
+                  >
+                    <img
+                      ref={imgRef}
+                      src={imageUrl}
+                      alt="Crop preview"
+                      onLoad={onImageLoad}
+                      style={imageStyle}
+                      className="max-w-full max-h-[500px] w-auto h-auto object-contain select-none"
+                      crossOrigin="anonymous"
+                      decoding="async"
+                    />
+                  </ReactCrop>
+                </div>
+
+                {/* Desktop hint overlay */}
+                <div className="hidden lg:group-hover:flex absolute bottom-4 left-1/2 -translate-x-1/2 items-center gap-4 px-4 py-2 rounded-full bg-background/80 backdrop-blur-sm border border-border text-xs text-muted-foreground shadow-sm pointer-events-none transition-all animate-in fade-in slide-in-from-bottom-2">
+                  <div className="flex items-center gap-1.5">
+                    <Move className="w-3 h-3" />
+                    Drag image to reposition
+                  </div>
+                  <div className="w-px h-3 bg-border" />
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 border border-muted-foreground rounded-[2px]" />
+                    Corners to resize
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
