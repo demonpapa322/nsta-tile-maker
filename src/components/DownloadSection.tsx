@@ -317,8 +317,10 @@ export const DownloadSection = memo(function DownloadSection({
           setDownloadProgress({ current: i + 1, total });
         }
         
+        // Use a longer, more reliable delay for browsers to handle sequential downloads
+        // Especially important for mobile and certain desktop browsers that throttle rapid downloads
         if (i < ordered.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 400));
+          await new Promise(resolve => setTimeout(resolve, 800));
         }
       } catch (error) {
         console.error(`Failed to download ${fileName}:`, error);
