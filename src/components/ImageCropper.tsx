@@ -34,8 +34,8 @@ function centerAspectCrop(
   );
 }
 
-// Memoized controls component
-const ZoomRotateControls = memo(function ZoomRotateControls({
+// Memoized controls component for sidebar
+const SidebarControls = memo(function SidebarControls({
   zoom,
   rotation,
   isProcessing,
@@ -44,6 +44,11 @@ const ZoomRotateControls = memo(function ZoomRotateControls({
   onZoomOut,
   onRotateLeft,
   onRotateRight,
+  onReset,
+  onCancel,
+  onApply,
+  canApply,
+  isApplying
 }: {
   zoom: number;
   rotation: number;
@@ -53,69 +58,126 @@ const ZoomRotateControls = memo(function ZoomRotateControls({
   onZoomOut: () => void;
   onRotateLeft: () => void;
   onRotateRight: () => void;
+  onReset: () => void;
+  onCancel: () => void;
+  onApply: () => void;
+  canApply: boolean;
+  isApplying: boolean;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-4 p-3 rounded-lg bg-muted/30 border border-border">
-      {/* Zoom Controls */}
-      <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-        <ZoomIn className="w-4 h-4 text-muted-foreground shrink-0" />
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-7 w-7"
-          onClick={onZoomOut}
-          disabled={zoom <= 0.5 || isProcessing}
-        >
-          <Minus className="w-3 h-3" />
-        </Button>
-        <Slider
-          value={[zoom]}
-          onValueChange={onZoomChange}
-          min={0.5}
-          max={3}
-          step={0.1}
-          className="flex-1"
-          disabled={isProcessing}
-        />
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-7 w-7"
-          onClick={onZoomIn}
-          disabled={zoom >= 3 || isProcessing}
-        >
-          <Plus className="w-3 h-3" />
-        </Button>
-        <span className="text-xs text-muted-foreground w-12 text-right">
-          {Math.round(zoom * 100)}%
-        </span>
+    <div className="flex flex-col h-full gap-6 p-4">
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+          <ZoomIn className="w-4 h-4" />
+          Zoom
+        </h3>
+        <div className="space-y-3">
+          <Slider
+            value={[zoom]}
+            onValueChange={onZoomChange}
+            min={0.5}
+            max={3}
+            step={0.1}
+            disabled={isProcessing}
+          />
+          <div className="flex items-center justify-between gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={onZoomOut}
+              disabled={zoom <= 0.5 || isProcessing}
+            >
+              <Minus className="w-4 h-4" />
+            </Button>
+            <span className="text-xs font-medium tabular-nums">
+              {Math.round(zoom * 100)}%
+            </span>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={onZoomIn}
+              disabled={zoom >= 3 || isProcessing}
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {/* Rotation Controls */}
-      <div className="flex items-center gap-2">
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+          <RotateCw className="w-4 h-4" />
+          Rotation
+        </h3>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRotateLeft}
+            className="h-9 px-2 text-xs"
+            disabled={isProcessing}
+          >
+            <RotateCcw className="w-3.5 h-3.5 mr-1" />
+            -90°
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRotateRight}
+            className="h-9 px-2 text-xs"
+            disabled={isProcessing}
+          >
+            <RotateCw className="w-3.5 h-3.5 mr-1" />
+            +90°
+          </Button>
+        </div>
+        <div className="text-center">
+          <span className="text-xs font-medium text-muted-foreground tabular-nums">
+            Current: {rotation % 360}°
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-auto space-y-2 pt-6 border-t border-border">
         <Button
           variant="outline"
           size="sm"
-          onClick={onRotateLeft}
-          className="gap-1"
+          onClick={onReset}
+          className="w-full justify-start gap-2 h-9"
           disabled={isProcessing}
         >
           <RotateCcw className="w-4 h-4" />
-          -90°
+          Reset
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onRotateRight}
-          className="gap-1"
-          disabled={isProcessing}
-        >
-          <RotateCw className="w-4 h-4" />
-          +90°
-        </Button>
-        <span className="text-xs text-muted-foreground w-10 text-center">
-          {rotation % 360}°
-        </span>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onCancel}
+            className="h-9"
+            disabled={isProcessing}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="gradient"
+            size="sm"
+            onClick={onApply}
+            className="h-9"
+            disabled={!canApply || isProcessing}
+          >
+            {isApplying ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <>
+                <Check className="w-4 h-4 mr-1.5" />
+                Done
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -366,90 +428,116 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
   const isProcessing = isTransforming || isApplying;
 
   return (
-    <div ref={ref} className="w-full space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Move className="w-4 h-4" />
-          <span>Drag to reposition • Corners to resize</span>
+    <div ref={ref} className="w-full">
+      {/* Mobile-only header info */}
+      <div className="flex lg:hidden items-center justify-between mb-4 px-1">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Move className="w-3.5 h-3.5" />
+          <span>Drag to reposition</span>
         </div>
-        <div className="text-xs text-muted-foreground">
-          Aspect: {cols}:{rows}
+        <div className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+          Grid: {cols}:{rows}
         </div>
       </div>
 
-      <ZoomRotateControls
-        zoom={zoom}
-        rotation={rotation}
-        isProcessing={isProcessing}
-        onZoomChange={handleZoomChange}
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
-        onRotateLeft={handleRotateLeft}
-        onRotateRight={handleRotateRight}
-      />
+      <div className="grid grid-cols-1 lg:grid-cols-[240px,1fr] gap-6">
+        {/* Sidebar Controls - Desktop Left, Mobile Top */}
+        <aside className="order-2 lg:order-1 bg-card border border-border rounded-2xl shadow-sm lg:sticky lg:top-24 h-fit max-h-[calc(100vh-120px)] overflow-y-auto no-scrollbar">
+          <SidebarControls
+            zoom={zoom}
+            rotation={rotation}
+            isProcessing={isProcessing}
+            onZoomChange={handleZoomChange}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onRotateLeft={handleRotateLeft}
+            onRotateRight={handleRotateRight}
+            onReset={handleReset}
+            onCancel={onCancel}
+            onApply={handleCropComplete}
+            canApply={!!completedCrop}
+            isApplying={isApplying}
+          />
+        </aside>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="flex items-center justify-center p-4 bg-muted/30 max-h-[500px] relative">
-          {isTransforming && (
-            <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        {/* Main Crop Area */}
+        <div className="order-1 lg:order-2 space-y-4">
+          <div className="rounded-2xl border border-border bg-card/50 overflow-hidden shadow-sm relative group">
+            <div className="flex items-center justify-center p-4 min-h-[300px] lg:min-h-[500px] bg-muted/20 relative">
+              {isTransforming && (
+                <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] flex items-center justify-center z-20 transition-opacity">
+                  <div className="bg-card p-3 rounded-xl shadow-lg border border-border flex items-center gap-3">
+                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                    <span className="text-sm font-medium">Processing...</span>
+                  </div>
+                </div>
+              )}
+              
+              <div className="w-full h-full flex items-center justify-center">
+                <ReactCrop
+                  crop={crop}
+                  onChange={(_, percentCrop) => setCrop(percentCrop)}
+                  onComplete={(c) => setCompletedCrop(c)}
+                  aspect={aspect}
+                  className="max-w-full max-h-[500px] transition-transform duration-200"
+                  disabled={isProcessing}
+                >
+                  <img
+                    ref={imgRef}
+                    src={transformedImageUrl}
+                    alt="Crop preview"
+                    onLoad={onImageLoad}
+                    className="max-w-full max-h-[500px] w-auto h-auto object-contain select-none"
+                    crossOrigin="anonymous"
+                    decoding="async"
+                  />
+                </ReactCrop>
+              </div>
+
+              {/* Desktop-only hint overlay */}
+              <div className="hidden lg:group-hover:flex absolute bottom-4 left-1/2 -translate-x-1/2 items-center gap-4 px-4 py-2 rounded-full bg-background/80 backdrop-blur-sm border border-border text-xs text-muted-foreground shadow-sm pointer-events-none transition-all animate-in fade-in slide-in-from-bottom-2">
+                <div className="flex items-center gap-1.5">
+                  <Move className="w-3 h-3" />
+                  Drag image to reposition
+                </div>
+                <div className="w-px h-3 bg-border" />
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 border border-muted-foreground rounded-[2px]" />
+                  Corners to resize
+                </div>
+              </div>
             </div>
-          )}
-          <ReactCrop
-            crop={crop}
-            onChange={(_, percentCrop) => setCrop(percentCrop)}
-            onComplete={(c) => setCompletedCrop(c)}
-            aspect={aspect}
-            className="max-h-[450px]"
-            disabled={isProcessing}
-          >
-            <img
-              ref={imgRef}
-              src={transformedImageUrl}
-              alt="Crop preview"
-              onLoad={onImageLoad}
-              className="max-h-[450px] w-auto"
-              crossOrigin="anonymous"
-              decoding="async"
-            />
-          </ReactCrop>
+          </div>
+          
+          {/* Mobile-only action buttons footer */}
+          <div className="flex lg:hidden gap-3 mt-4">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={onCancel}
+              className="flex-1 rounded-xl"
+              disabled={isProcessing}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="gradient"
+              size="lg"
+              onClick={handleCropComplete}
+              className="flex-[2] rounded-xl"
+              disabled={!completedCrop || isProcessing}
+            >
+              {isApplying ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <Check className="w-5 h-5 mr-2" />
+                  Apply Changes
+                </>
+              )}
+            </Button>
+          </div>
         </div>
-      </div>
-
-      <div className="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleReset}
-          className="flex-1"
-          disabled={isProcessing}
-        >
-          <RotateCcw className="w-4 h-4" />
-          Reset All
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onCancel}
-          className="flex-1"
-          disabled={isProcessing}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="gradient"
-          size="sm"
-          onClick={handleCropComplete}
-          className="flex-1"
-          disabled={!completedCrop || isProcessing}
-        >
-          {isApplying ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Check className="w-4 h-4" />
-          )}
-          Apply Crop
-        </Button>
       </div>
     </div>
   );
