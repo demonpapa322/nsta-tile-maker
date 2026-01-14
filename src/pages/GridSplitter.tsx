@@ -399,8 +399,6 @@ const GridSplitter = memo(function GridSplitter() {
                 >
                   <ImageUploader
                     onImageUpload={handleImageUpload}
-                    uploadedImage={null}
-                    onClear={handleClear}
                   />
                 </motion.div>
               )}

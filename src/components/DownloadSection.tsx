@@ -208,7 +208,7 @@ export const DownloadSection = memo(function DownloadSection({
           canvas = document.createElement('canvas');
           canvas.width = outputWidth;
           canvas.height = outputHeight;
-          ctx = canvas.getContext('2d', { willReadFrequently: false });
+          ctx = canvas.getContext('2d');
         }
         
         if (!ctx) return;

@@ -95,97 +95,6 @@ const MobileZoomControls = memo(function MobileZoomControls({
   );
 });
 
-// Rotation handle component - visual dial on the image
-const RotationHandle = memo(function RotationHandle({
-  rotation,
-  onRotationChange,
-  isProcessing,
-}: {
-  rotation: number;
-  onRotationChange: (rotation: number) => void;
-  isProcessing: boolean;
-}) {
-  const handleRef = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
-  const startAngle = useRef(0);
-  const startRotation = useRef(0);
-
-  const getAngleFromCenter = useCallback((clientX: number, clientY: number) => {
-    if (!handleRef.current) return 0;
-    const rect = handleRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    return Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
-  }, []);
-
-  const handleStart = useCallback((clientX: number, clientY: number) => {
-    if (isProcessing) return;
-    isDragging.current = true;
-    startAngle.current = getAngleFromCenter(clientX, clientY);
-    startRotation.current = rotation;
-  }, [getAngleFromCenter, rotation, isProcessing]);
-
-  const handleMove = useCallback((clientX: number, clientY: number) => {
-    if (!isDragging.current) return;
-    const currentAngle = getAngleFromCenter(clientX, clientY);
-    const angleDiff = currentAngle - startAngle.current;
-    let newRotation = startRotation.current + angleDiff;
-    // Snap to 15-degree increments for easier alignment
-    newRotation = Math.round(newRotation / 15) * 15;
-    onRotationChange(newRotation);
-  }, [getAngleFromCenter, onRotationChange]);
-
-  const handleEnd = useCallback(() => {
-    isDragging.current = false;
-  }, []);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => handleMove(e.clientX, e.clientY);
-    const handleMouseUp = () => handleEnd();
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 1) {
-        handleMove(e.touches[0].clientX, e.touches[0].clientY);
-      }
-    };
-    const handleTouchEnd = () => handleEnd();
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('touchmove', handleTouchMove, { passive: true });
-    window.addEventListener('touchend', handleTouchEnd);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [handleMove, handleEnd]);
-
-  return (
-    <div
-      ref={handleRef}
-      className="relative z-20 cursor-grab active:cursor-grabbing touch-none flex flex-col items-center group/dial"
-      onMouseDown={(e) => handleStart(e.clientX, e.clientY)}
-      onTouchStart={(e) => {
-        if (e.touches.length === 1) {
-          handleStart(e.touches[0].clientX, e.touches[0].clientY);
-        }
-      }}
-    >
-      <div 
-        className="w-12 h-12 rounded-full bg-background/80 backdrop-blur-xl text-primary flex items-center justify-center shadow-2xl border-2 border-primary/20 transition-all duration-300 group-hover/dial:scale-110 group-hover/dial:border-primary/50 group-active/dial:scale-90 group-active/dial:bg-primary group-active/dial:text-white mb-1.5"
-        style={{ transform: `rotate(${rotation}deg)` }}
-      >
-        <RotateCw className="w-5 h-5" />
-      </div>
-      <div className="text-[9px] font-black tracking-tighter text-muted-foreground bg-background/90 px-2 py-0.5 rounded-full border border-border shadow-sm uppercase">
-        {rotation % 360}°
-      </div>
-    </div>
-  );
-});
-
 // Desktop sidebar controls
 const SidebarControls = memo(function SidebarControls({
   zoom,
@@ -487,7 +396,6 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
   const handleZoomIn = useCallback(() => setZoom((z) => Math.min(z + 0.1, 3)), []);
   const handleZoomOut = useCallback(() => setZoom((z) => Math.max(z - 0.1, 0.5)), []);
   const handleZoomChange = useCallback((value: number[]) => setZoom(value[0]), []);
-  const handleRotationChange = useCallback((newRotation: number) => setRotation(newRotation), []);
 
   const isProcessing = isApplying; 
 
