@@ -93,6 +93,28 @@ const ActionButtons = memo(function ActionButtons({
   );
 });
 
+const pageVariants = {
+  initial: { opacity: 0, scale: 0.94 },
+  animate: { 
+    opacity: 1, 
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 260,
+      damping: 26,
+      mass: 1
+    }
+  },
+  exit: { 
+    opacity: 0, 
+    scale: 1.05,
+    transition: {
+      duration: 0.3,
+      ease: [0.4, 0, 1, 1]
+    }
+  }
+};
+
 const GridSplitter = memo(function GridSplitter() {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
@@ -194,7 +216,13 @@ const GridSplitter = memo(function GridSplitter() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div 
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={pageVariants}
+      className="min-h-screen bg-background"
+    >
       <Helmet>
         <title>Image Splitter & Grid Maker for Instagram - 100% Online</title>
         <meta name="description" content="Transform one image into a stunning multi-post Instagram grid. Free, fast, and works entirely in your browser." />
@@ -351,7 +379,7 @@ const GridSplitter = memo(function GridSplitter() {
           </p>
         </footer>
       </div>
-    </div>
+    </motion.div>
   );
 });
 

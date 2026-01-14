@@ -49,6 +49,28 @@ const tools: Tool[] = [
 ];
 
 // Pre-computed animation variants for better performance
+const pageVariants = {
+  initial: { opacity: 0, scale: 0.94 },
+  animate: { 
+    opacity: 1, 
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 260,
+      damping: 26,
+      mass: 1
+    }
+  },
+  exit: { 
+    opacity: 0, 
+    scale: 1.05,
+    transition: {
+      duration: 0.3,
+      ease: [0.4, 0, 1, 1]
+    }
+  }
+};
+
 const cardVariants = {
   hidden: { opacity: 0, y: 16 },
   visible: (i: number) => ({
@@ -122,7 +144,13 @@ const Home = memo(function Home() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div 
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={pageVariants}
+      className="min-h-screen bg-background"
+    >
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between">
         <motion.div 
@@ -172,7 +200,7 @@ const Home = memo(function Home() {
           </p>
         </footer>
       </div>
-    </div>
+    </motion.div>
   );
 });
 

@@ -2,9 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
-import { MotionConfig } from "framer-motion";
+import { MotionConfig, AnimatePresence } from "framer-motion";
 import { Analytics } from "@vercel/analytics/react";
 import { HelmetProvider } from "react-helmet-async";
 import Home from "./pages/Home";
@@ -16,26 +16,33 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<Home />} />
+        <Route path="/grid-splitter" element={<GridSplitter />} />
+        <Route path="/caption-generator" element={<CaptionGenerator />} />
+        <Route path="/hashtag-finder" element={<HashtagFinder />} />
+        <Route path="/image-resizer" element={<ImageResizer />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </AnimatePresence>
+  );
+};
+
 const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         <Analytics />
-        {/* Global motion defaults tuned for mobile smoothness */}
-        <MotionConfig reducedMotion="user" transition={{ type: "tween", ease: "easeOut", duration: 0.22 }}>
+        <MotionConfig reducedMotion="user" transition={{ type: "spring", stiffness: 300, damping: 30 }}>
           <TooltipProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/grid-splitter" element={<GridSplitter />} />
-                <Route path="/caption-generator" element={<CaptionGenerator />} />
-                <Route path="/hashtag-finder" element={<HashtagFinder />} />
-                <Route path="/image-resizer" element={<ImageResizer />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <AnimatedRoutes />
             </BrowserRouter>
           </TooltipProvider>
         </MotionConfig>
