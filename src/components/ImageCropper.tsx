@@ -515,14 +515,6 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
                   </Button>
                 </div>
                 
-                <div className="flex flex-col items-center gap-1.5">
-                  <RotationHandle
-                    rotation={rotation}
-                    onRotationChange={handleRotationChange}
-                    isProcessing={isProcessing}
-                  />
-                </div>
-
                 <div className="bg-background/80 backdrop-blur-md rounded-2xl p-2 border border-border shadow-xl">
                   <span className="text-[10px] font-bold tracking-widest text-primary uppercase px-1">
                     {grid}
@@ -559,10 +551,6 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/50 border border-border text-[10px] font-medium text-muted-foreground uppercase tracking-wider shadow-sm">
               <Move className="w-3 h-3 text-primary" />
               Pan & Scale
-            </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/50 border border-border text-[10px] font-medium text-muted-foreground uppercase tracking-wider shadow-sm">
-              <RotateCw className="w-3 h-3 text-primary" />
-              Rotate Dial
             </div>
           </div>
         </div>
