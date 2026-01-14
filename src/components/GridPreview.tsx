@@ -52,11 +52,12 @@ const GridTile = memo(function GridTile({
     const offsetX = (bgWidth - cols * 100) / 2;
     const offsetY = (bgHeight - rows * 100) / 2;
     
-    const bgPosX = cols > 1 
-      ? (offsetX + colIndex * 100) / (bgWidth - 100) * 100
+    // Fix: Correctly offset each tile's background position to show the relevant slice
+    const bgPosX = bgWidth > 100
+      ? ((offsetX + colIndex * 100) / (bgWidth - 100)) * 100
       : 50;
-    const bgPosY = rows > 1 
-      ? (offsetY + rowIndex * 100) / (bgHeight - 100) * 100
+    const bgPosY = bgHeight > 100
+      ? ((offsetY + rowIndex * 100) / (bgHeight - 100)) * 100
       : 50;
     
     return {

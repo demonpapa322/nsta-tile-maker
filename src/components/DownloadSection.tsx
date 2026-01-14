@@ -216,12 +216,13 @@ export const DownloadSection = memo(function DownloadSection({
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
 
+        // Fix: Use correct source coordinates to slice the image into tiles
         ctx.drawImage(
           img,
-          offsetX + col * tileWidth,
-          offsetY + row * tileHeight,
-          tileWidth,
-          tileHeight,
+          Math.floor(offsetX + col * tileWidth),
+          Math.floor(offsetY + row * tileHeight),
+          Math.floor(tileWidth),
+          Math.floor(tileHeight),
           0,
           0,
           outputWidth,
