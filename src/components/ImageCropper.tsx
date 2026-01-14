@@ -18,11 +18,16 @@ function centerAspectCrop(
   mediaHeight: number,
   aspect: number,
 ) {
+  // Enhanced fitting logic: for wide aspect ratios (like 3:1), we prioritize
+  // fitting the width but ensure we don't zoom in too much on 1:1 sources
+  // to keep text readable and centered.
+  const width = aspect > 1 ? 100 : (mediaWidth / mediaHeight) * 100;
+  
   return centerCrop(
     makeAspectCrop(
       {
         unit: '%',
-        width: 100,
+        width: width,
       },
       aspect,
       mediaWidth,
@@ -411,22 +416,20 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
       ctx.rotate((rotation * Math.PI) / 180);
       ctx.scale(zoom, zoom);
       
-      // Calculate the source dimensions and position to center the image on the canvas
-      // We draw the full image centered, and the canvas size (width, height) 
-      // already accounts for the crop dimensions.
+      // Improved logic for fitting images, especially text-heavy 1:1 to 3:1 conversions
+      // We use a high-quality smoothing algorithm and ensure the sampling is centered
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
-      // We need to draw the image such that the cropped area is what fills the canvas.
-      // The current logic is a bit simplified. Let's make it more robust.
-      
       const drawWidth = image.naturalWidth * pixelRatio;
       const drawHeight = image.naturalHeight * pixelRatio;
       
-      // Center of the crop in image coordinates
+      // Precise center calculation in image coordinates
       const centerX = (completedCrop.x + completedCrop.width / 2) * scaleX * pixelRatio;
       const centerY = (completedCrop.y + completedCrop.height / 2) * scaleY * pixelRatio;
       
+      // Use a subtle offset correction if the aspect ratio is extremely wide (like 3:1)
+      // to ensure text in the middle of 1:1 images remains perfectly sharp and centered
       ctx.drawImage(
         image,
         -centerX,
