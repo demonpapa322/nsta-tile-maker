@@ -395,8 +395,15 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
       const scaleY = image.naturalHeight / image.height;
       const pixelRatio = window.devicePixelRatio || 1;
 
-      const width = Math.floor(completedCrop.width * scaleX * pixelRatio);
-      const height = Math.floor(completedCrop.height * scaleY * pixelRatio);
+      // The completedCrop coordinates are relative to the displayed image size
+      // We need to map these to the natural image coordinates
+      const cropX = completedCrop.x * scaleX;
+      const cropY = completedCrop.y * scaleY;
+      const cropWidth = completedCrop.width * scaleX;
+      const cropHeight = completedCrop.height * scaleY;
+
+      const width = Math.floor(cropWidth * pixelRatio);
+      const height = Math.floor(cropHeight * pixelRatio);
 
       let canvas: HTMLCanvasElement | OffscreenCanvas;
       let ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
@@ -416,31 +423,38 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
         return;
       }
 
-      ctx.translate(width / 2, height / 2);
-      ctx.rotate((rotation * Math.PI) / 180);
-      ctx.scale(zoom, zoom);
-      
-      // Improved logic for fitting images, especially text-heavy 1:1 to 3:1 conversions
-      // We use a high-quality smoothing algorithm and ensure the sampling is centered
+      // High quality rendering
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
-      const drawWidth = image.naturalWidth * pixelRatio;
-      const drawHeight = image.naturalHeight * pixelRatio;
+      // Fill background (optional, useful for rotations)
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.save();
       
-      // Precise center calculation in image coordinates
-      const centerX = (completedCrop.x + completedCrop.width / 2) * scaleX * pixelRatio;
-      const centerY = (completedCrop.y + completedCrop.height / 2) * scaleY * pixelRatio;
+      // Move to center of canvas
+      ctx.translate(width / 2, height / 2);
       
-      // Use a subtle offset correction if the aspect ratio is extremely wide (like 3:1)
-      // to ensure text in the middle of 1:1 images remains perfectly sharp and centered
+      // Apply rotation and zoom
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.scale(zoom, zoom);
+      
+      // Draw the image centered on the rotation point
+      // We want the part of the image defined by cropX/Y to be what's in our canvas
+      // The translate(width/2, height/2) moved the origin to the center of our crop
+      // So we need to draw the image so that the center of the crop aligns with this origin
+      const centerX = cropX + cropWidth / 2;
+      const centerY = cropY + cropHeight / 2;
+
       ctx.drawImage(
         image,
-        -centerX,
-        -centerY,
-        drawWidth,
-        drawHeight
+        0, 0, image.naturalWidth, image.naturalHeight, // Source
+        -centerX * pixelRatio, -centerY * pixelRatio, // Destination (offset by center)
+        image.naturalWidth * pixelRatio, image.naturalHeight * pixelRatio
       );
+
+      ctx.restore();
 
       const handleBlob = (blob: Blob | null) => {
         setIsApplying(false);
