@@ -4,7 +4,6 @@ import 'react-image-crop/dist/ReactCrop.css';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Check, RotateCcw, Move, ZoomIn, RotateCw, Minus, Plus, Loader2 } from 'lucide-react';
-import { useDebounce } from '@/hooks/useDebounce';
 import { useObjectUrlManager } from '@/hooks/useObjectUrl';
 
 interface ImageCropperProps {
@@ -194,118 +193,14 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
-  const [transformedImageUrl, setTransformedImageUrl] = useState(imageUrl);
-  const [isTransforming, setIsTransforming] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
   
-  const { createUrl, revokeUrl, revokeAll } = useObjectUrlManager();
+  const { revokeAll } = useObjectUrlManager();
   
-  // Debounce zoom and rotation to prevent excessive processing
-  const debouncedZoom = useDebounce(zoom, 150);
-  const debouncedRotation = useDebounce(rotation, 150);
-
   const { cols, rows, aspect } = useMemo(() => {
     const [c, r] = grid.split('x').map(Number);
     return { cols: c, rows: r, aspect: c / r };
   }, [grid]);
-
-  // Generate transformed image when debounced zoom or rotation changes
-  useEffect(() => {
-    if (debouncedZoom === 1 && debouncedRotation === 0) {
-      setTransformedImageUrl(imageUrl);
-      setIsTransforming(false);
-      return;
-    }
-
-    let cancelled = false;
-    setIsTransforming(true);
-
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    
-    img.onload = () => {
-      if (cancelled) return;
-      
-      const processImage = () => {
-        if (cancelled) return;
-        
-        // Use OffscreenCanvas if available
-        const useOffscreen = typeof OffscreenCanvas !== 'undefined';
-        let canvas: HTMLCanvasElement | OffscreenCanvas;
-        let ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
-
-        const radians = (debouncedRotation * Math.PI) / 180;
-        const sin = Math.abs(Math.sin(radians));
-        const cos = Math.abs(Math.cos(radians));
-
-        const rotatedWidth = img.width * cos + img.height * sin;
-        const rotatedHeight = img.width * sin + img.height * cos;
-
-        const width = rotatedWidth * debouncedZoom;
-        const height = rotatedHeight * debouncedZoom;
-
-        if (useOffscreen) {
-          canvas = new OffscreenCanvas(width, height);
-          ctx = canvas.getContext('2d');
-        } else {
-          canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          ctx = canvas.getContext('2d');
-        }
-
-        if (!ctx) {
-          setIsTransforming(false);
-          return;
-        }
-
-        ctx.translate(width / 2, height / 2);
-        ctx.rotate(radians);
-        ctx.scale(debouncedZoom, debouncedZoom);
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, -img.width / 2, -img.height / 2);
-
-        const handleBlob = (blob: Blob | null) => {
-          if (cancelled || !blob) {
-            setIsTransforming(false);
-            return;
-          }
-          
-          if (transformedImageUrl !== imageUrl) {
-            revokeUrl(transformedImageUrl);
-          }
-          
-          const url = createUrl(blob);
-          setTransformedImageUrl(url);
-          setIsTransforming(false);
-        };
-
-        if (useOffscreen && canvas instanceof OffscreenCanvas) {
-          canvas.convertToBlob({ type: 'image/png' }).then(handleBlob);
-        } else {
-          (canvas as HTMLCanvasElement).toBlob(handleBlob, 'image/png');
-        }
-      };
-
-      // Use requestIdleCallback if available
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(processImage, { timeout: 500 });
-      } else {
-        setTimeout(processImage, 0);
-      }
-    };
-    
-    img.onerror = () => {
-      if (!cancelled) setIsTransforming(false);
-    };
-    
-    img.src = imageUrl;
-
-    return () => {
-      cancelled = true;
-    };
-  }, [imageUrl, debouncedZoom, debouncedRotation, createUrl, revokeUrl, transformedImageUrl]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -380,11 +275,6 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
-      const cropX = completedCrop.x * scaleX;
-      const cropY = completedCrop.y * scaleY;
-      const cropWidth = completedCrop.width * scaleX;
-      const cropHeight = completedCrop.height * scaleY;
-
       ctx.drawImage(
         image,
         -image.naturalWidth / 2,
@@ -407,7 +297,7 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
         (canvas as HTMLCanvasElement).toBlob(handleBlob, 'image/png', 1.0);
       }
     }, 10);
-  }, [completedCrop, onCropComplete]);
+  }, [completedCrop, onCropComplete, zoom, rotation]);
 
   const handleReset = useCallback(() => {
     setZoom(1);
@@ -427,8 +317,7 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
 
   // Superior transformation logic - no debouncing, using CSS for instant feedback, 
   // and optimized canvas rendering for the final crop
-  const transformedImageUrl = useMemo(() => imageUrl, [imageUrl]);
-  const isTransforming = false; 
+  const isProcessing = isApplying; 
 
   // Instead of re-rendering a new blob on every zoom/rotate (which is slow),
   // we apply CSS transforms to the image in the cropper for instant feedback,
@@ -476,15 +365,6 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
         <div className="order-1 lg:order-2 space-y-4">
           <div className="rounded-2xl border border-border bg-card/50 overflow-hidden shadow-sm relative group">
             <div className="flex items-center justify-center p-4 min-h-[300px] lg:min-h-[500px] bg-muted/20 relative">
-              {isTransforming && (
-                <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] flex items-center justify-center z-20 transition-opacity">
-                  <div className="bg-card p-3 rounded-xl shadow-lg border border-border flex items-center gap-3">
-                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                    <span className="text-sm font-medium">Processing...</span>
-                  </div>
-                </div>
-              )}
-              
               <div className="w-full h-full flex items-center justify-center">
                 <ReactCrop
                   crop={crop}
