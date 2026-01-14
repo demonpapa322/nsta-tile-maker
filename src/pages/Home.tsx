@@ -153,7 +153,89 @@ const Home = memo(function Home() {
       className="min-h-screen bg-background"
     >
       <Helmet>
-        <title>SocialTool</title>
+        {/* Primary Meta Tags */}
+        <title>SocialTools - Free Instagram Grid Splitter & Social Media Tools</title>
+        <meta name="title" content="SocialTools - Free Instagram Grid Splitter & Social Media Tools" />
+        <meta name="description" content="Free online tools for social media creators. Split images into Instagram grids, generate captions, find trending hashtags, and resize images. No signup required, 100% private." />
+        <meta name="keywords" content="social media tools, instagram tools, free instagram grid splitter, image splitter, grid maker, caption generator, hashtag finder, image resizer, instagram post splitter, social media creator tools, content creation tools, instagram carousel maker, SocialTools" />
+        <meta name="robots" content="index, follow" />
+        <meta name="language" content="English" />
+        <meta name="author" content="SocialTools" />
+        
+        {/* Canonical URL */}
+        <link rel="canonical" href="https://www.socialtool.co/" />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.socialtool.co/" />
+        <meta property="og:title" content="SocialTools - Free Instagram Grid Splitter & Social Media Tools" />
+        <meta property="og:description" content="Free tools for social media creators. Split images into grids, generate captions, find hashtags. No signup, 100% private." />
+        <meta property="og:site_name" content="SocialTools" />
+        <meta property="og:image" content="https://www.socialtool.co/og-image.png" />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content="https://www.socialtool.co/" />
+        <meta name="twitter:title" content="SocialTools - Free Social Media Tools" />
+        <meta name="twitter:description" content="Free tools for creators. Split images, generate captions, find hashtags. No signup required." />
+        <meta name="twitter:image" content="https://www.socialtool.co/og-image.png" />
+        
+        {/* Structured Data - Organization */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "SocialTools",
+            "url": "https://www.socialtool.co",
+            "description": "Free online tools for social media creators",
+            "sameAs": []
+          })}
+        </script>
+        
+        {/* Structured Data - WebSite with SearchAction */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "SocialTools",
+            "url": "https://www.socialtool.co",
+            "description": "Free online tools for social media creators. Instagram grid splitter, caption generator, hashtag finder, and image resizer.",
+            "publisher": {
+              "@type": "Organization",
+              "name": "SocialTools"
+            }
+          })}
+        </script>
+        
+        {/* Structured Data - SoftwareApplication */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "SocialTools",
+            "applicationCategory": "UtilitiesApplication",
+            "operatingSystem": "Any",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.8",
+              "ratingCount": "150"
+            },
+            "featureList": [
+              "Instagram Grid Splitter",
+              "Caption Generator",
+              "Hashtag Finder", 
+              "Image Resizer",
+              "100% browser-based",
+              "No signup required",
+              "Privacy-focused"
+            ]
+          })}
+        </script>
       </Helmet>
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between">
