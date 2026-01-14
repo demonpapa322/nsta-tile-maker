@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef, memo, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { ImageUploader } from '@/components/ImageUploader';
 import { ImageCropper } from '@/components/ImageCropper';
 import { GridSelector } from '@/components/GridSelector';
@@ -194,6 +195,10 @@ const GridSplitter = memo(function GridSplitter() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Image Splitter & Grid Maker for Instagram - 100% Online</title>
+        <meta name="description" content="Transform one image into a stunning multi-post Instagram grid. Free, fast, and works entirely in your browser." />
+      </Helmet>
       <Header />
 
       {/* Subtle background gradient */}

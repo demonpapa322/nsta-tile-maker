@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { MotionConfig } from "framer-motion";
 import { Analytics } from "@vercel/analytics/react";
+import { HelmetProvider } from "react-helmet-async";
 import Home from "./pages/Home";
 import GridSplitter from "./pages/GridSplitter";
 import CaptionGenerator from "./pages/CaptionGenerator";
@@ -16,29 +17,31 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-      <Analytics />
-      {/* Global motion defaults tuned for mobile smoothness */}
-      <MotionConfig reducedMotion="user" transition={{ type: "tween", ease: "easeOut", duration: 0.22 }}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/grid-splitter" element={<GridSplitter />} />
-              <Route path="/caption-generator" element={<CaptionGenerator />} />
-              <Route path="/hashtag-finder" element={<HashtagFinder />} />
-              <Route path="/image-resizer" element={<ImageResizer />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </MotionConfig>
-    </ThemeProvider>
-  </QueryClientProvider>
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <Analytics />
+        {/* Global motion defaults tuned for mobile smoothness */}
+        <MotionConfig reducedMotion="user" transition={{ type: "tween", ease: "easeOut", duration: 0.22 }}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/grid-splitter" element={<GridSplitter />} />
+                <Route path="/caption-generator" element={<CaptionGenerator />} />
+                <Route path="/hashtag-finder" element={<HashtagFinder />} />
+                <Route path="/image-resizer" element={<ImageResizer />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </MotionConfig>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;
