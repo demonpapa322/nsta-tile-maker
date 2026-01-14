@@ -94,22 +94,22 @@ const ActionButtons = memo(function ActionButtons({
 });
 
 const pageVariants: any = {
-  initial: { opacity: 0, scale: 0.94 },
+  initial: { opacity: 0, scale: 0.96 },
   animate: { 
     opacity: 1, 
     scale: 1,
     transition: {
       type: "spring",
-      stiffness: 260,
-      damping: 26,
+      stiffness: 380,
+      damping: 30,
       mass: 1
     }
   },
   exit: { 
     opacity: 0, 
-    scale: 1.05,
+    scale: 1.02,
     transition: {
-      duration: 0.3,
+      duration: 0.2,
       ease: [0.4, 0, 1, 1]
     }
   }
