@@ -21,8 +21,11 @@ export function FeedbackForm() {
       message: formData.get('message'),
     };
 
+    // Optimistic UI: Reset form and close immediately while sending in background
+    setIsSubmitted(true);
+    const formElement = e.currentTarget;
+
     try {
-      // Using a direct Formspree endpoint specifically for nunchuckspro123@gmail.com
       const response = await fetch('https://formspree.io/f/mnnjrdrw', {
         method: 'POST',
         body: JSON.stringify(data),
@@ -32,18 +35,17 @@ export function FeedbackForm() {
         }
       });
 
-      if (response.ok) {
-        setIsSubmitted(true);
-        toast.success('Feedback sent successfully!');
-        setTimeout(() => {
-          setIsSubmitted(false);
-          setIsOpen(false);
-        }, 3000);
-      } else {
-        throw new Error('Failed to send feedback');
-      }
+      if (!response.ok) throw new Error('Failed');
+      
+      toast.success('Feedback sent!');
+      setTimeout(() => {
+        setIsSubmitted(false);
+        setIsOpen(false);
+        formElement.reset();
+      }, 1500);
     } catch (error) {
-      toast.error('Failed to send feedback. Please try again.');
+      setIsSubmitted(false);
+      toast.error('Failed to send. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -54,9 +56,10 @@ export function FeedbackForm() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, y: 10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
             className="mb-4 w-80 sm:w-96 bg-background/80 backdrop-blur-xl border border-border shadow-2xl rounded-3xl overflow-hidden"
           >
             <div className="p-6">
@@ -138,13 +141,13 @@ export function FeedbackForm() {
 
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className={`h-14 w-14 rounded-full shadow-2xl transition-all duration-500 active:scale-90 ${
+        className={`h-14 w-14 rounded-full shadow-2xl transition-all duration-300 active:scale-90 ${
           isOpen ? 'bg-muted text-foreground' : 'bg-primary text-primary-foreground'
         }`}
       >
         <motion.div
-          animate={{ rotate: isOpen ? 180 : 0 }}
-          transition={{ type: "spring", stiffness: 260, damping: 20 }}
+          animate={{ rotate: isOpen ? 90 : 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
         >
           {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
         </motion.div>
