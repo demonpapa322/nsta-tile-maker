@@ -159,11 +159,6 @@ const Home = memo(function Home() {
           variants={headerVariants}
           className="flex items-center gap-2.5 will-animate"
         >
-          <div className="flex items-center gap-0.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500" />
-            <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-fuchsia-500 to-rose-500" />
-            <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-rose-500 to-orange-400" />
-          </div>
           <span className="text-xl font-semibold tracking-tight">
             <span className="text-foreground/90">Social</span>
             <span className="bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent">Tools</span>

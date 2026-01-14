@@ -81,10 +81,6 @@ const ActionButtons = memo(function ActionButtons({
         onClick={onClear}
         className={`${baseClass} gap-2 group`}
       >
-        <span className="flex items-center gap-0.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500" />
-          <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-br from-fuchsia-500 to-rose-500" />
-        </span>
         <span className="group-hover:text-primary transition-colors">
           {isMobile ? 'Change Photo' : 'Change'}
         </span>
