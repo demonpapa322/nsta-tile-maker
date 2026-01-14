@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { MotionConfig } from "framer-motion";
+import { Analytics } from "@vercel/analytics/react";
 import Home from "./pages/Home";
 import GridSplitter from "./pages/GridSplitter";
 import CaptionGenerator from "./pages/CaptionGenerator";
@@ -17,6 +18,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+      <Analytics />
       {/* Global motion defaults tuned for mobile smoothness */}
       <MotionConfig reducedMotion="user" transition={{ type: "tween", ease: "easeOut", duration: 0.22 }}>
         <TooltipProvider>
