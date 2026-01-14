@@ -260,21 +260,28 @@ const Home = memo(function Home() {
         <main className="container pt-28 pb-12 md:pt-32 md:pb-20">
           {/* Hero Section */}
           <div className="text-center mb-16">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground mb-3">
-              <motion.span
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="inline-block"
-              >
-                Create better content,
-              </motion.span>{" "}
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground mb-3 flex flex-wrap justify-center gap-x-2">
+              {"Create better content,".split(" ").map((word, i) => (
+                <motion.span
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ 
+                    duration: 0.5, 
+                    delay: i * 0.15,
+                    ease: [0.16, 1, 0.3, 1] 
+                  }}
+                  className="inline-block"
+                >
+                  {word}
+                </motion.span>
+              ))}
               <motion.span 
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ 
                   duration: 0.8, 
-                  delay: 0.3,
+                  delay: "Create better content,".split(" ").length * 0.15 + 0.2,
                   type: "spring",
                   stiffness: 200,
                   damping: 15
