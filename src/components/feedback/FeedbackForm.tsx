@@ -19,6 +19,7 @@ export function FeedbackForm() {
     const data = {
       name: formData.get('name'),
       message: formData.get('message'),
+      _to: 'nunchuckspro123@gmail.com',
     };
 
     // Optimistic UI: Reset form and close immediately while sending in background
@@ -26,7 +27,7 @@ export function FeedbackForm() {
     const formElement = e.currentTarget;
 
     try {
-      const response = await fetch('https://formspree.io/f/mnnjrdrw', {
+      const response = await fetch('https://formspree.io/f/xvgzlowz', {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
