@@ -139,7 +139,19 @@ const Home = memo(function Home() {
   // Memoize the tool cards to prevent re-creation on each render
   const toolCards = useMemo(() => 
     tools.map((tool, index) => (
-      <ToolCard key={tool.id} tool={tool} index={index} />
+      <motion.div
+        key={tool.id}
+        initial={{ opacity: 0, x: index % 2 === 0 ? 50 : -50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ 
+          duration: 0.8, 
+          delay: index * 0.1,
+          ease: [0.16, 1, 0.3, 1]
+        }}
+      >
+        <ToolCard tool={tool} index={index} />
+      </motion.div>
     )), 
     []
   );
