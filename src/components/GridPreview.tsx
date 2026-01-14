@@ -62,8 +62,10 @@ const GridTile = memo(function GridTile({
       backgroundSize: `${bgWidth}% ${bgHeight}%`,
       backgroundPosition: `${bgPosX}% ${bgPosY}%`,
       // Use transform for GPU layer - critical for mobile
-      transform: 'translateZ(0)',
-      willChange: 'auto' as const,
+      transform: 'translate3d(0, 0, 0)',
+      backfaceVisibility: 'hidden' as const,
+      perspective: 1000,
+      willChange: 'transform' as const,
     };
   }, [index, cols, rows, imageUrl, imageAspect, gridAspect]);
   
@@ -147,7 +149,9 @@ export const GridPreview = memo(function GridPreview({
     gap: '2px',
     backgroundColor: 'hsl(var(--background))',
     // Force GPU compositing for smooth scroll
-    transform: 'translateZ(0)',
+    transform: 'translate3d(0, 0, 0)',
+    backfaceVisibility: 'hidden' as const,
+    willChange: 'transform' as const,
   }), [cols]);
 
   return (

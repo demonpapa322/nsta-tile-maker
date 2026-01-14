@@ -63,13 +63,13 @@ export const ImageUploader = memo(forwardRef<HTMLDivElement, ImageUploaderProps>
         <input {...getInputProps()} aria-label="Upload image file" />
         
         {uploadedImage ? (
-          <div className="relative aspect-video max-h-[400px] w-full flex items-center justify-center bg-muted/20">
+          <div className="relative aspect-video max-h-[400px] w-full flex items-center justify-center bg-muted/20 overflow-hidden">
             <img
               src={uploadedImage}
               alt="Uploaded preview"
-              className="max-w-full max-h-[400px] object-contain"
+              className="max-w-full max-h-[400px] object-contain transform-gpu"
               loading="eager"
-              decoding="async"
+              decoding="sync"
             />
             <button
               onClick={handleClear}
