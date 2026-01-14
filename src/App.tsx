@@ -37,7 +37,7 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         <Analytics />
-        <MotionConfig reducedMotion="user" transition={{ type: "spring", stiffness: 300, damping: 30 }}>
+        <MotionConfig reducedMotion="user" transition={{ type: "spring", stiffness: 400, damping: 35, restDelta: 0.001, restSpeed: 0.001 }}>
           <TooltipProvider>
             <Toaster />
             <Sonner />

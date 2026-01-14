@@ -401,7 +401,7 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
 
   const imageStyle = useMemo(() => ({
     transform: `rotate(${rotation}deg) scale(${zoom})`,
-    transition: 'transform 0.15s cubic-bezier(0.2, 0, 0, 1)',
+    transition: 'transform 0.1s cubic-bezier(0.2, 0, 0, 1)',
     willChange: 'transform',
   }), [rotation, zoom]);
 
