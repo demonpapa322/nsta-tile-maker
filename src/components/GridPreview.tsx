@@ -60,13 +60,14 @@ const GridTile = memo(function GridTile({
     const offsetX = (bgWidth - cols * 100) / 2;
     const offsetY = (bgHeight - rows * 100) / 2;
     
-    // Correctly offset each tile's background position to show the relevant slice
-    // When image fits exactly, each tile shows exactly 1/cols and 1/rows of the image
-    const bgPosX = cols > 1
-      ? (colIndex / (cols - 1)) * 100
+    // Correctly offset each tile's background position to show the relevant slice.
+    // IMPORTANT: Use the background's *actual* scaled size (bgWidth/bgHeight) + center offsets.
+    // This prevents the "zoom to one corner" feel for portrait/landscape images.
+    const bgPosX = bgWidth > 100
+      ? ((offsetX + colIndex * 100) / (bgWidth - 100)) * 100
       : 50;
-    const bgPosY = rows > 1
-      ? (rowIndex / (rows - 1)) * 100
+    const bgPosY = bgHeight > 100
+      ? ((offsetY + rowIndex * 100) / (bgHeight - 100)) * 100
       : 50;
     
     return {
@@ -74,9 +75,10 @@ const GridTile = memo(function GridTile({
       backgroundSize: `${bgWidth}% ${bgHeight}%`,
       backgroundPosition: `${bgPosX}% ${bgPosY}%`,
       // Use transform for GPU layer - critical for mobile
-      transform: 'translate3d(0, 0, 0)',
+      // Slight scale avoids hairline seams between tiles on some mobile GPUs.
+      transform: 'translate3d(0, 0, 0) scale(1.001)',
       backfaceVisibility: 'hidden' as const,
-      willChange: 'auto' as const, // Reduced memory usage on mobile
+      willChange: 'transform' as const,
     };
   }, [index, cols, rows, imageUrl, imageAspect, gridAspect]);
   

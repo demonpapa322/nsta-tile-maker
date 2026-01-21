@@ -301,28 +301,21 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
 
       const useOffscreen = typeof OffscreenCanvas !== 'undefined';
       
-      // Calculate scale between displayed and natural image size
-      // Account for zoom applied to the displayed image
-      const displayedWidth = image.width * zoom;
-      const displayedHeight = image.height * zoom;
-      const scaleX = image.naturalWidth / image.width;
-      const scaleY = image.naturalHeight / image.height;
+      // Calculate scale between what the user sees and the natural image.
+      // Use getBoundingClientRect() so CSS transforms (zoom) are correctly accounted for.
+      const rect = image.getBoundingClientRect();
+      const scaleX = image.naturalWidth / rect.width;
+      const scaleY = image.naturalHeight / rect.height;
       
       // Use device pixel ratio but cap it for performance on mobile
       const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
 
-      // The crop coordinates are relative to the DISPLAYED (zoomed/rotated) image
-      // We need to calculate what part of the NATURAL image this corresponds to
-      
-      // For a zoomed image, the crop area represents a smaller portion of the original
-      // The visible area is: originalSize / zoom
-      // So we need to adjust the crop coordinates accordingly
-      
-      // Calculate the natural image coordinates for the crop
-      const cropX = (completedCrop.x / zoom) * scaleX;
-      const cropY = (completedCrop.y / zoom) * scaleY;
-      const cropWidth = (completedCrop.width / zoom) * scaleX;
-      const cropHeight = (completedCrop.height / zoom) * scaleY;
+      // The crop coordinates are measured in pixels relative to the rendered image.
+      // Map them to natural image coordinates using the rect-based scale factors.
+      const cropX = completedCrop.x * scaleX;
+      const cropY = completedCrop.y * scaleY;
+      const cropWidth = completedCrop.width * scaleX;
+      const cropHeight = completedCrop.height * scaleY;
 
       // Output dimensions - use the aspect ratio of the grid, not the zoom level
       // This ensures the output image has correct proportions regardless of zoom
