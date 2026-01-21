@@ -291,8 +291,8 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
 
     setIsApplying(true);
 
-    // Use requestAnimationFrame for smoother processing
-    requestAnimationFrame(() => {
+    // Use setTimeout(0) to allow UI to update before heavy processing
+    setTimeout(() => {
       const image = imgRef.current;
       if (!image) {
         setIsApplying(false);
@@ -302,25 +302,29 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
       const useOffscreen = typeof OffscreenCanvas !== 'undefined';
       
       // Calculate scale between what the user sees and the natural image.
-      // Use getBoundingClientRect() so CSS transforms (zoom) are correctly accounted for.
       const rect = image.getBoundingClientRect();
       const scaleX = image.naturalWidth / rect.width;
       const scaleY = image.naturalHeight / rect.height;
       
-      // Use device pixel ratio but cap it for performance on mobile
-      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      // Cap pixel ratio at 1.5 for faster processing on mobile
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
 
-      // The crop coordinates are measured in pixels relative to the rendered image.
-      // Map them to natural image coordinates using the rect-based scale factors.
+      // Map crop coordinates to natural image coordinates
       const cropX = completedCrop.x * scaleX;
       const cropY = completedCrop.y * scaleY;
       const cropWidth = completedCrop.width * scaleX;
       const cropHeight = completedCrop.height * scaleY;
 
-      // Output dimensions - use the aspect ratio of the grid, not the zoom level
-      // This ensures the output image has correct proportions regardless of zoom
-      const outputWidth = Math.floor(cropWidth * pixelRatio);
-      const outputHeight = Math.floor(cropHeight * pixelRatio);
+      // Cap output dimensions for performance (max 2048px on any side)
+      const maxDim = 2048;
+      let outputWidth = Math.floor(cropWidth * pixelRatio);
+      let outputHeight = Math.floor(cropHeight * pixelRatio);
+      
+      if (outputWidth > maxDim || outputHeight > maxDim) {
+        const scale = maxDim / Math.max(outputWidth, outputHeight);
+        outputWidth = Math.floor(outputWidth * scale);
+        outputHeight = Math.floor(outputHeight * scale);
+      }
 
       let canvas: HTMLCanvasElement | OffscreenCanvas;
       let ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
@@ -340,43 +344,36 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
         return;
       }
 
-      // High quality rendering
+      // Use medium quality for faster rendering
       ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-
-      // Fill background with white (useful for rotations that might expose corners)
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, outputWidth, outputHeight);
-
-      ctx.save();
+      ctx.imageSmoothingQuality = 'medium';
 
       if (rotation !== 0) {
-        // For rotated images, we need to handle the transformation carefully
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, outputWidth, outputHeight);
+        ctx.save();
         ctx.translate(outputWidth / 2, outputHeight / 2);
         ctx.rotate((rotation * Math.PI) / 180);
         
-        // After rotation, we need to draw the correct portion of the image
-        // The crop area on the rotated image maps to a different area on the original
         const centerX = cropX + cropWidth / 2;
         const centerY = cropY + cropHeight / 2;
+        const drawScale = outputWidth / cropWidth;
         
         ctx.drawImage(
           image,
           0, 0, image.naturalWidth, image.naturalHeight,
-          -centerX * pixelRatio, -centerY * pixelRatio,
-          image.naturalWidth * pixelRatio, image.naturalHeight * pixelRatio
+          -centerX * drawScale, -centerY * drawScale,
+          image.naturalWidth * drawScale, image.naturalHeight * drawScale
         );
+        ctx.restore();
       } else {
-        // No rotation - simple crop from the natural image
-        // Draw only the cropped portion, scaled to fill the output canvas
+        // No rotation - simple fast crop
         ctx.drawImage(
           image,
-          cropX, cropY, cropWidth, cropHeight, // Source rectangle from natural image
-          0, 0, outputWidth, outputHeight // Destination - fill the entire output canvas
+          cropX, cropY, cropWidth, cropHeight,
+          0, 0, outputWidth, outputHeight
         );
       }
-
-      ctx.restore();
 
       const handleBlob = (blob: Blob | null) => {
         setIsApplying(false);
@@ -386,12 +383,13 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
         }
       };
 
+      // Use JPEG for much faster encoding (5-10x faster than PNG)
       if (useOffscreen && canvas instanceof OffscreenCanvas) {
-        canvas.convertToBlob({ type: 'image/png', quality: 0.95 }).then(handleBlob);
+        canvas.convertToBlob({ type: 'image/jpeg', quality: 0.92 }).then(handleBlob);
       } else {
-        (canvas as HTMLCanvasElement).toBlob(handleBlob, 'image/png', 0.95);
+        (canvas as HTMLCanvasElement).toBlob(handleBlob, 'image/jpeg', 0.92);
       }
-    });
+    }, 0);
   }, [completedCrop, onCropComplete, zoom, rotation]);
 
   const handleReset = useCallback(() => {
