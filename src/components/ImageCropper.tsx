@@ -291,7 +291,8 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
 
     setIsApplying(true);
 
-    setTimeout(() => {
+    // Use requestAnimationFrame for smoother processing
+    requestAnimationFrame(() => {
       const image = imgRef.current;
       if (!image) {
         setIsApplying(false);
@@ -300,30 +301,44 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
 
       const useOffscreen = typeof OffscreenCanvas !== 'undefined';
       
+      // Calculate scale between displayed and natural image size
+      // Account for zoom applied to the displayed image
+      const displayedWidth = image.width * zoom;
+      const displayedHeight = image.height * zoom;
       const scaleX = image.naturalWidth / image.width;
       const scaleY = image.naturalHeight / image.height;
-      const pixelRatio = window.devicePixelRatio || 1;
+      
+      // Use device pixel ratio but cap it for performance on mobile
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
 
-      // The completedCrop coordinates are relative to the displayed image size
-      // We need to map these to the natural image coordinates
-      const cropX = completedCrop.x * scaleX;
-      const cropY = completedCrop.y * scaleY;
-      const cropWidth = completedCrop.width * scaleX;
-      const cropHeight = completedCrop.height * scaleY;
+      // The crop coordinates are relative to the DISPLAYED (zoomed/rotated) image
+      // We need to calculate what part of the NATURAL image this corresponds to
+      
+      // For a zoomed image, the crop area represents a smaller portion of the original
+      // The visible area is: originalSize / zoom
+      // So we need to adjust the crop coordinates accordingly
+      
+      // Calculate the natural image coordinates for the crop
+      const cropX = (completedCrop.x / zoom) * scaleX;
+      const cropY = (completedCrop.y / zoom) * scaleY;
+      const cropWidth = (completedCrop.width / zoom) * scaleX;
+      const cropHeight = (completedCrop.height / zoom) * scaleY;
 
-      const width = Math.floor(cropWidth * pixelRatio);
-      const height = Math.floor(cropHeight * pixelRatio);
+      // Output dimensions - use the aspect ratio of the grid, not the zoom level
+      // This ensures the output image has correct proportions regardless of zoom
+      const outputWidth = Math.floor(cropWidth * pixelRatio);
+      const outputHeight = Math.floor(cropHeight * pixelRatio);
 
       let canvas: HTMLCanvasElement | OffscreenCanvas;
       let ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
 
       if (useOffscreen) {
-        canvas = new OffscreenCanvas(width, height);
+        canvas = new OffscreenCanvas(outputWidth, outputHeight);
         ctx = canvas.getContext('2d');
       } else {
         canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
+        canvas.width = outputWidth;
+        canvas.height = outputHeight;
         ctx = canvas.getContext('2d');
       }
 
@@ -336,32 +351,37 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
-      // Fill background (optional, useful for rotations)
+      // Fill background with white (useful for rotations that might expose corners)
       ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, width, height);
+      ctx.fillRect(0, 0, outputWidth, outputHeight);
 
       ctx.save();
-      
-      // Move to center of canvas
-      ctx.translate(width / 2, height / 2);
-      
-      // Apply rotation and zoom
-      ctx.rotate((rotation * Math.PI) / 180);
-      ctx.scale(zoom, zoom);
-      
-      // Draw the image centered on the rotation point
-      // We want the part of the image defined by cropX/Y to be what's in our canvas
-      // The translate(width/2, height/2) moved the origin to the center of our crop
-      // So we need to draw the image so that the center of the crop aligns with this origin
-      const centerX = cropX + cropWidth / 2;
-      const centerY = cropY + cropHeight / 2;
 
-      ctx.drawImage(
-        image,
-        0, 0, image.naturalWidth, image.naturalHeight, // Source
-        -centerX * pixelRatio, -centerY * pixelRatio, // Destination (offset by center)
-        image.naturalWidth * pixelRatio, image.naturalHeight * pixelRatio
-      );
+      if (rotation !== 0) {
+        // For rotated images, we need to handle the transformation carefully
+        ctx.translate(outputWidth / 2, outputHeight / 2);
+        ctx.rotate((rotation * Math.PI) / 180);
+        
+        // After rotation, we need to draw the correct portion of the image
+        // The crop area on the rotated image maps to a different area on the original
+        const centerX = cropX + cropWidth / 2;
+        const centerY = cropY + cropHeight / 2;
+        
+        ctx.drawImage(
+          image,
+          0, 0, image.naturalWidth, image.naturalHeight,
+          -centerX * pixelRatio, -centerY * pixelRatio,
+          image.naturalWidth * pixelRatio, image.naturalHeight * pixelRatio
+        );
+      } else {
+        // No rotation - simple crop from the natural image
+        // Draw only the cropped portion, scaled to fill the output canvas
+        ctx.drawImage(
+          image,
+          cropX, cropY, cropWidth, cropHeight, // Source rectangle from natural image
+          0, 0, outputWidth, outputHeight // Destination - fill the entire output canvas
+        );
+      }
 
       ctx.restore();
 
@@ -374,11 +394,11 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
       };
 
       if (useOffscreen && canvas instanceof OffscreenCanvas) {
-        canvas.convertToBlob({ type: 'image/png', quality: 1.0 }).then(handleBlob);
+        canvas.convertToBlob({ type: 'image/png', quality: 0.95 }).then(handleBlob);
       } else {
-        (canvas as HTMLCanvasElement).toBlob(handleBlob, 'image/png', 1.0);
+        (canvas as HTMLCanvasElement).toBlob(handleBlob, 'image/png', 0.95);
       }
-    }, 10);
+    });
   }, [completedCrop, onCropComplete, zoom, rotation]);
 
   const handleReset = useCallback(() => {

@@ -32,13 +32,21 @@ const GridTile = memo(function GridTile({
     const colIndex = index % cols;
     const rowIndex = Math.floor(index / cols);
     
-    // Calculate background size to cover while maintaining aspect ratio
-    // This logic ensures the image fills the grid naturally without being
-    // unnaturally zoomed in or out, regardless of the original aspect ratio.
+    // For cropped images that already match grid aspect ratio,
+    // we use simple 100% sizing to avoid any zoom distortion
+    // This is the key fix - when the image has been cropped to match the grid,
+    // its aspect ratio should be very close to the grid aspect ratio
+    const aspectDiff = Math.abs(imageAspect - gridAspect);
+    const isCroppedToGrid = aspectDiff < 0.01; // Small tolerance for floating point
+    
     let bgWidth: number;
     let bgHeight: number;
     
-    if (imageAspect > gridAspect) {
+    if (isCroppedToGrid) {
+      // Image was cropped to match grid - use exact fit (no zoom)
+      bgWidth = cols * 100;
+      bgHeight = rows * 100;
+    } else if (imageAspect > gridAspect) {
       // Image is wider than grid - fit by height, overflow width (natural cover)
       bgHeight = rows * 100;
       bgWidth = (bgHeight * imageAspect) / gridAspect;
@@ -52,12 +60,13 @@ const GridTile = memo(function GridTile({
     const offsetX = (bgWidth - cols * 100) / 2;
     const offsetY = (bgHeight - rows * 100) / 2;
     
-    // Fix: Correctly offset each tile's background position to show the relevant slice
-    const bgPosX = bgWidth > 100
-      ? ((offsetX + colIndex * 100) / (bgWidth - 100)) * 100
+    // Correctly offset each tile's background position to show the relevant slice
+    // When image fits exactly, each tile shows exactly 1/cols and 1/rows of the image
+    const bgPosX = cols > 1
+      ? (colIndex / (cols - 1)) * 100
       : 50;
-    const bgPosY = bgHeight > 100
-      ? ((offsetY + rowIndex * 100) / (bgHeight - 100)) * 100
+    const bgPosY = rows > 1
+      ? (rowIndex / (rows - 1)) * 100
       : 50;
     
     return {
@@ -65,10 +74,9 @@ const GridTile = memo(function GridTile({
       backgroundSize: `${bgWidth}% ${bgHeight}%`,
       backgroundPosition: `${bgPosX}% ${bgPosY}%`,
       // Use transform for GPU layer - critical for mobile
-      transform: 'translate3d(0, 0, 0) scale(1.001)',
+      transform: 'translate3d(0, 0, 0)',
       backfaceVisibility: 'hidden' as const,
-      perspective: 1000,
-      willChange: 'transform' as const,
+      willChange: 'auto' as const, // Reduced memory usage on mobile
     };
   }, [index, cols, rows, imageUrl, imageAspect, gridAspect]);
   
