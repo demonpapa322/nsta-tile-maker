@@ -9,6 +9,7 @@ import { GridPreview } from '@/components/GridPreview';
 import { DownloadSection } from '@/components/DownloadSection';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ArrowLeft, Sparkles, Eye, EyeOff, Pencil } from 'lucide-react';
+import { create2DCanvas, canvasToBlob } from '@/lib/canvas';
 
 type Step = 'upload' | 'crop' | 'preview';
 
@@ -151,9 +152,6 @@ const GridSplitter = memo(function GridSplitter() {
           cropY = (img.naturalHeight - cropHeight) / 2;
         }
         
-        // Use OffscreenCanvas for faster processing when available
-        const useOffscreen = typeof OffscreenCanvas !== 'undefined';
-        
         // Cap dimensions for performance
         const maxDim = 2048;
         let outWidth = cropWidth;
@@ -163,42 +161,27 @@ const GridSplitter = memo(function GridSplitter() {
           outWidth = Math.floor(outWidth * scale);
           outHeight = Math.floor(outHeight * scale);
         }
-        
-        let canvas: HTMLCanvasElement | OffscreenCanvas;
-        let ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
-        
-        if (useOffscreen) {
-          canvas = new OffscreenCanvas(outWidth, outHeight);
-          ctx = canvas.getContext('2d');
-        } else {
-          canvas = document.createElement('canvas');
-          canvas.width = outWidth;
-          canvas.height = outHeight;
-          ctx = canvas.getContext('2d');
-        }
-        
-        if (!ctx) {
-          resolve(imageUrl);
-          return;
-        }
-        
-        ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, outWidth, outHeight);
-        
-        const handleBlob = (blob: Blob | null) => {
-          if (blob) {
-            const url = URL.createObjectURL(blob);
-            urlsToCleanupRef.current.add(url);
-            resolve(url);
-          } else {
-            resolve(imageUrl);
+
+        (async () => {
+          try {
+            const { canvas, ctx, width: safeW, height: safeH } = create2DCanvas(outWidth, outHeight);
+            outWidth = safeW;
+            outHeight = safeH;
+
+            ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, outWidth, outHeight);
+
+            const blob = await canvasToBlob(canvas, { type: 'image/jpeg', quality: 0.92 });
+            if (blob) {
+              const url = URL.createObjectURL(blob);
+              urlsToCleanupRef.current.add(url);
+              resolve(url);
+              return;
+            }
+          } catch (err) {
+            console.error('Auto-crop failed:', err);
           }
-        };
-        
-        if (useOffscreen && canvas instanceof OffscreenCanvas) {
-          canvas.convertToBlob({ type: 'image/jpeg', quality: 0.92 }).then(handleBlob);
-        } else {
-          (canvas as HTMLCanvasElement).toBlob(handleBlob, 'image/jpeg', 0.92);
-        }
+          resolve(imageUrl);
+        })();
       };
       img.onerror = () => resolve(imageUrl);
       img.src = imageUrl;

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Check, RotateCcw, Move, ZoomIn, RotateCw, Minus, Plus, Loader2 } from 'lucide-react';
 import { useObjectUrlManager } from '@/hooks/useObjectUrl';
+import { create2DCanvas, canvasToBlob } from '@/lib/canvas';
 
 interface ImageCropperProps {
   imageUrl: string;
@@ -293,102 +294,86 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
 
     // Use setTimeout(0) to allow UI to update before heavy processing
     setTimeout(() => {
-      const image = imgRef.current;
-      if (!image) {
-        setIsApplying(false);
-        return;
-      }
+      (async () => {
+        try {
+          const image = imgRef.current;
+          if (!image) return;
 
-      const useOffscreen = typeof OffscreenCanvas !== 'undefined';
-      
-      // Calculate scale between what the user sees and the natural image.
-      const rect = image.getBoundingClientRect();
-      const scaleX = image.naturalWidth / rect.width;
-      const scaleY = image.naturalHeight / rect.height;
-      
-      // Cap pixel ratio at 1.5 for faster processing on mobile
-      const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+          // Calculate scale between what the user sees and the natural image.
+          const rect = image.getBoundingClientRect();
+          if (!rect.width || !rect.height) return;
 
-      // Map crop coordinates to natural image coordinates
-      const cropX = completedCrop.x * scaleX;
-      const cropY = completedCrop.y * scaleY;
-      const cropWidth = completedCrop.width * scaleX;
-      const cropHeight = completedCrop.height * scaleY;
+          const scaleX = image.naturalWidth / rect.width;
+          const scaleY = image.naturalHeight / rect.height;
 
-      // Cap output dimensions for performance (max 2048px on any side)
-      const maxDim = 2048;
-      let outputWidth = Math.floor(cropWidth * pixelRatio);
-      let outputHeight = Math.floor(cropHeight * pixelRatio);
-      
-      if (outputWidth > maxDim || outputHeight > maxDim) {
-        const scale = maxDim / Math.max(outputWidth, outputHeight);
-        outputWidth = Math.floor(outputWidth * scale);
-        outputHeight = Math.floor(outputHeight * scale);
-      }
+          // Cap pixel ratio at 1.5 for faster processing on mobile
+          const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
 
-      let canvas: HTMLCanvasElement | OffscreenCanvas;
-      let ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
+          // Map crop coordinates to natural image coordinates
+          const cropX = completedCrop.x * scaleX;
+          const cropY = completedCrop.y * scaleY;
+          const cropWidth = completedCrop.width * scaleX;
+          const cropHeight = completedCrop.height * scaleY;
 
-      if (useOffscreen) {
-        canvas = new OffscreenCanvas(outputWidth, outputHeight);
-        ctx = canvas.getContext('2d');
-      } else {
-        canvas = document.createElement('canvas');
-        canvas.width = outputWidth;
-        canvas.height = outputHeight;
-        ctx = canvas.getContext('2d');
-      }
+          // Cap output dimensions for performance (max 2048px on any side)
+          const maxDim = 2048;
+          let outputWidth = Math.floor(cropWidth * pixelRatio);
+          let outputHeight = Math.floor(cropHeight * pixelRatio);
 
-      if (!ctx) {
-        setIsApplying(false);
-        return;
-      }
+          if (outputWidth > maxDim || outputHeight > maxDim) {
+            const scale = maxDim / Math.max(outputWidth, outputHeight);
+            outputWidth = Math.floor(outputWidth * scale);
+            outputHeight = Math.floor(outputHeight * scale);
+          }
 
-      // Use medium quality for faster rendering
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'medium';
+          // Create canvas safely (OffscreenCanvas when possible, otherwise HTMLCanvas)
+          const { canvas, ctx, width: safeW, height: safeH } = create2DCanvas(outputWidth, outputHeight);
+          outputWidth = safeW;
+          outputHeight = safeH;
 
-      if (rotation !== 0) {
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, outputWidth, outputHeight);
-        ctx.save();
-        ctx.translate(outputWidth / 2, outputHeight / 2);
-        ctx.rotate((rotation * Math.PI) / 180);
-        
-        const centerX = cropX + cropWidth / 2;
-        const centerY = cropY + cropHeight / 2;
-        const drawScale = outputWidth / cropWidth;
-        
-        ctx.drawImage(
-          image,
-          0, 0, image.naturalWidth, image.naturalHeight,
-          -centerX * drawScale, -centerY * drawScale,
-          image.naturalWidth * drawScale, image.naturalHeight * drawScale
-        );
-        ctx.restore();
-      } else {
-        // No rotation - simple fast crop
-        ctx.drawImage(
-          image,
-          cropX, cropY, cropWidth, cropHeight,
-          0, 0, outputWidth, outputHeight
-        );
-      }
+          // Use medium quality for faster rendering
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'medium';
 
-      const handleBlob = (blob: Blob | null) => {
-        setIsApplying(false);
-        if (blob) {
-          const croppedUrl = URL.createObjectURL(blob);
-          onCropComplete(croppedUrl);
+          if (rotation !== 0) {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, outputWidth, outputHeight);
+            ctx.save();
+            ctx.translate(outputWidth / 2, outputHeight / 2);
+            ctx.rotate((rotation * Math.PI) / 180);
+
+            const centerX = cropX + cropWidth / 2;
+            const centerY = cropY + cropHeight / 2;
+            const drawScale = outputWidth / cropWidth;
+
+            ctx.drawImage(
+              image,
+              0, 0, image.naturalWidth, image.naturalHeight,
+              -centerX * drawScale, -centerY * drawScale,
+              image.naturalWidth * drawScale, image.naturalHeight * drawScale,
+            );
+            ctx.restore();
+          } else {
+            // No rotation - simple fast crop
+            ctx.drawImage(
+              image,
+              cropX, cropY, cropWidth, cropHeight,
+              0, 0, outputWidth, outputHeight,
+            );
+          }
+
+          // Use JPEG for much faster encoding (5-10x faster than PNG)
+          const blob = await canvasToBlob(canvas, { type: 'image/jpeg', quality: 0.92 });
+          if (blob) {
+            const croppedUrl = URL.createObjectURL(blob);
+            onCropComplete(croppedUrl);
+          }
+        } catch (err) {
+          console.error('Failed to apply edits:', err);
+        } finally {
+          setIsApplying(false);
         }
-      };
-
-      // Use JPEG for much faster encoding (5-10x faster than PNG)
-      if (useOffscreen && canvas instanceof OffscreenCanvas) {
-        canvas.convertToBlob({ type: 'image/jpeg', quality: 0.92 }).then(handleBlob);
-      } else {
-        (canvas as HTMLCanvasElement).toBlob(handleBlob, 'image/jpeg', 0.92);
-      }
+      })();
     }, 0);
   }, [completedCrop, onCropComplete, zoom, rotation]);
 
