@@ -7,7 +7,7 @@ interface GridPreviewProps {
   showNumbers?: boolean;
 }
 
-// Lightweight tile component - uses CSS transform for GPU acceleration
+// Simplified tile component - uses straightforward background positioning
 const GridTile = memo(function GridTile({ 
   index, 
   postOrder, 
@@ -15,8 +15,6 @@ const GridTile = memo(function GridTile({
   rows, 
   imageUrl, 
   showNumbers,
-  imageAspect,
-  gridAspect,
 }: { 
   index: number; 
   postOrder: number; 
@@ -24,85 +22,49 @@ const GridTile = memo(function GridTile({
   rows: number; 
   imageUrl: string; 
   showNumbers: boolean;
-  imageAspect: number;
-  gridAspect: number;
 }) {
-  // Pre-compute all values at mount, avoid recalc on scroll
   const style = useMemo(() => {
     const colIndex = index % cols;
     const rowIndex = Math.floor(index / cols);
     
-    // For cropped images that already match grid aspect ratio,
-    // we use simple 100% sizing to avoid any zoom distortion
-    // This is the key fix - when the image has been cropped to match the grid,
-    // its aspect ratio should be very close to the grid aspect ratio
-    const aspectDiff = Math.abs(imageAspect - gridAspect);
-    const isCroppedToGrid = aspectDiff < 0.01; // Small tolerance for floating point
+    // Simple and correct: the image is pre-cropped to the grid aspect ratio,
+    // so we just need to slice it evenly. No cover/zoom logic needed.
+    // Background size = full grid dimensions (cols x rows tiles worth)
+    // Each tile shows 1/cols width and 1/rows height of the image
+    const bgWidth = cols * 100;
+    const bgHeight = rows * 100;
     
-    let bgWidth: number;
-    let bgHeight: number;
-    
-    if (isCroppedToGrid) {
-      // Image was cropped to match grid - use exact fit (no zoom)
-      bgWidth = cols * 100;
-      bgHeight = rows * 100;
-    } else if (imageAspect > gridAspect) {
-      // Image is wider than grid - fit by height, overflow width (natural cover)
-      bgHeight = rows * 100;
-      bgWidth = (bgHeight * imageAspect) / gridAspect;
-    } else {
-      // Image is taller than grid - fit by width, overflow height (natural cover)
-      bgWidth = cols * 100;
-      bgHeight = (bgWidth * gridAspect) / imageAspect;
-    }
-    
-    // Calculate position based on tile index, centered
-    const offsetX = (bgWidth - cols * 100) / 2;
-    const offsetY = (bgHeight - rows * 100) / 2;
-    
-    // Correctly offset each tile's background position to show the relevant slice.
-    // IMPORTANT: Use the background's *actual* scaled size (bgWidth/bgHeight) + center offsets.
-    // This prevents the "zoom to one corner" feel for portrait/landscape images.
-    const bgPosX = bgWidth > 100
-      ? ((offsetX + colIndex * 100) / (bgWidth - 100)) * 100
-      : 50;
-    const bgPosY = bgHeight > 100
-      ? ((offsetY + rowIndex * 100) / (bgHeight - 100)) * 100
-      : 50;
+    // Position the background so this tile shows its corresponding slice
+    // For col 0: 0%, col 1: 100/(cols-1)%, etc. (percentage of movable range)
+    const bgPosX = cols > 1 ? (colIndex / (cols - 1)) * 100 : 50;
+    const bgPosY = rows > 1 ? (rowIndex / (rows - 1)) * 100 : 50;
     
     return {
       backgroundImage: `url(${imageUrl})`,
       backgroundSize: `${bgWidth}% ${bgHeight}%`,
       backgroundPosition: `${bgPosX}% ${bgPosY}%`,
-      // Use transform for GPU layer - critical for mobile
-      // Slight scale avoids hairline seams between tiles on some mobile GPUs.
-      transform: 'translate3d(0, 0, 0) scale(1.001)',
-      backfaceVisibility: 'hidden' as const,
-      willChange: 'transform' as const,
+      backgroundRepeat: 'no-repeat',
     };
-  }, [index, cols, rows, imageUrl, imageAspect, gridAspect]);
+  }, [index, cols, rows, imageUrl]);
   
   return (
-    <div className="relative aspect-square overflow-hidden" style={{ contain: 'layout style paint' }}>
+    <div className="relative aspect-square overflow-hidden">
       <div className="absolute inset-0" style={style} />
       {showNumbers && (
-        <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/70 flex items-center justify-center" style={{ contain: 'layout paint' }}>
+        <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/70 flex items-center justify-center">
           <span className="text-[10px] font-semibold text-white">{postOrder}</span>
         </div>
       )}
     </div>
   );
 }, (prevProps, nextProps) => {
-  // Custom comparison - only re-render if these specific props change
   return (
     prevProps.index === nextProps.index &&
     prevProps.postOrder === nextProps.postOrder &&
     prevProps.cols === nextProps.cols &&
     prevProps.rows === nextProps.rows &&
     prevProps.imageUrl === nextProps.imageUrl &&
-    prevProps.showNumbers === nextProps.showNumbers &&
-    prevProps.imageAspect === nextProps.imageAspect &&
-    prevProps.gridAspect === nextProps.gridAspect
+    prevProps.showNumbers === nextProps.showNumbers
   );
 });
 
@@ -131,20 +93,9 @@ export const GridPreview = memo(function GridPreview({
   grid, 
   showNumbers = true 
 }: GridPreviewProps) {
-  const [imageAspect, setImageAspect] = useState<number>(1);
-
-  // Load image to get natural dimensions
-  useEffect(() => {
-    const img = new Image();
-    img.onload = () => {
-      setImageAspect(img.naturalWidth / img.naturalHeight);
-    };
-    img.src = imageUrl;
-  }, [imageUrl]);
-
-  const { cols, rows, totalTiles, gridAspect } = useMemo(() => {
+  const { cols, rows, totalTiles } = useMemo(() => {
     const [c, r] = grid.split('x').map(Number);
-    return { cols: c, rows: r, totalTiles: c * r, gridAspect: c / r };
+    return { cols: c, rows: r, totalTiles: c * r };
   }, [grid]);
 
   // Pre-compute tiles array once
@@ -161,23 +112,19 @@ export const GridPreview = memo(function GridPreview({
     gridTemplateColumns: `repeat(${cols}, 1fr)`,
     gap: '2px',
     backgroundColor: 'hsl(var(--background))',
-    // Force GPU compositing for smooth scroll
-    transform: 'translate3d(0, 0, 0)',
-    backfaceVisibility: 'hidden' as const,
-    willChange: 'transform' as const,
   }), [cols]);
 
   return (
     <div className="w-full flex justify-center">
-      <div className="rounded-xl overflow-hidden bg-card shadow-lg border border-border/50 max-w-sm w-full" style={{ contain: 'layout style paint', isolation: 'isolate' }}>
-        {/* Instagram tab icons - static, never re-renders */}
+      <div className="rounded-xl overflow-hidden bg-card shadow-lg border border-border/50 max-w-sm w-full">
+        {/* Instagram tab icons */}
         <div className="flex items-center justify-center gap-12 py-3 border-b border-border/30">
           <TabButton icon={Grid3X3} isActive={true} label="Grid view" />
           <TabButton icon={Bookmark} isActive={false} label="Saved" />
           <TabButton icon={User} isActive={false} label="Tagged" />
         </div>
 
-        {/* Grid - GPU accelerated container */}
+        {/* Grid */}
         <div style={gridStyle}>
           {tiles.map(({ index, postOrder }) => (
             <GridTile
@@ -188,8 +135,6 @@ export const GridPreview = memo(function GridPreview({
               rows={rows}
               imageUrl={imageUrl}
               showNumbers={showNumbers}
-              imageAspect={imageAspect}
-              gridAspect={gridAspect}
             />
           ))}
         </div>

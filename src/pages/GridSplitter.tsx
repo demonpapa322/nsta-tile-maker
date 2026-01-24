@@ -129,7 +129,83 @@ const GridSplitter = memo(function GridSplitter() {
     };
   }, []);
 
-  const handleImageUpload = useCallback((file: File, preview: string) => {
+  // Auto-crop image to grid aspect ratio on upload for instant preview
+  const autoCropToGrid = useCallback((imageUrl: string, gridAspect: number): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const imgAspect = img.naturalWidth / img.naturalHeight;
+        
+        let cropWidth = img.naturalWidth;
+        let cropHeight = img.naturalHeight;
+        let cropX = 0;
+        let cropY = 0;
+        
+        if (imgAspect > gridAspect) {
+          // Image is wider - crop sides
+          cropWidth = img.naturalHeight * gridAspect;
+          cropX = (img.naturalWidth - cropWidth) / 2;
+        } else if (imgAspect < gridAspect) {
+          // Image is taller - crop top/bottom
+          cropHeight = img.naturalWidth / gridAspect;
+          cropY = (img.naturalHeight - cropHeight) / 2;
+        }
+        
+        // Use OffscreenCanvas for faster processing when available
+        const useOffscreen = typeof OffscreenCanvas !== 'undefined';
+        
+        // Cap dimensions for performance
+        const maxDim = 2048;
+        let outWidth = cropWidth;
+        let outHeight = cropHeight;
+        if (outWidth > maxDim || outHeight > maxDim) {
+          const scale = maxDim / Math.max(outWidth, outHeight);
+          outWidth = Math.floor(outWidth * scale);
+          outHeight = Math.floor(outHeight * scale);
+        }
+        
+        let canvas: HTMLCanvasElement | OffscreenCanvas;
+        let ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
+        
+        if (useOffscreen) {
+          canvas = new OffscreenCanvas(outWidth, outHeight);
+          ctx = canvas.getContext('2d');
+        } else {
+          canvas = document.createElement('canvas');
+          canvas.width = outWidth;
+          canvas.height = outHeight;
+          ctx = canvas.getContext('2d');
+        }
+        
+        if (!ctx) {
+          resolve(imageUrl);
+          return;
+        }
+        
+        ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, outWidth, outHeight);
+        
+        const handleBlob = (blob: Blob | null) => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            urlsToCleanupRef.current.add(url);
+            resolve(url);
+          } else {
+            resolve(imageUrl);
+          }
+        };
+        
+        if (useOffscreen && canvas instanceof OffscreenCanvas) {
+          canvas.convertToBlob({ type: 'image/jpeg', quality: 0.92 }).then(handleBlob);
+        } else {
+          (canvas as HTMLCanvasElement).toBlob(handleBlob, 'image/jpeg', 0.92);
+        }
+      };
+      img.onerror = () => resolve(imageUrl);
+      img.src = imageUrl;
+    });
+  }, []);
+
+  const handleImageUpload = useCallback(async (file: File, preview: string) => {
     if (originalImage && originalImage.startsWith('blob:')) {
       URL.revokeObjectURL(originalImage);
       urlsToCleanupRef.current.delete(originalImage);
@@ -139,10 +215,17 @@ const GridSplitter = memo(function GridSplitter() {
       urlsToCleanupRef.current.add(preview);
     }
     
+    // Parse current grid aspect ratio
+    const [cols, rows] = selectedGrid.split('x').map(Number);
+    const gridAspect = cols / rows;
+    
+    // Auto-crop to grid aspect ratio for immediate correct preview
+    const croppedPreview = await autoCropToGrid(preview, gridAspect);
+    
     setOriginalImage(preview);
-    setCroppedImage(null);
+    setCroppedImage(croppedPreview);
     setCurrentStep('preview');
-  }, [originalImage]);
+  }, [originalImage, selectedGrid, autoCropToGrid]);
 
   const handleClear = useCallback(() => {
     if (originalImage?.startsWith('blob:')) {
@@ -159,14 +242,23 @@ const GridSplitter = memo(function GridSplitter() {
     setCurrentStep('upload');
   }, [originalImage, croppedImage]);
 
-  const handleGridSelect = useCallback((grid: string) => {
+  const handleGridSelect = useCallback(async (grid: string) => {
     setSelectedGrid(grid);
     if (croppedImage?.startsWith('blob:')) {
       URL.revokeObjectURL(croppedImage);
       urlsToCleanupRef.current.delete(croppedImage);
     }
-    setCroppedImage(null);
-  }, [croppedImage]);
+    
+    // Re-crop original image to new grid aspect ratio
+    if (originalImage) {
+      const [cols, rows] = grid.split('x').map(Number);
+      const gridAspect = cols / rows;
+      const newCropped = await autoCropToGrid(originalImage, gridAspect);
+      setCroppedImage(newCropped);
+    } else {
+      setCroppedImage(null);
+    }
+  }, [croppedImage, originalImage, autoCropToGrid]);
 
   const handleCropComplete = useCallback((croppedUrl: string) => {
     if (croppedImage?.startsWith('blob:')) {
