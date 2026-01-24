@@ -3,6 +3,7 @@ import { memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { FeedbackWidget } from '@/components/FeedbackWidget';
 import { Grid3X3, Hash, MessageSquare, Image, LucideIcon } from 'lucide-react';
 
 interface Tool {
@@ -319,6 +320,9 @@ const Home = memo(function Home() {
           </p>
         </footer>
       </div>
+
+      {/* Feedback Widget - only on Home page */}
+      <FeedbackWidget />
     </motion.div>
   );
 });
