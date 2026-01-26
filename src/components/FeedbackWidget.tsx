@@ -39,14 +39,14 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
 
     setIsSubmitting(true);
 
-    // Build Gmail compose URL with pre-filled content
+    // Build mailto URL - opens native Gmail app on mobile, mail client on desktop
     const recipient = 'nunchuckspro123@gmail.com';
     const subject = encodeURIComponent('Feedback from SocialTools User');
     const body = encodeURIComponent(`From: ${email}\n\n${message}`);
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${recipient}&su=${subject}&body=${body}`;
+    const mailtoUrl = `mailto:${recipient}?subject=${subject}&body=${body}`;
 
-    // Open Gmail in new tab
-    window.open(gmailUrl, '_blank', 'noopener,noreferrer');
+    // Open native email app (Gmail on mobile if set as default)
+    window.location.href = mailtoUrl;
 
     // Reset form
     setTimeout(() => {
