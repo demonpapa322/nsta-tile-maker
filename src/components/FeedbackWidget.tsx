@@ -1,12 +1,11 @@
 import { useState, memo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { MessageCircle, X, ArrowRight } from 'lucide-react';
 import { z } from 'zod';
 
 const feedbackSchema = z.object({
-  email: z.string().trim().email({ message: "Please enter a valid email" }).max(255),
-  message: z.string().trim().min(10, { message: "Message must be at least 10 characters" }).max(1000),
+  email: z.string().trim().email({ message: "Valid email required" }).max(255),
+  message: z.string().trim().min(10, { message: "Min 10 characters" }).max(1000),
 });
 
 export const FeedbackWidget = memo(function FeedbackWidget() {
@@ -39,16 +38,13 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
 
     setIsSubmitting(true);
 
-    // Build mailto URL - opens native Gmail app on mobile, mail client on desktop
     const recipient = 'nunchuckspro123@gmail.com';
     const subject = encodeURIComponent('Feedback from SocialTools User');
     const body = encodeURIComponent(`From: ${email}\n\n${message}`);
     const mailtoUrl = `mailto:${recipient}?subject=${subject}&body=${body}`;
 
-    // Open native email app (Gmail on mobile if set as default)
     window.location.href = mailtoUrl;
 
-    // Reset form
     setTimeout(() => {
       setEmail('');
       setMessage('');
@@ -59,112 +55,95 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
 
   return (
     <>
-      {/* Floating trigger button */}
+      {/* Minimal floating trigger */}
       <motion.button
         onClick={handleToggle}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-primary via-primary to-accent shadow-lg shadow-primary/25 flex items-center justify-center text-primary-foreground hover:scale-110 transition-transform"
-        whileHover={{ scale: 1.1 }}
+        className="fixed bottom-5 right-5 z-50 w-12 h-12 rounded-full bg-foreground text-background flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow"
+        whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        aria-label="Open feedback"
+        aria-label={isOpen ? "Close feedback" : "Send feedback"}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           {isOpen ? (
             <motion.div
               key="close"
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
+              initial={{ opacity: 0, rotate: -90 }}
+              animate={{ opacity: 1, rotate: 0 }}
+              exit={{ opacity: 0, rotate: 90 }}
               transition={{ duration: 0.15 }}
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </motion.div>
           ) : (
             <motion.div
               key="open"
-              initial={{ rotate: 90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: -90, opacity: 0 }}
+              initial={{ opacity: 0, rotate: 90 }}
+              animate={{ opacity: 1, rotate: 0 }}
+              exit={{ opacity: 0, rotate: -90 }}
               transition={{ duration: 0.15 }}
             >
-              <MessageSquare className="w-6 h-6" />
+              <MessageCircle className="w-5 h-5" />
             </motion.div>
           )}
         </AnimatePresence>
       </motion.button>
 
-      {/* Feedback panel */}
+      {/* Minimal panel */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, y: 16, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="fixed bottom-24 right-6 z-50 w-80 max-w-[calc(100vw-3rem)]"
+            exit={{ opacity: 0, y: 16, scale: 0.96 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+            className="fixed bottom-20 right-5 z-50 w-72"
           >
-            <div className="bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl shadow-black/10 overflow-hidden">
+            <div className="bg-background border border-border rounded-2xl shadow-2xl overflow-hidden">
               {/* Header */}
-              <div className="px-5 py-4 border-b border-border/30 bg-gradient-to-r from-primary/5 to-accent/5">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                  <h3 className="font-semibold text-foreground">Send Feedback</h3>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  We'd love to hear from you!
-                </p>
+              <div className="px-4 py-3 border-b border-border">
+                <h3 className="text-sm font-medium text-foreground">Feedback</h3>
               </div>
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="p-5 space-y-4">
-                <div className="space-y-1.5">
-                  <label htmlFor="feedback-email" className="text-xs font-medium text-muted-foreground">
-                    Your Email
-                  </label>
+              <form onSubmit={handleSubmit} className="p-4 space-y-3">
+                <div>
                   <input
                     id="feedback-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="w-full px-3 py-2.5 text-sm bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all placeholder:text-muted-foreground/50"
+                    placeholder="Email"
+                    className="w-full px-3 py-2 text-sm bg-muted/50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/60"
                     disabled={isSubmitting}
                   />
                   {errors.email && (
-                    <p className="text-xs text-destructive">{errors.email}</p>
+                    <p className="text-[11px] text-destructive mt-1">{errors.email}</p>
                   )}
                 </div>
 
-                <div className="space-y-1.5">
-                  <label htmlFor="feedback-message" className="text-xs font-medium text-muted-foreground">
-                    Your Feedback
-                  </label>
+                <div>
                   <textarea
                     id="feedback-message"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Tell us what you think..."
-                    rows={4}
-                    className="w-full px-3 py-2.5 text-sm bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none placeholder:text-muted-foreground/50"
+                    placeholder="Your feedback..."
+                    rows={3}
+                    className="w-full px-3 py-2 text-sm bg-muted/50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none placeholder:text-muted-foreground/60"
                     disabled={isSubmitting}
                   />
                   {errors.message && (
-                    <p className="text-xs text-destructive">{errors.message}</p>
+                    <p className="text-[11px] text-destructive mt-1">{errors.message}</p>
                   )}
                 </div>
 
-                <Button
+                <button
                   type="submit"
-                  variant="gradient"
-                  className="w-full h-11 rounded-xl font-semibold gap-2"
                   disabled={isSubmitting}
+                  className="w-full h-9 bg-foreground text-background text-sm font-medium rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
-                  <Send className="w-4 h-4" />
-                  {isSubmitting ? 'Opening Gmail...' : 'Send via Gmail'}
-                </Button>
-
-                <p className="text-[10px] text-center text-muted-foreground/70">
-                  Opens Gmail to send your feedback
-                </p>
+                  {isSubmitting ? 'Opening...' : 'Send'}
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </form>
             </div>
           </motion.div>
