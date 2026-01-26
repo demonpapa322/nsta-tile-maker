@@ -55,10 +55,10 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
 
   return (
     <>
-      {/* Minimal floating trigger */}
+      {/* Themed floating trigger with gradient */}
       <motion.button
         onClick={handleToggle}
-        className="fixed bottom-5 right-5 z-50 w-12 h-12 rounded-full bg-foreground text-background flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow"
+        className="fixed bottom-5 right-5 z-50 w-12 h-12 rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 text-white flex items-center justify-center shadow-lg hover:shadow-xl hover:shadow-fuchsia-500/25 transition-all"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         aria-label={isOpen ? "Close feedback" : "Send feedback"}
@@ -88,7 +88,7 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
         </AnimatePresence>
       </motion.button>
 
-      {/* Minimal panel */}
+      {/* Expanded themed panel */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -96,52 +96,60 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.96 }}
             transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-            className="fixed bottom-20 right-5 z-50 w-72"
+            className="fixed bottom-20 right-5 z-50 w-80 sm:w-96"
           >
-            <div className="bg-background border border-border rounded-2xl shadow-2xl overflow-hidden">
-              {/* Header */}
-              <div className="px-4 py-3 border-b border-border">
-                <h3 className="text-sm font-medium text-foreground">Feedback</h3>
+            <div className="bg-background/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl overflow-hidden">
+              {/* Header with gradient accent */}
+              <div className="px-5 py-4 border-b border-border relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-violet-500/10 via-fuchsia-500/10 to-rose-500/10" />
+                <h3 className="relative text-base font-semibold text-foreground">Share your feedback</h3>
+                <p className="relative text-xs text-muted-foreground mt-0.5">We'd love to hear from you</p>
               </div>
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="p-4 space-y-3">
+              <form onSubmit={handleSubmit} className="p-5 space-y-4">
                 <div>
+                  <label htmlFor="feedback-email" className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                    Email
+                  </label>
                   <input
                     id="feedback-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Email"
-                    className="w-full px-3 py-2 text-sm bg-muted/50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/60"
+                    placeholder="your@email.com"
+                    className="w-full px-4 py-2.5 text-sm bg-muted/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-fuchsia-500/30 focus:border-fuchsia-500/50 transition-all placeholder:text-muted-foreground/50"
                     disabled={isSubmitting}
                   />
                   {errors.email && (
-                    <p className="text-[11px] text-destructive mt-1">{errors.email}</p>
+                    <p className="text-xs text-destructive mt-1.5">{errors.email}</p>
                   )}
                 </div>
 
                 <div>
+                  <label htmlFor="feedback-message" className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                    Message
+                  </label>
                   <textarea
                     id="feedback-message"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Your feedback..."
-                    rows={3}
-                    className="w-full px-3 py-2 text-sm bg-muted/50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none placeholder:text-muted-foreground/60"
+                    placeholder="Tell us what you think..."
+                    rows={4}
+                    className="w-full px-4 py-2.5 text-sm bg-muted/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-fuchsia-500/30 focus:border-fuchsia-500/50 transition-all resize-none placeholder:text-muted-foreground/50"
                     disabled={isSubmitting}
                   />
                   {errors.message && (
-                    <p className="text-[11px] text-destructive mt-1">{errors.message}</p>
+                    <p className="text-xs text-destructive mt-1.5">{errors.message}</p>
                   )}
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-9 bg-foreground text-background text-sm font-medium rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+                  className="w-full h-11 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 text-white text-sm font-medium rounded-xl flex items-center justify-center gap-2 hover:opacity-90 hover:shadow-lg hover:shadow-fuchsia-500/25 transition-all disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Opening...' : 'Send'}
+                  {isSubmitting ? 'Opening...' : 'Send Feedback'}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
