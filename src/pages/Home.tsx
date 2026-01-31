@@ -313,9 +313,9 @@ const Home = memo(function Home() {
           </div>
         </main>
 
-        {/* Footer - fixed at bottom left, aligned with feedback button */}
-        <footer className="fixed bottom-5 left-5 z-40">
-          <p className="text-xs text-muted-foreground/70">
+        {/* Footer - fixed at bottom center */}
+        <footer className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40">
+          <p className="text-xs text-muted-foreground/70 whitespace-nowrap">
             All processing happens locally — your data never leaves your device
           </p>
         </footer>
