@@ -269,9 +269,9 @@ const Home = memo(function Home() {
       <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
 
       <div className="relative z-10">
-        <main className="container pt-28 pb-12 md:pt-32 md:pb-20">
+        <main className="container pt-24 pb-6 md:pt-28 md:pb-8">
           {/* Hero Section */}
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 md:mb-12">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground mb-3 flex flex-wrap justify-center gap-x-2">
               {"Create better content,".split(" ").map((word, i) => (
                 <motion.span
@@ -314,8 +314,8 @@ const Home = memo(function Home() {
         </main>
 
         {/* Footer */}
-        <footer className="py-8 mt-12">
-          <p className="text-center text-xs text-muted-foreground/70">
+        <footer className="py-4 mt-4">
+          <p className="text-center text-xs text-muted-foreground/70 pr-16 md:pr-0">
             All processing happens locally — your data never leaves your device
           </p>
         </footer>
