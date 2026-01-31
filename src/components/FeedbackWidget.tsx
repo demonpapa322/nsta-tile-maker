@@ -41,9 +41,18 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
     const recipient = 'nunchuckspro123@gmail.com';
     const subject = encodeURIComponent('Feedback from SocialTools User');
     const body = encodeURIComponent(`From: ${email}\n\n${message}`);
-    const mailtoUrl = `mailto:${recipient}?subject=${subject}&body=${body}`;
-
-    window.location.href = mailtoUrl;
+    
+    // Check if mobile device
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // Mobile: Use mailto to open default mail app (Gmail app if set as default)
+      window.location.href = `mailto:${recipient}?subject=${subject}&body=${body}`;
+    } else {
+      // Desktop: Open Gmail compose in new tab
+      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${recipient}&su=${subject}&body=${body}`;
+      window.open(gmailUrl, '_blank');
+    }
 
     setTimeout(() => {
       setEmail('');
@@ -102,6 +111,27 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
               {/* Form */}
               <form onSubmit={handleSubmit} className="p-4 space-y-3">
                 <div>
+                  <label htmlFor="feedback-email" className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                    Email
+                  </label>
+                  <input
+                    id="feedback-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="w-full px-3 py-2 text-sm bg-muted/30 border border-border/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 focus:border-fuchsia-500/40 transition-all placeholder:text-muted-foreground/60"
+                    disabled={isSubmitting}
+                  />
+                  {errors.email && (
+                    <p className="text-xs text-destructive mt-1">{errors.email}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="feedback-message" className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                    Feedback
+                  </label>
                   <textarea
                     id="feedback-message"
                     value={message}
@@ -113,21 +143,6 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
                   />
                   {errors.message && (
                     <p className="text-xs text-destructive mt-1">{errors.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <input
-                    id="feedback-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Your email"
-                    className="w-full px-3 py-2 text-sm bg-muted/30 border border-border/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 focus:border-fuchsia-500/40 transition-all placeholder:text-muted-foreground/60"
-                    disabled={isSubmitting}
-                  />
-                  {errors.email && (
-                    <p className="text-xs text-destructive mt-1">{errors.email}</p>
                   )}
                 </div>
 
