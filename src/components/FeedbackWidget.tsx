@@ -98,59 +98,46 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
             transition={{ type: 'spring', stiffness: 500, damping: 35 }}
             className="fixed bottom-20 right-5 z-50 w-80 sm:w-96"
           >
-            <div className="bg-background/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl overflow-hidden">
-              {/* Header with gradient accent */}
-              <div className="px-5 py-4 border-b border-border relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-violet-500/10 via-fuchsia-500/10 to-rose-500/10" />
-                <h3 className="relative text-base font-semibold text-foreground">Share your feedback</h3>
-                <p className="relative text-xs text-muted-foreground mt-0.5">We'd love to hear from you</p>
-              </div>
-
+            <div className="bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl overflow-hidden">
               {/* Form */}
-              <form onSubmit={handleSubmit} className="p-5 space-y-4">
+              <form onSubmit={handleSubmit} className="p-4 space-y-3">
                 <div>
-                  <label htmlFor="feedback-email" className="text-xs font-medium text-muted-foreground mb-1.5 block">
-                    Email
-                  </label>
+                  <textarea
+                    id="feedback-message"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="How can we improve?"
+                    rows={3}
+                    className="w-full px-3 py-2.5 text-sm bg-muted/30 border border-border/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 focus:border-fuchsia-500/40 transition-all resize-none placeholder:text-muted-foreground/60"
+                    disabled={isSubmitting}
+                  />
+                  {errors.message && (
+                    <p className="text-xs text-destructive mt-1">{errors.message}</p>
+                  )}
+                </div>
+
+                <div>
                   <input
                     id="feedback-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    className="w-full px-4 py-2.5 text-sm bg-muted/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-fuchsia-500/30 focus:border-fuchsia-500/50 transition-all placeholder:text-muted-foreground/50"
+                    placeholder="Your email"
+                    className="w-full px-3 py-2 text-sm bg-muted/30 border border-border/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20 focus:border-fuchsia-500/40 transition-all placeholder:text-muted-foreground/60"
                     disabled={isSubmitting}
                   />
                   {errors.email && (
-                    <p className="text-xs text-destructive mt-1.5">{errors.email}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="feedback-message" className="text-xs font-medium text-muted-foreground mb-1.5 block">
-                    Message
-                  </label>
-                  <textarea
-                    id="feedback-message"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Tell us what you think..."
-                    rows={4}
-                    className="w-full px-4 py-2.5 text-sm bg-muted/50 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-fuchsia-500/30 focus:border-fuchsia-500/50 transition-all resize-none placeholder:text-muted-foreground/50"
-                    disabled={isSubmitting}
-                  />
-                  {errors.message && (
-                    <p className="text-xs text-destructive mt-1.5">{errors.message}</p>
+                    <p className="text-xs text-destructive mt-1">{errors.email}</p>
                   )}
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-11 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 text-white text-sm font-medium rounded-xl flex items-center justify-center gap-2 hover:opacity-90 hover:shadow-lg hover:shadow-fuchsia-500/25 transition-all disabled:opacity-50"
+                  className="w-full h-9 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 text-white text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 hover:opacity-90 transition-all disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Opening...' : 'Send Feedback'}
-                  <ArrowRight className="w-4 h-4" />
+                  {isSubmitting ? 'Opening...' : 'Send'}
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </form>
             </div>
