@@ -67,7 +67,7 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
       {/* Themed floating trigger with gradient */}
       <motion.button
         onClick={handleToggle}
-        className="fixed bottom-5 right-5 z-50 w-12 h-12 rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 text-white flex items-center justify-center shadow-lg hover:shadow-xl hover:shadow-fuchsia-500/25 transition-all"
+        className="fixed bottom-5 right-5 z-50 w-12 h-12 rounded-full bg-gradient-to-r from-violet-400/80 via-fuchsia-400/80 to-rose-400/80 text-white flex items-center justify-center shadow-md hover:shadow-lg hover:shadow-fuchsia-400/20 transition-all"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         aria-label={isOpen ? "Close feedback" : "Send feedback"}
@@ -149,7 +149,7 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-9 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 text-white text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 hover:opacity-90 transition-all disabled:opacity-50"
+                  className="w-full h-9 bg-gradient-to-r from-violet-400/80 via-fuchsia-400/80 to-rose-400/80 text-white text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 hover:opacity-90 transition-all disabled:opacity-50"
                 >
                   {isSubmitting ? 'Opening...' : 'Send'}
                   <ArrowRight className="w-3.5 h-3.5" />
