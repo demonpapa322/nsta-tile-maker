@@ -37,15 +37,31 @@ const Home = memo(function Home() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  const handleSendMessage = useCallback((content: string) => {
+  const handleSendMessage = useCallback((content: string, image?: File) => {
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content,
+      content: image ? (content || 'Uploaded an image') : content,
       timestamp: new Date()
     };
     
     setMessages(prev => [...prev, userMessage]);
+    
+    // If image is uploaded, navigate to grid splitter
+    if (image) {
+      setTimeout(() => {
+        const aiMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: "Great image! Let me take you to the Grid Splitter where you can choose your grid layout and split this image for Instagram.",
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, aiMessage]);
+        scrollToBottom();
+        setTimeout(() => navigate('/grid-splitter'), 1200);
+      }, 500);
+      return;
+    }
     
     // Check for grid-related keywords to navigate
     const lowerContent = content.toLowerCase();
@@ -54,7 +70,6 @@ const Home = memo(function Home() {
       lowerContent.includes('grid') ||
       lowerContent.includes('instagram')
     ) {
-      // Simulate AI response then navigate
       setTimeout(() => {
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -64,8 +79,6 @@ const Home = memo(function Home() {
         };
         setMessages(prev => [...prev, aiMessage]);
         scrollToBottom();
-        
-        // Navigate after showing the message
         setTimeout(() => navigate('/grid-splitter'), 1500);
       }, 500);
     } else if (lowerContent.includes('resize')) {
@@ -80,7 +93,6 @@ const Home = memo(function Home() {
         scrollToBottom();
       }, 500);
     } else {
-      // Default response - AI not connected yet
       setTimeout(() => {
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
