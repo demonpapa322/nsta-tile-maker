@@ -1,160 +1,104 @@
 import { Helmet } from 'react-helmet-async';
-import { memo, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { useState, useCallback, memo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  ChatSidebar, 
+  ChatInput, 
+  ChatHeader, 
+  ChatMessage, 
+  QuickActions,
+  type Message 
+} from '@/components/chat';
 import { FeedbackWidget } from '@/components/FeedbackWidget';
-import { Grid3X3, Hash, MessageSquare, Image, LucideIcon } from 'lucide-react';
 
-interface Tool {
-  id: string;
-  name: string;
-  description: string;
-  icon: LucideIcon;
-  path: string;
-  ready: boolean;
-}
-
-const tools: Tool[] = [
-  {
-    id: 'grid-splitter',
-    name: 'Grid Splitter',
-    description: 'Split images into perfect Instagram grid posts',
-    icon: Grid3X3,
-    path: '/grid-splitter',
-    ready: true,
-  },
-  {
-    id: 'caption-generator',
-    name: 'Caption Generator',
-    description: 'Create engaging captions with AI assistance',
-    icon: MessageSquare,
-    path: '/caption-generator',
-    ready: false,
-  },
-  {
-    id: 'hashtag-finder',
-    name: 'Hashtag Finder',
-    description: 'Discover trending hashtags for your niche',
-    icon: Hash,
-    path: '/hashtag-finder',
-    ready: false,
-  },
-  {
-    id: 'image-resizer',
-    name: 'Image Resizer',
-    description: 'Resize images for any social platform',
-    icon: Image,
-    path: '/image-resizer',
-    ready: false,
-  },
-];
-
-// Pre-computed animation variants for better performance
-const pageVariants: any = {
-  initial: { opacity: 0, y: 10 },
-  animate: { 
-    opacity: 1, 
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 30
-    }
-  },
-  exit: { 
-    opacity: 0,
-    transition: { duration: 0.2 }
-  }
+const pageVariants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.3 } },
+  exit: { opacity: 0, transition: { duration: 0.2 } }
 };
-
-const cardVariants: any = {
-  hidden: { opacity: 0, y: 10 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { 
-      duration: 0.3,
-      delay: i * 0.05
-    },
-  }),
-};
-
-const headerVariants: any = {
-  hidden: { opacity: 0 },
-  visible: { 
-    opacity: 1,
-    transition: { duration: 0.4 }
-  },
-};
-
-// Memoized tool card to prevent unnecessary re-renders
-const ToolCard = memo(function ToolCard({ 
-  tool, 
-  index 
-}: { 
-  tool: Tool; 
-  index: number;
-}) {
-  const Icon = tool.icon;
-  
-  return (
-    <motion.div
-      custom={index}
-      initial="hidden"
-      animate="visible"
-      variants={cardVariants}
-      className="will-animate"
-    >
-      <Link
-        to={tool.path}
-        className={`group block p-6 rounded-2xl border bg-card transition-all duration-300 ${
-          tool.ready
-            ? 'border-border hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5'
-            : 'border-border/50 opacity-60 cursor-default pointer-events-none'
-        }`}
-      >
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors ${
-          tool.ready 
-            ? 'bg-primary/10 group-hover:bg-primary/20' 
-            : 'bg-muted'
-        }`}>
-          <Icon className={`w-6 h-6 ${tool.ready ? 'text-primary' : 'text-muted-foreground'}`} />
-        </div>
-        <h3 className="font-semibold text-foreground mb-1">
-          {tool.name}
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          {tool.description}
-        </p>
-        {!tool.ready && (
-          <span className="inline-block mt-3 text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
-            Coming Soon
-          </span>
-        )}
-      </Link>
-    </motion.div>
-  );
-});
 
 const Home = memo(function Home() {
-  const toolCards = useMemo(() => 
-    tools.map((tool, index) => (
-      <motion.div
-        key={tool.id}
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ 
-          duration: 0.4,
-          delay: index * 0.05
-        }}
-      >
-        <ToolCard tool={tool} index={index} />
-      </motion.div>
-    )), 
-    []
-  );
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const navigate = useNavigate();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const handleToggleSidebar = useCallback(() => {
+    setIsSidebarOpen(prev => !prev);
+  }, []);
+
+  const handleNewChat = useCallback(() => {
+    setMessages([]);
+    setIsSidebarOpen(false);
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
+  const handleSendMessage = useCallback((content: string) => {
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content,
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    
+    // Check for grid-related keywords to navigate
+    const lowerContent = content.toLowerCase();
+    if (
+      lowerContent.includes('split') || 
+      lowerContent.includes('grid') ||
+      lowerContent.includes('instagram')
+    ) {
+      // Simulate AI response then navigate
+      setTimeout(() => {
+        const aiMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: "I'll help you split your image into a grid! Let me take you to the Grid Splitter tool where you can upload your image and choose your grid layout.",
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, aiMessage]);
+        scrollToBottom();
+        
+        // Navigate after showing the message
+        setTimeout(() => navigate('/grid-splitter'), 1500);
+      }, 500);
+    } else if (lowerContent.includes('resize')) {
+      setTimeout(() => {
+        const aiMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: "The Image Resizer tool is coming soon! For now, you can use the Grid Splitter to crop and prepare your images.",
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, aiMessage]);
+        scrollToBottom();
+      }, 500);
+    } else {
+      // Default response - AI not connected yet
+      setTimeout(() => {
+        const aiMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: "I'm here to help you with image grid splitting and social media content preparation. Try asking me to 'split an image into a grid' or use the quick action buttons above!",
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, aiMessage]);
+        scrollToBottom();
+      }, 500);
+    }
+  }, [navigate, scrollToBottom]);
+
+  const handleQuickAction = useCallback((prompt: string) => {
+    handleSendMessage(prompt);
+  }, [handleSendMessage]);
+
+  const hasMessages = messages.length > 0;
 
   return (
     <motion.div 
@@ -162,166 +106,120 @@ const Home = memo(function Home() {
       animate="animate"
       exit="exit"
       variants={pageVariants}
-      className="min-h-screen bg-background"
+      className="h-screen flex bg-background overflow-hidden"
     >
       <Helmet>
-        {/* Primary Meta Tags */}
-        <title>SocialTool</title>
-        <meta name="title" content="SocialTool" />
-        <meta name="description" content="Free online tools for social media creators. Split images into Instagram grids, generate captions, find trending hashtags, and resize images. No signup required, 100% private." />
-        <meta name="keywords" content="social media tools, instagram tools, free instagram grid splitter, image splitter, grid maker, caption generator, hashtag finder, image resizer, instagram post splitter, social media creator tools, content creation tools, instagram carousel maker, SocialTools" />
+        <title>GridAI - AI-Powered Instagram Grid Splitter</title>
+        <meta name="title" content="GridAI - AI-Powered Instagram Grid Splitter" />
+        <meta name="description" content="Split images into perfect Instagram grid posts with AI assistance. Free, fast, and private - all processing happens in your browser." />
+        <meta name="keywords" content="instagram grid splitter, AI image splitter, grid maker, instagram carousel, social media tools" />
         <meta name="robots" content="index, follow" />
-        <meta name="language" content="English" />
-        <meta name="author" content="SocialTools" />
-        
-        {/* Canonical URL */}
         <link rel="canonical" href="https://www.socialtool.co/" />
         
-        {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.socialtool.co/" />
-        <meta property="og:title" content="SocialTools - Free Instagram Grid Splitter & Social Media Tools" />
-        <meta property="og:description" content="Free tools for social media creators. Split images into grids, generate captions, find hashtags. No signup, 100% private." />
-        <meta property="og:site_name" content="SocialTools" />
-        <meta property="og:image" content="https://www.socialtool.co/og-image.png" />
+        <meta property="og:title" content="GridAI - AI-Powered Instagram Grid Splitter" />
+        <meta property="og:description" content="Split images into perfect Instagram grid posts with AI assistance. Free and private." />
         
-        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content="https://www.socialtool.co/" />
-        <meta name="twitter:title" content="SocialTools - Free Social Media Tools" />
-        <meta name="twitter:description" content="Free tools for creators. Split images, generate captions, find hashtags. No signup required." />
-        <meta name="twitter:image" content="https://www.socialtool.co/og-image.png" />
+        <meta name="twitter:title" content="GridAI - AI-Powered Instagram Grid Splitter" />
+        <meta name="twitter:description" content="Split images into perfect Instagram grid posts with AI assistance." />
         
-        {/* Structured Data - Organization */}
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "Organization",
-            "name": "SocialTool",
+            "@type": "WebApplication",
+            "name": "GridAI",
             "url": "https://www.socialtool.co",
-            "description": "Free online tools for social media creators",
-            "sameAs": []
-          })}
-        </script>
-        
-        {/* Structured Data - WebSite with SearchAction */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebSite",
-            "name": "SocialTool",
-            "url": "https://www.socialtool.co",
-            "description": "Free online tools for social media creators. Instagram grid splitter, caption generator, hashtag finder, and image resizer.",
-            "publisher": {
-              "@type": "Organization",
-              "name": "SocialTool"
-            }
-          })}
-        </script>
-        
-        {/* Structured Data - SoftwareApplication */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "SoftwareApplication",
-            "name": "SocialTool",
+            "description": "AI-powered Instagram grid splitter and social media tools",
             "applicationCategory": "UtilitiesApplication",
             "operatingSystem": "Any",
             "offers": {
               "@type": "Offer",
               "price": "0",
               "priceCurrency": "USD"
-            },
-            "aggregateRating": {
-              "@type": "AggregateRating",
-              "ratingValue": "4.8",
-              "ratingCount": "150"
-            },
-            "featureList": [
-              "Instagram Grid Splitter",
-              "Caption Generator",
-              "Hashtag Finder", 
-              "Image Resizer",
-              "100% browser-based",
-              "No signup required",
-              "Privacy-focused"
-            ]
+            }
           })}
         </script>
       </Helmet>
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between">
-        <motion.div 
-          initial="hidden"
-          animate="visible"
-          variants={headerVariants}
-          className="flex items-center gap-2.5 will-animate"
-        >
-          <span className="text-xl font-semibold tracking-tight">
-            <span className="text-foreground/90">Social</span>
-            <span className="bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent">Tool</span>
-          </span>
-        </motion.div>
-        <ThemeToggle />
-      </header>
 
-      {/* Background gradient */}
-      <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+      {/* Sidebar */}
+      <ChatSidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)}
+        onNewChat={handleNewChat}
+      />
 
-      <div className="relative z-10">
-        <main className="container pt-24 pb-6 md:pt-28 md:pb-8">
-          {/* Hero Section */}
-          <div className="text-center mb-10 md:mb-12">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground mb-3 flex flex-wrap justify-center gap-x-2">
-              {"Create better content,".split(" ").map((word, i) => (
-                <motion.span
-                  key={i}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ 
-                    duration: 0.3,
-                    delay: i * 0.08
-                  }}
-                  className="inline-block"
-                >
-                  {word}
-                </motion.span>
-              ))}
-              <motion.span 
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ 
-                  duration: 0.8, 
-                  delay: "Create better content,".split(" ").length * 0.15 + 0.2,
-                  type: "spring",
-                  stiffness: 200,
-                  damping: 15
-                }}
-                className="gradient-text inline-block"
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <ChatHeader 
+          onMenuToggle={handleToggleSidebar}
+          isSidebarOpen={isSidebarOpen}
+        />
+
+        {/* Chat Area */}
+        <main className="flex-1 flex flex-col overflow-hidden">
+          <AnimatePresence mode="wait">
+            {!hasMessages ? (
+              /* Empty State - Welcome View */
+              <motion.div 
+                key="welcome"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="flex-1 flex flex-col items-center justify-center px-4"
               >
-                faster
-              </motion.span>
-            </h1>
-            <p className="text-base text-muted-foreground max-w-md mx-auto">
-              Free tools to supercharge your social media presence
-            </p>
-          </div>
+                <div className="text-center mb-8">
+                  <motion.h1 
+                    className="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground mb-2"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    What can I help with?
+                  </motion.h1>
+                  <motion.p
+                    className="text-muted-foreground text-sm"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    AI-assisted grid splitting for Instagram
+                  </motion.p>
+                </div>
 
-          {/* Tool Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
-            {toolCards}
+                <QuickActions onSelect={handleQuickAction} />
+              </motion.div>
+            ) : (
+              /* Messages View */
+              <motion.div 
+                key="messages"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex-1 overflow-y-auto"
+              >
+                <div className="py-4">
+                  {messages.map((message) => (
+                    <ChatMessage key={message.id} message={message} />
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Input Area - Always at bottom */}
+          <div className="mt-auto">
+            <ChatInput 
+              onSend={handleSendMessage}
+              placeholder="Ask about grid splitting..."
+            />
           </div>
         </main>
-
-        {/* Footer - fixed at bottom center */}
-        <footer className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40">
-          <p className="text-xs text-muted-foreground/70 whitespace-nowrap">
-            All processing happens locally — your data never leaves your device
-          </p>
-        </footer>
       </div>
 
-      {/* Feedback Widget - only on Home page */}
+      {/* Feedback Widget */}
       <FeedbackWidget />
     </motion.div>
   );
