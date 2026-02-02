@@ -10,7 +10,7 @@ import {
   QuickActions,
   type Message 
 } from '@/components/chat';
-import { FeedbackWidget } from '@/components/FeedbackWidget';
+import { FeedbackModal } from '@/components/FeedbackModal';
 
 const pageVariants = {
   initial: { opacity: 0 },
@@ -20,6 +20,7 @@ const pageVariants = {
 
 const Home = memo(function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -160,6 +161,7 @@ const Home = memo(function Home() {
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)}
         onNewChat={handleNewChat}
+        onFeedback={() => setIsFeedbackOpen(true)}
       />
 
       {/* Main Content */}
@@ -231,8 +233,11 @@ const Home = memo(function Home() {
         </main>
       </div>
 
-      {/* Feedback Widget */}
-      <FeedbackWidget />
+      {/* Feedback Modal */}
+      <FeedbackModal 
+        isOpen={isFeedbackOpen} 
+        onClose={() => setIsFeedbackOpen(false)} 
+      />
     </motion.div>
   );
 });
