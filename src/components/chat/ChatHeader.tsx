@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Menu, Sparkles, UserPlus, ScanLine } from 'lucide-react';
+import { Menu, Sparkles } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { cn } from '@/lib/utils';
 
@@ -43,22 +43,8 @@ export function ChatHeader({ onMenuToggle, isSidebarOpen }: ChatHeaderProps) {
         </div>
 
         {/* Right Section */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center">
           <ThemeToggle />
-          
-          <button
-            className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-muted transition-colors"
-            aria-label="Invite users"
-          >
-            <UserPlus className="w-5 h-5 text-muted-foreground" />
-          </button>
-          
-          <button
-            className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-muted transition-colors"
-            aria-label="Scan"
-          >
-            <ScanLine className="w-5 h-5 text-muted-foreground" />
-          </button>
         </div>
       </div>
     </header>

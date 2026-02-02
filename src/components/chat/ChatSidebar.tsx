@@ -8,7 +8,7 @@ import {
   FolderPlus,
   Pin,
   X,
-  Menu
+  MessageCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -23,6 +23,7 @@ interface ChatSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onNewChat: () => void;
+  onFeedback?: () => void;
 }
 
 const mockHistory: ChatHistory[] = [
@@ -33,7 +34,7 @@ const mockHistory: ChatHistory[] = [
   { id: '5', title: 'Feed Aesthetic Planning' },
 ];
 
-export function ChatSidebar({ isOpen, onClose, onNewChat }: ChatSidebarProps) {
+export function ChatSidebar({ isOpen, onClose, onNewChat, onFeedback }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredHistory = mockHistory.filter(item =>
@@ -141,13 +142,14 @@ export function ChatSidebar({ isOpen, onClose, onNewChat }: ChatSidebarProps) {
           </div>
         </div>
 
-        {/* User Profile */}
+        {/* Feedback Button */}
         <div className="p-3 border-t border-border">
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/70 transition-colors">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-fuchsia-400 flex items-center justify-center text-white text-xs font-semibold">
-              U
-            </div>
-            <span className="text-sm font-medium">User</span>
+          <button 
+            onClick={onFeedback}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/70 transition-colors text-sm"
+          >
+            <MessageCircle className="w-4 h-4 text-muted-foreground" />
+            <span>Send Feedback</span>
           </button>
         </div>
       </motion.aside>
