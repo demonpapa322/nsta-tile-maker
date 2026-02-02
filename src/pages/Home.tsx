@@ -11,7 +11,7 @@ import {
   type Message 
 } from '@/components/chat';
 import { FeedbackModal } from '@/components/FeedbackModal';
-
+import { streamChat } from '@/lib/openrouter';
 const pageVariants = {
   initial: { opacity: 0 },
   animate: { opacity: 1, transition: { duration: 0.3 } },
@@ -22,6 +22,7 @@ const Home = memo(function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -64,48 +65,53 @@ const Home = memo(function Home() {
       return;
     }
     
-    // Check for grid-related keywords to navigate
-    const lowerContent = content.toLowerCase();
-    if (
-      lowerContent.includes('split') || 
-      lowerContent.includes('grid') ||
-      lowerContent.includes('instagram')
-    ) {
-      setTimeout(() => {
-        const aiMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: "I'll help you split your image into a grid! Let me take you to the Grid Splitter tool where you can upload your image and choose your grid layout.",
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, aiMessage]);
+    // Use AI for responses
+    setIsLoading(true);
+    const assistantId = (Date.now() + 1).toString();
+    let assistantContent = '';
+
+    // Add empty assistant message
+    setMessages(prev => [...prev, {
+      id: assistantId,
+      role: 'assistant',
+      content: '',
+      timestamp: new Date()
+    }]);
+
+    const chatHistory = [...messages, userMessage].map(m => ({
+      role: m.role as 'user' | 'assistant',
+      content: m.content
+    }));
+
+    streamChat(chatHistory, {
+      onDelta: (text) => {
+        assistantContent += text;
+        setMessages(prev => prev.map(m => 
+          m.id === assistantId ? { ...m, content: assistantContent } : m
+        ));
         scrollToBottom();
-        setTimeout(() => navigate('/grid-splitter'), 1500);
-      }, 500);
-    } else if (lowerContent.includes('resize')) {
-      setTimeout(() => {
-        const aiMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: "The Image Resizer tool is coming soon! For now, you can use the Grid Splitter to crop and prepare your images.",
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, aiMessage]);
+      },
+      onDone: () => {
+        setIsLoading(false);
         scrollToBottom();
-      }, 500);
-    } else {
-      setTimeout(() => {
-        const aiMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: "I'm here to help you with image grid splitting and social media content preparation. Try asking me to 'split an image into a grid' or use the quick action buttons above!",
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, aiMessage]);
-        scrollToBottom();
-      }, 500);
-    }
-  }, [navigate, scrollToBottom]);
+        
+        // Check if response suggests navigation
+        const lowerContent = content.toLowerCase();
+        if (lowerContent.includes('split') || lowerContent.includes('grid')) {
+          setTimeout(() => navigate('/grid-splitter'), 2000);
+        }
+      },
+      onError: (error) => {
+        console.error('AI error:', error);
+        setIsLoading(false);
+        setMessages(prev => prev.map(m => 
+          m.id === assistantId 
+            ? { ...m, content: "Sorry, I encountered an error. Please try again." } 
+            : m
+        ));
+      }
+    });
+  }, [messages, navigate, scrollToBottom]);
 
   const handleQuickAction = useCallback((prompt: string) => {
     handleSendMessage(prompt);
@@ -228,6 +234,7 @@ const Home = memo(function Home() {
             <ChatInput 
               onSend={handleSendMessage}
               placeholder="Ask about grid splitting..."
+              disabled={isLoading}
             />
           </div>
         </main>
