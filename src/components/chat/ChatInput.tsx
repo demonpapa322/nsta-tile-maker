@@ -91,8 +91,8 @@ export function ChatInput({
     <div className="w-full max-w-3xl mx-auto px-4 pb-4">
       <motion.div 
         className={cn(
-          "relative flex flex-col rounded-3xl bg-muted/30 border transition-all",
-          isDragging ? "border-primary/50 bg-primary/5" : "border-border/50"
+          "relative flex flex-col rounded-2xl bg-muted/40 border shadow-sm transition-all",
+          isDragging ? "border-primary/50 bg-primary/5" : "border-border/30"
         )}
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
