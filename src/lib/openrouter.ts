@@ -1,6 +1,4 @@
-// WARNING: This API key is exposed in client-side code. For production, use a backend.
-const OPENROUTER_API_KEY = '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';
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
 interface Message {
   role: 'user' | 'assistant' | 'system';
@@ -13,34 +11,18 @@ interface StreamCallbacks {
   onError: (error: Error) => void;
 }
 
-const SYSTEM_PROMPT = `You are GridAI, a helpful assistant specialized in Instagram grid splitting and social media image preparation. You help users:
-- Split images into perfect grid layouts for Instagram profiles
-- Understand the best grid sizes (2x3, 3x3, etc.) for their content
-- Optimize images for social media
-
-Keep responses concise and helpful. When users want to split images, guide them to upload an image or use the grid splitter tool.`;
-
 export async function streamChat(
   messages: Message[],
   callbacks: StreamCallbacks
 ): Promise<void> {
   try {
-    const response = await fetch(OPENROUTER_URL, {
+    const response = await fetch(CHAT_URL, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': window.location.origin,
-        'X-Title': 'GridAI'
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({
-        model: 'deepseek/deepseek-chat',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          ...messages
-        ],
-        stream: true
-      })
+      body: JSON.stringify({ messages })
     });
 
     if (!response.ok) {
