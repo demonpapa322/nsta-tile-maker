@@ -1,5 +1,5 @@
 // WARNING: This API key is exposed in client-side code. For production, use a backend.
-const OPENROUTER_API_KEY = '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';
+const OPENROUTER_API_KEY = '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';
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 interface Message {
