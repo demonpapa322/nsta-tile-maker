@@ -10,7 +10,7 @@ interface ChatHeaderProps {
 
 export function ChatHeader({ onMenuToggle, isSidebarOpen }: ChatHeaderProps) {
   return (
-    <header className="sticky top-0 z-30 w-full bg-background/80 backdrop-blur-xl border-b border-border/50">
+    <header className="sticky top-0 z-30 w-full bg-background/80 backdrop-blur-xl">
       <div className="flex items-center justify-between h-14 px-3">
         {/* Left Section */}
         <div className="flex items-center gap-2">
