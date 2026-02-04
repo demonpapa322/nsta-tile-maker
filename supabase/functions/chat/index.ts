@@ -41,7 +41,7 @@ serve(async (req) => {
         'X-Title': 'GridAI'
       },
       body: JSON.stringify({
-        model: 'deepseek/deepseek-chat',
+        model: 'meta-llama/llama-3-8b-instruct',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           ...messages
