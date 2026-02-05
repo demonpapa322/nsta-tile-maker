@@ -1,11 +1,10 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
   PenSquare, 
-  Image, 
-  Grid3X3, 
-  FolderPlus,
+  Wrench,
   Pin,
   X,
   MessageCircle
@@ -104,18 +103,14 @@ export function ChatSidebar({ isOpen, onClose, onNewChat, onFeedback }: ChatSide
         {/* Quick Access */}
         <div className="px-3 pb-2">
           <nav className="space-y-0.5">
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/70 transition-colors text-sm">
-              <Image className="w-4 h-4 text-primary" />
-              Images
-            </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/70 transition-colors text-sm">
-              <Grid3X3 className="w-4 h-4 text-primary" />
-              Grid Splitter
-            </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/70 transition-colors text-sm">
-              <FolderPlus className="w-4 h-4" />
-              New project
-            </button>
+            <Link 
+              to="/tools"
+              onClick={onClose}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/70 transition-colors text-sm"
+            >
+              <Wrench className="w-4 h-4 text-primary" />
+              Tools
+            </Link>
           </nav>
         </div>
 
