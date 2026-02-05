@@ -12,6 +12,7 @@ import GridSplitter from "./pages/GridSplitter";
 import CaptionGenerator from "./pages/CaptionGenerator";
 import HashtagFinder from "./pages/HashtagFinder";
 import ImageResizer from "./pages/ImageResizer";
+import Tools from "./pages/Tools";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const AnimatedRoutes = () => {
         <Route path="/caption-generator" element={<CaptionGenerator />} />
         <Route path="/hashtag-finder" element={<HashtagFinder />} />
         <Route path="/image-resizer" element={<ImageResizer />} />
+        <Route path="/tools" element={<Tools />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
