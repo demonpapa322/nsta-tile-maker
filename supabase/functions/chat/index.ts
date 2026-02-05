@@ -66,7 +66,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://www.socialtool.co',
-        'X-Title': 'GridAI'
+        'X-Title': 'Social AI'
       },
       body: JSON.stringify({
         model: 'meta-llama/llama-3-8b-instruct',
