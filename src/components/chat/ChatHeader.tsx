@@ -24,9 +24,12 @@ export function ChatHeader({ onMenuToggle, isSidebarOpen }: ChatHeaderProps) {
           </motion.button>
           
           {/* Brand */}
-          <span className="hidden sm:inline text-lg font-semibold bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent">
+          <a
+            href="https://www.socialtool.co/"
+            className="hidden sm:inline text-lg font-semibold bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent"
+          >
             SocialTool
-          </span>
+          </a>
         </div>
 
         {/* Right Section */}
