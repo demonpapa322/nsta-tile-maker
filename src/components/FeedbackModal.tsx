@@ -77,24 +77,24 @@ export const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose }: Fe
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90%] max-w-md"
+            className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 mx-auto max-w-sm sm:max-w-md"
           >
-            <div className="bg-background border border-border rounded-2xl shadow-2xl overflow-hidden">
+            <div className="bg-background border border-border rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
               {/* Header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                <h2 className="text-lg font-semibold">Send Feedback</h2>
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+                <h2 className="text-base font-semibold">Send Feedback</h2>
                 <button
                   onClick={onClose}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-muted transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="p-5 space-y-4">
+              <form onSubmit={handleSubmit} className="p-4 space-y-3 overflow-y-auto">
                 <div>
-                  <label htmlFor="feedback-email" className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                  <label htmlFor="feedback-email" className="text-sm font-medium text-muted-foreground mb-1 block">
                     Email
                   </label>
                   <input
@@ -103,7 +103,7 @@ export const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose }: Fe
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your@email.com"
-                    className="w-full px-3.5 py-2.5 text-sm bg-muted/30 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all placeholder:text-muted-foreground/60"
+                    className="w-full px-3 py-2 text-sm bg-muted/30 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all placeholder:text-muted-foreground/60"
                     disabled={isSubmitting}
                   />
                   {errors.email && (
@@ -112,7 +112,7 @@ export const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose }: Fe
                 </div>
 
                 <div>
-                  <label htmlFor="feedback-message" className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                  <label htmlFor="feedback-message" className="text-sm font-medium text-muted-foreground mb-1 block">
                     Your Feedback
                   </label>
                   <textarea
@@ -120,8 +120,8 @@ export const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose }: Fe
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="How can we improve?"
-                    rows={4}
-                    className="w-full px-3.5 py-2.5 text-sm bg-muted/30 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all resize-none placeholder:text-muted-foreground/60"
+                    rows={3}
+                    className="w-full px-3 py-2 text-sm bg-muted/30 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all resize-none placeholder:text-muted-foreground/60"
                     disabled={isSubmitting}
                   />
                   {errors.message && (
@@ -132,7 +132,7 @@ export const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose }: Fe
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-10 bg-foreground text-background text-sm font-medium rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50"
+                  className="w-full h-9 bg-foreground text-background text-sm font-medium rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50"
                 >
                   {isSubmitting ? 'Opening...' : 'Send Feedback'}
                   <ArrowRight className="w-4 h-4" />
