@@ -23,23 +23,10 @@ export function ChatHeader({ onMenuToggle, isSidebarOpen }: ChatHeaderProps) {
             <Menu className="w-5 h-5" />
           </motion.button>
           
-          {/* Brand/Upgrade Button */}
-          <motion.button
-            className={cn(
-              "hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full",
-              "bg-gradient-to-r from-violet-400/10 via-fuchsia-400/10 to-rose-400/10",
-              "border border-primary/20",
-              "text-sm font-medium",
-              "hover:border-primary/40 transition-colors"
-            )}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span className="bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent">
-              GridAI
-            </span>
-          </motion.button>
+          {/* Brand */}
+          <span className="hidden sm:inline text-lg font-semibold bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent">
+            SocialTool
+          </span>
         </div>
 
         {/* Right Section */}
