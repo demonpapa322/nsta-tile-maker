@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
-import { Menu, Sparkles } from 'lucide-react';
+import { Menu } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { cn } from '@/lib/utils';
 
 interface ChatHeaderProps {
   onMenuToggle: () => void;
@@ -23,10 +23,14 @@ export function ChatHeader({ onMenuToggle, isSidebarOpen }: ChatHeaderProps) {
             <Menu className="w-5 h-5" />
           </motion.button>
           
-          {/* Brand */}
-          <span className="hidden sm:inline text-lg font-semibold bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent">
+          {/* Brand - as draggable link */}
+          <Link 
+            to="/"
+            className="hidden sm:inline text-lg font-semibold bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+            draggable="true"
+          >
             SocialTool
-          </span>
+          </Link>
         </div>
 
         {/* Right Section */}
