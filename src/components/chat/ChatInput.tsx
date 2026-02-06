@@ -91,8 +91,8 @@ export function ChatInput({
     <div className="w-full max-w-3xl mx-auto px-4 pb-4">
       <motion.div 
         className={cn(
-          "relative flex flex-col rounded-xl bg-muted/50 border shadow-sm transition-all",
-          isDragging ? "border-primary/50 bg-primary/5" : "border-border/60"
+          "relative flex flex-col rounded-3xl bg-card/80 backdrop-blur-sm border shadow-lg transition-all",
+          isDragging ? "border-primary/50 bg-primary/5 shadow-primary/20" : "border-border/40 hover:border-border/60"
         )}
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -146,7 +146,7 @@ export function ChatInput({
         </AnimatePresence>
 
         {/* Input Row */}
-        <div className="flex items-end gap-1 px-3 py-2">
+        <div className="flex items-end gap-2 px-4 py-3">
           {/* Hidden file input */}
           <input
             ref={fileInputRef}
@@ -159,7 +159,7 @@ export function ChatInput({
           {/* Attachment Button */}
           <button
             onClick={handleAttachClick}
-            className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted/80 transition-colors"
+            className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-muted/50 hover:bg-muted transition-colors"
             aria-label="Add image"
           >
             <Paperclip className="w-4 h-4 text-muted-foreground" />
@@ -176,7 +176,7 @@ export function ChatInput({
             rows={1}
             className={cn(
               "flex-1 resize-none bg-transparent border-0 text-sm leading-relaxed",
-              "placeholder:text-muted-foreground/60",
+              "placeholder:text-muted-foreground/50",
               "focus:outline-none focus:ring-0",
               "min-h-[36px] max-h-[120px] py-2",
               disabled && "opacity-50 cursor-not-allowed"
@@ -188,10 +188,10 @@ export function ChatInput({
             onClick={handleSend}
             disabled={(!message.trim() && !image) || disabled}
             className={cn(
-              "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg transition-all",
+              "flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full transition-all",
               (message.trim() || image)
-                ? "bg-foreground text-background" 
-                : "bg-muted/70 text-muted-foreground/50"
+                ? "bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 text-white shadow-md" 
+                : "bg-muted/50 text-muted-foreground/50"
             )}
             whileTap={{ scale: 0.92 }}
             aria-label="Send message"
@@ -202,7 +202,7 @@ export function ChatInput({
       </motion.div>
       
       {/* Disclaimer */}
-      <p className="text-[10px] text-muted-foreground/60 text-center mt-2">
+      <p className="text-[10px] text-muted-foreground/50 text-center mt-2.5">
         All processing happens locally in your browser
       </p>
     </div>
