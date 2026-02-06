@@ -83,10 +83,14 @@ export function ChatSidebar({ isOpen, onClose, onNewChat, onFeedback }: ChatSide
               <Link 
                 to="/tools"
                 onClick={onClose}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/70 transition-colors text-sm"
+                className="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-violet-500/10 via-fuchsia-500/10 to-rose-500/10 border border-violet-500/20 hover:from-violet-500/20 hover:via-fuchsia-500/20 hover:to-rose-500/20 hover:border-violet-500/30 transition-all text-sm"
               >
-                <Wrench className="w-4 h-4 text-primary" />
-                Tools
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 via-fuchsia-500 to-rose-500 flex items-center justify-center shadow-sm">
+                  <Wrench className="w-3.5 h-3.5 text-white" />
+                </div>
+                <span className="font-medium bg-gradient-to-r from-violet-600 via-fuchsia-600 to-rose-600 bg-clip-text text-transparent">
+                  Tools
+                </span>
               </Link>
             </nav>
           </div>

@@ -26,10 +26,11 @@ export function ChatHeader({ onMenuToggle, isSidebarOpen }: ChatHeaderProps) {
           {/* Brand - as draggable link */}
           <Link 
             to="/"
-            className="hidden sm:inline text-lg font-semibold bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+            className="hidden sm:inline text-base font-semibold hover:opacity-80 transition-opacity"
             draggable="true"
           >
-            SocialTool
+            <span className="bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent">SocialTool</span>
+            <span className="text-muted-foreground font-normal"> - AI powered Social Media suite</span>
           </Link>
         </div>
 
