@@ -2,38 +2,45 @@
  import { Link } from 'react-router-dom';
  import { motion } from 'framer-motion';
  import { ThemeToggle } from '@/components/ThemeToggle';
- import { ArrowLeft, Grid3X3, Image, Hash, MessageSquare, Sparkles } from 'lucide-react';
- 
- const tools = [
-   {
-     title: 'Grid Splitter',
-     description: 'Split images into perfect Instagram grid posts',
-     icon: Grid3X3,
-     href: '/grid-splitter',
-     available: true,
-   },
-    {
-      title: 'Image Resizer',
-      description: 'Resize and optimize images for social media',
-      icon: Image,
-      href: '/image-resizer',
-      available: true,
-    },
-   {
-     title: 'Caption Generator',
-     description: 'Create engaging captions with AI assistance',
-     icon: MessageSquare,
-     href: '/caption-generator',
-     available: false,
-   },
-   {
-     title: 'Hashtag Finder',
-     description: 'Discover trending hashtags for your content',
-     icon: Hash,
-     href: '/hashtag-finder',
-     available: false,
-   },
- ];
+import { ArrowLeft, Grid3X3, Image, Hash, MessageSquare, Sparkles, Wand2 } from 'lucide-react';
+
+const tools = [
+  {
+    title: 'Grid Splitter',
+    description: 'Split images into perfect Instagram grid posts',
+    icon: Grid3X3,
+    href: '/grid-splitter',
+    available: true,
+  },
+  {
+    title: 'Image Resizer',
+    description: 'Resize and optimize images for social media',
+    icon: Image,
+    href: '/image-resizer',
+    available: true,
+  },
+  {
+    title: 'AI Image Generator',
+    description: 'Create stunning images from text with AI',
+    icon: Wand2,
+    href: '/image-generator',
+    available: true,
+  },
+  {
+    title: 'Caption Generator',
+    description: 'Create engaging captions with AI assistance',
+    icon: MessageSquare,
+    href: '/caption-generator',
+    available: false,
+  },
+  {
+    title: 'Hashtag Finder',
+    description: 'Discover trending hashtags for your content',
+    icon: Hash,
+    href: '/hashtag-finder',
+    available: false,
+  },
+];
  
  const containerVariants = {
    hidden: { opacity: 0 },
