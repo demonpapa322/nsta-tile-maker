@@ -12,13 +12,13 @@
      href: '/grid-splitter',
      available: true,
    },
-   {
-     title: 'Image Resizer',
-     description: 'Resize and optimize images for social media',
-     icon: Image,
-     href: '/image-resizer',
-     available: false,
-   },
+    {
+      title: 'Image Resizer',
+      description: 'Resize and optimize images for social media',
+      icon: Image,
+      href: '/image-resizer',
+      available: true,
+    },
    {
      title: 'Caption Generator',
      description: 'Create engaging captions with AI assistance',
