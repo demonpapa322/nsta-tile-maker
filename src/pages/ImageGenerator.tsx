@@ -6,6 +6,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import {
   ArrowLeft,
   Sparkles,
@@ -54,22 +55,16 @@ const ImageGenerator = () => {
     setGeneratedImage(null);
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ prompt: prompt.trim(), style: selectedStyle }),
-        }
-      );
+      const { data, error } = await supabase.functions.invoke('generate-image', {
+        body: { prompt: prompt.trim(), style: selectedStyle },
+      });
 
-      const data = await response.json();
+      if (error) {
+        throw new Error(error.message || 'Failed to generate image');
+      }
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate image');
+      if (data?.error) {
+        throw new Error(data.error);
       }
 
       setGeneratedImage(data.imageUrl);
