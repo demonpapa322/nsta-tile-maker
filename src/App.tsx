@@ -7,16 +7,14 @@ import { ThemeProvider } from "next-themes";
 import { MotionConfig, AnimatePresence } from "framer-motion";
 import { Analytics } from "@vercel/analytics/react";
 import { HelmetProvider } from "react-helmet-async";
-import { lazy, Suspense } from "react";
 import Home from "./pages/Home";
 import GridSplitter from "./pages/GridSplitter";
 import CaptionGenerator from "./pages/CaptionGenerator";
 import HashtagFinder from "./pages/HashtagFinder";
 import ImageResizer from "./pages/ImageResizer";
+import ImageGenerator from "./pages/ImageGenerator";
 import Tools from "./pages/Tools";
 import NotFound from "./pages/NotFound";
-
-const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
 
 const queryClient = new QueryClient();
 
@@ -30,7 +28,7 @@ const AnimatedRoutes = () => {
         <Route path="/caption-generator" element={<CaptionGenerator />} />
         <Route path="/hashtag-finder" element={<HashtagFinder />} />
         <Route path="/image-resizer" element={<ImageResizer />} />
-        <Route path="/image-generator" element={<Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}><ImageGenerator /></Suspense>} />
+        <Route path="/image-generator" element={<ImageGenerator />} />
         <Route path="/tools" element={<Tools />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
