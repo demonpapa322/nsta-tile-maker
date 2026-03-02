@@ -6,7 +6,8 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+const SUPABASE_URL = 'https://qdqihlxlgzomnqkxbjij.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkcWlobHhsZ3pvbW5xa3hiamlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMjE4MzksImV4cCI6MjA4NTY5NzgzOX0.eHlmX9hrya9q9EMzsap148Mkm4G3R9p5qYft9X1AmAE';
 import {
   ArrowLeft,
   Sparkles,
@@ -55,16 +56,19 @@ const ImageGenerator = () => {
     setGeneratedImage(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke('generate-image', {
-        body: { prompt: prompt.trim(), style: selectedStyle },
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-image`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ prompt: prompt.trim(), style: selectedStyle }),
       });
 
-      if (error) {
-        throw new Error(error.message || 'Failed to generate image');
-      }
+      const data = await response.json();
 
-      if (data?.error) {
-        throw new Error(data.error);
+      if (!response.ok || data?.error) {
+        throw new Error(data?.error || 'Failed to generate image');
       }
 
       setGeneratedImage(data.imageUrl);
