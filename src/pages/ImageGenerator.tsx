@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -16,6 +16,9 @@ import {
   Wand2,
   RefreshCw,
   Image as ImageIcon,
+  Trash2,
+  Clock,
+  X,
 } from 'lucide-react';
 
 const STYLES = [
@@ -38,13 +41,68 @@ const SUGGESTIONS = [
   'Abstract geometric pattern in vibrant colors',
 ];
 
+interface GalleryItem {
+  id: string;
+  prompt: string;
+  style: string;
+  imageUrl: string;
+  createdAt: string;
+}
+
+const GALLERY_KEY = 'socialtool-image-gallery';
+const MAX_GALLERY_ITEMS = 20;
+
+function loadGallery(): GalleryItem[] {
+  try {
+    const raw = localStorage.getItem(GALLERY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveGallery(items: GalleryItem[]) {
+  localStorage.setItem(GALLERY_KEY, JSON.stringify(items.slice(0, MAX_GALLERY_ITEMS)));
+}
+
 const ImageGenerator = () => {
   const [prompt, setPrompt] = useState('');
   const [selectedStyle, setSelectedStyle] = useState('photorealistic');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [imageDescription, setImageDescription] = useState('');
+  const [gallery, setGallery] = useState<GalleryItem[]>(loadGallery);
+  const [selectedGalleryItem, setSelectedGalleryItem] = useState<GalleryItem | null>(null);
+  const [showGallery, setShowGallery] = useState(false);
   const { toast } = useToast();
+
+  // Persist gallery changes
+  useEffect(() => {
+    saveGallery(gallery);
+  }, [gallery]);
+
+  const addToGallery = useCallback((imageUrl: string, usedPrompt: string, usedStyle: string) => {
+    const item: GalleryItem = {
+      id: Date.now().toString(),
+      prompt: usedPrompt,
+      style: usedStyle,
+      imageUrl,
+      createdAt: new Date().toISOString(),
+    };
+    setGallery(prev => [item, ...prev].slice(0, MAX_GALLERY_ITEMS));
+  }, []);
+
+  const removeFromGallery = useCallback((id: string) => {
+    setGallery(prev => prev.filter(item => item.id !== id));
+    if (selectedGalleryItem?.id === id) setSelectedGalleryItem(null);
+    toast({ title: 'Image removed from gallery' });
+  }, [selectedGalleryItem, toast]);
+
+  const clearGallery = useCallback(() => {
+    setGallery([]);
+    setSelectedGalleryItem(null);
+    toast({ title: 'Gallery cleared' });
+  }, [toast]);
 
   const handleGenerate = useCallback(async () => {
     if (!prompt.trim()) {
@@ -54,6 +112,8 @@ const ImageGenerator = () => {
 
     setIsGenerating(true);
     setGeneratedImage(null);
+    const currentPrompt = prompt.trim();
+    const currentStyle = selectedStyle;
 
     try {
       const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-image`, {
@@ -62,7 +122,7 @@ const ImageGenerator = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         },
-        body: JSON.stringify({ prompt: prompt.trim(), style: selectedStyle }),
+        body: JSON.stringify({ prompt: currentPrompt, style: currentStyle }),
       });
 
       const data = await response.json();
@@ -73,7 +133,8 @@ const ImageGenerator = () => {
 
       setGeneratedImage(data.imageUrl);
       setImageDescription(data.description || '');
-      toast({ title: 'Image generated!' });
+      addToGallery(data.imageUrl, currentPrompt, currentStyle);
+      toast({ title: 'Image generated & saved to gallery!' });
     } catch (err) {
       console.error('Generation error:', err);
       toast({
@@ -84,13 +145,14 @@ const ImageGenerator = () => {
     } finally {
       setIsGenerating(false);
     }
-  }, [prompt, selectedStyle, toast]);
+  }, [prompt, selectedStyle, toast, addToGallery]);
 
-  const handleDownload = useCallback(() => {
-    if (!generatedImage) return;
+  const handleDownload = useCallback((imageUrl?: string, downloadPrompt?: string) => {
+    const url = imageUrl || generatedImage;
+    if (!url) return;
 
     const link = document.createElement('a');
-    link.href = generatedImage;
+    link.href = url;
     link.download = `socialtool-ai-${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
@@ -101,6 +163,8 @@ const ImageGenerator = () => {
   const handleSuggestion = useCallback((text: string) => {
     setPrompt(text);
   }, []);
+
+  const styleLabelMap = Object.fromEntries(STYLES.map(s => [s.id, `${s.emoji} ${s.label}`]));
 
   return (
     <div className="min-h-screen bg-background">
@@ -122,7 +186,24 @@ const ImageGenerator = () => {
           <span className="hidden sm:inline">Back to Tools</span>
         </Link>
       </div>
-      <div className="fixed top-4 right-4 z-50">
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+        {/* Gallery Toggle */}
+        <button
+          onClick={() => setShowGallery(prev => !prev)}
+          className={`relative inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors border ${
+            showGallery
+              ? 'border-primary bg-primary/10 text-primary'
+              : 'border-border/50 bg-card text-muted-foreground hover:text-foreground hover:bg-muted/50'
+          }`}
+        >
+          <Clock className="w-4 h-4" />
+          <span className="hidden sm:inline">Gallery</span>
+          {gallery.length > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+              {gallery.length}
+            </span>
+          )}
+        </button>
         <ThemeToggle />
       </div>
 
@@ -160,6 +241,158 @@ const ImageGenerator = () => {
             Describe what you want and let AI create it for you
           </motion.p>
         </div>
+
+        {/* Gallery Panel */}
+        <AnimatePresence>
+          {showGallery && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mb-8 overflow-hidden"
+            >
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-primary" />
+                    Generated Images ({gallery.length})
+                  </h2>
+                  {gallery.length > 0 && (
+                    <button
+                      onClick={clearGallery}
+                      className="text-xs text-muted-foreground hover:text-destructive transition-colors flex items-center gap-1"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      Clear all
+                    </button>
+                  )}
+                </div>
+
+                {gallery.length === 0 ? (
+                  <div className="py-8 text-center">
+                    <ImageIcon className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">No images yet. Generate your first image!</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    {gallery.map((item) => (
+                      <motion.div
+                        key={item.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="group relative rounded-xl overflow-hidden border border-border/50 bg-muted/20 cursor-pointer hover:border-primary/40 transition-colors"
+                        onClick={() => setSelectedGalleryItem(item)}
+                      >
+                        <div className="aspect-square">
+                          <img
+                            src={item.imageUrl}
+                            alt={item.prompt}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                        {/* Hover overlay */}
+                        <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-2">
+                          <p className="text-[10px] text-foreground text-center line-clamp-3 font-medium">
+                            {item.prompt}
+                          </p>
+                          <span className="text-[9px] text-muted-foreground">
+                            {styleLabelMap[item.style] || item.style}
+                          </span>
+                        </div>
+                        {/* Delete button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFromGallery(item.id);
+                          }}
+                          className="absolute top-1 right-1 w-6 h-6 rounded-full bg-destructive/90 text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Gallery Item Lightbox */}
+        <AnimatePresence>
+          {selectedGalleryItem && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] bg-background/90 backdrop-blur-sm flex items-center justify-center p-4"
+              onClick={() => setSelectedGalleryItem(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="max-w-2xl w-full rounded-2xl border border-border bg-card overflow-hidden shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img
+                  src={selectedGalleryItem.imageUrl}
+                  alt={selectedGalleryItem.prompt}
+                  className="w-full object-contain max-h-[60vh]"
+                />
+                <div className="p-4 space-y-3">
+                  <p className="text-sm text-foreground font-medium">{selectedGalleryItem.prompt}</p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="px-2 py-0.5 rounded-full bg-muted/50 border border-border">
+                      {styleLabelMap[selectedGalleryItem.style] || selectedGalleryItem.style}
+                    </span>
+                    <span>{new Date(selectedGalleryItem.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => handleDownload(selectedGalleryItem.imageUrl)}
+                      variant="outline"
+                      className="flex-1 rounded-xl"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setPrompt(selectedGalleryItem.prompt);
+                        setSelectedStyle(selectedGalleryItem.style);
+                        setSelectedGalleryItem(null);
+                        setShowGallery(false);
+                      }}
+                      variant="outline"
+                      className="flex-1 rounded-xl"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Use prompt
+                    </Button>
+                    <Button
+                      onClick={() => removeFromGallery(selectedGalleryItem.id)}
+                      variant="outline"
+                      className="rounded-xl text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedGalleryItem(null)}
+                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/80 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left – Controls */}
@@ -292,7 +525,7 @@ const ImageGenerator = () => {
                     {/* Action bar */}
                     <div className="p-4 flex items-center gap-3 border-t border-border">
                       <Button
-                        onClick={handleDownload}
+                        onClick={() => handleDownload()}
                         variant="outline"
                         className="flex-1 rounded-xl"
                       >
