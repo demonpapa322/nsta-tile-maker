@@ -45,12 +45,33 @@ interface GalleryItem {
   id: string;
   prompt: string;
   style: string;
-  imageUrl: string;
+  imageUrl: string;      // compressed thumbnail (persisted in localStorage)
+  fullImageUrl?: string;  // full-res base64 kept in memory only (not persisted)
   createdAt: string;
 }
 
 const GALLERY_KEY = 'socialtool-image-gallery';
 const MAX_GALLERY_ITEMS = 20;
+const THUMB_MAX_SIZE = 256; // px – keeps each item under ~50KB
+
+function compressToThumbnail(dataUrl: string): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(THUMB_MAX_SIZE / img.width, THUMB_MAX_SIZE / img.height, 1);
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.7));
+    };
+    img.onerror = () => resolve(dataUrl); // fallback
+    img.src = dataUrl;
+  });
+}
 
 function loadGallery(): GalleryItem[] {
   try {
@@ -62,7 +83,13 @@ function loadGallery(): GalleryItem[] {
 }
 
 function saveGallery(items: GalleryItem[]) {
-  localStorage.setItem(GALLERY_KEY, JSON.stringify(items.slice(0, MAX_GALLERY_ITEMS)));
+  try {
+    localStorage.setItem(GALLERY_KEY, JSON.stringify(items.slice(0, MAX_GALLERY_ITEMS)));
+  } catch (e) {
+    // If still too large, trim older items
+    const trimmed = items.slice(0, Math.max(1, items.length - 2));
+    try { localStorage.setItem(GALLERY_KEY, JSON.stringify(trimmed)); } catch { /* give up */ }
+  }
 }
 
 const ImageGenerator = () => {
@@ -81,12 +108,14 @@ const ImageGenerator = () => {
     saveGallery(gallery);
   }, [gallery]);
 
-  const addToGallery = useCallback((imageUrl: string, usedPrompt: string, usedStyle: string) => {
+  const addToGallery = useCallback(async (imageUrl: string, usedPrompt: string, usedStyle: string) => {
+    const thumbnail = await compressToThumbnail(imageUrl);
     const item: GalleryItem = {
       id: Date.now().toString(),
       prompt: usedPrompt,
       style: usedStyle,
-      imageUrl,
+      imageUrl: thumbnail,
+      fullImageUrl: imageUrl,
       createdAt: new Date().toISOString(),
     };
     setGallery(prev => [item, ...prev].slice(0, MAX_GALLERY_ITEMS));
@@ -340,7 +369,7 @@ const ImageGenerator = () => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <img
-                  src={selectedGalleryItem.imageUrl}
+                  src={selectedGalleryItem.fullImageUrl || selectedGalleryItem.imageUrl}
                   alt={selectedGalleryItem.prompt}
                   className="w-full object-contain max-h-[60vh]"
                 />
@@ -354,7 +383,7 @@ const ImageGenerator = () => {
                   </div>
                   <div className="flex gap-2">
                     <Button
-                      onClick={() => handleDownload(selectedGalleryItem.imageUrl)}
+                      onClick={() => handleDownload(selectedGalleryItem.fullImageUrl || selectedGalleryItem.imageUrl)}
                       variant="outline"
                       className="flex-1 rounded-xl"
                     >
