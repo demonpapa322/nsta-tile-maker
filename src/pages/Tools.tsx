@@ -2,7 +2,7 @@
  import { Link } from 'react-router-dom';
  import { motion } from 'framer-motion';
  import { ThemeToggle } from '@/components/ThemeToggle';
-import { ArrowLeft, Grid3X3, Image, Hash, MessageSquare, Sparkles, Wand2 } from 'lucide-react';
+import { ArrowLeft, Grid3X3, Image, Hash, MessageSquare, Sparkles, Wand2, Zap } from 'lucide-react';
 
 const tools = [
   {
@@ -31,7 +31,14 @@ const tools = [
     description: 'Create engaging captions with AI assistance',
     icon: MessageSquare,
     href: '/caption-generator',
-    available: false,
+    available: true,
+  },
+  {
+    title: 'Viral Trend Scout',
+    description: 'AI agent that finds viral trends & suggests image prompts',
+    icon: Zap,
+    href: '/trend-scout',
+    available: true,
   },
   {
     title: 'Hashtag Finder',
