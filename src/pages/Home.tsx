@@ -172,7 +172,7 @@ const Home = memo(function Home() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative">
         {/* Header */}
         <ChatHeader 
           onMenuToggle={handleToggleSidebar}
@@ -231,16 +231,20 @@ const Home = memo(function Home() {
           </AnimatePresence>
 
           {/* Spacer for floating input */}
-          <div className="h-28 shrink-0" />
+          <div className="h-32 shrink-0" />
         </main>
-      </div>
 
-      {/* Floating Input */}
-      <ChatInput 
-        onSend={handleSendMessage}
-        placeholder="Ask anything"
-        disabled={isLoading}
-      />
+        {/* Floating Input — inside main content column so it centers correctly */}
+        <div className="absolute bottom-0 left-0 right-0 z-40 pointer-events-none">
+          <div className="w-full max-w-3xl mx-auto pointer-events-auto">
+            <ChatInput 
+              onSend={handleSendMessage}
+              placeholder="Ask anything"
+              disabled={isLoading}
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Feedback Modal */}
       <FeedbackModal 
