@@ -234,6 +234,13 @@ const Home = memo(function Home() {
         </main>
       </div>
 
+      {/* Floating Input */}
+      <ChatInput 
+        onSend={handleSendMessage}
+        placeholder="Ask anything"
+        disabled={isLoading}
+      />
+
       {/* Feedback Modal */}
       <FeedbackModal 
         isOpen={isFeedbackOpen} 
