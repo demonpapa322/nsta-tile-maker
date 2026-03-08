@@ -379,9 +379,9 @@ const GridSplitter = memo(function GridSplitter() {
                 "text": "Download all grid tiles and post them to Instagram in reverse order for a seamless look."
               }
             ],
-            "tool": {
+             "tool": {
               "@type": "HowToTool",
-              "name": "SocialTools Grid Splitter"
+              "name": "SocialTools Grid & Carousel Maker"
             }
           })}
         </script>
