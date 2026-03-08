@@ -299,7 +299,7 @@ const GridSplitter = memo(function GridSplitter() {
         <title>Grid & Carousel Maker for Instagram - 100% Online</title>
         <meta name="title" content="Grid & Carousel Maker for Instagram - 100% Online" />
         <meta name="description" content="Create perfect Instagram grid posts and carousels for free. Make stunning 3x3, 3x2, 3x1 grid layouts in seconds. No signup, 100% private - works entirely in your browser." />
-        <meta name="keywords" content="instagram grid maker, instagram carousel maker, grid and carousel maker, split image for instagram, instagram photo grid, grid post maker, instagram puzzle feed, instagram grid layout, photo grid maker online, free instagram grid tool, instagram multi-post, instagram seamless grid, 9 grid photo maker, instagram profile grid" />
+        <meta name="keywords" content="Instagram grid maker, photo grid for Instagram, split image for Instagram, Instagram feed planner, aesthetic Instagram feed, create Instagram puzzle feed, 3x3 grid for Instagram, free Instagram grid template, how to make a grid on Instagram, best Instagram grid app" />
         <meta name="robots" content="index, follow" />
         <meta name="language" content="English" />
         <meta name="author" content="SocialTools" />
