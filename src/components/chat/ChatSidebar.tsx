@@ -110,7 +110,7 @@ export function ChatSidebar({ isOpen, onClose, onToggle, onNewChat, onFeedback }
 
           {/* Quick Access */}
           <div className="px-3 pb-2">
-            <nav className="space-y-0.5">
+            <nav className="space-y-1">
               <Link 
                 to="/tools"
                 onClick={onClose}
@@ -121,6 +121,20 @@ export function ChatSidebar({ isOpen, onClose, onToggle, onNewChat, onFeedback }
                 </div>
                 <span className="font-medium bg-gradient-to-r from-violet-600 via-fuchsia-600 to-rose-600 bg-clip-text text-transparent">
                   Tools
+                </span>
+              </Link>
+              <Link 
+                to="/post-scheduler"
+                onClick={onClose}
+                className="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/60 transition-all text-sm"
+              >
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-sm">
+                  <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <span className="font-medium text-foreground/80">
+                  Post Scheduler
                 </span>
               </Link>
             </nav>

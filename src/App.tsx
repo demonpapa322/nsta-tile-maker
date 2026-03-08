@@ -14,6 +14,7 @@ import HashtagFinder from "./pages/HashtagFinder";
 import ImageResizer from "./pages/ImageResizer";
 import ImageGenerator from "./pages/ImageGenerator";
 import TrendScout from "./pages/TrendScout";
+import PostScheduler from "./pages/PostScheduler";
 import Tools from "./pages/Tools";
 import NotFound from "./pages/NotFound";
 
@@ -32,6 +33,7 @@ const AnimatedRoutes = () => {
         <Route path="/image-generator" element={<ImageGenerator />} />
         <Route path="/tools" element={<Tools />} />
         <Route path="/trend-scout" element={<TrendScout />} />
+        <Route path="/post-scheduler" element={<PostScheduler />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>

@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.trend-scout]
 verify_jwt = false
+
+[functions.schedule-ai]
+verify_jwt = false
