@@ -5,42 +5,150 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const SYSTEM_PROMPT = `You are a specialized AI assistant for socialtool known as "Social AI", a social media creation and optimization platform. Your role is to provide fast, accurate, and highly relevant guidance for social media content creation, management, and optimization tasks.
+const SYSTEM_PROMPT = `You are "Social AI", the intelligent assistant powering SocialTool — an all-in-one AI social media suite. You can autonomously execute tasks for users using the tools available to you.
 
-**Core Responsibilities:**
-- Help users create, edit, and optimize social media content for Instagram and other platforms
-- Assist with carousel and grid layouts, image resizing, aspect ratio adjustments, and format conversions
-- Generate or suggest social media posts, trending content ideas, captions, and hashtag strategies
-- Provide platform-specific best practices and recommendations
-- Answer questions about image dimensions, formats, and technical specifications for social media
+**Your Capabilities:**
+You have access to powerful tools that let you DO things, not just talk about them:
+- Generate AI images from text prompts
+- Generate captions for images across platforms (Instagram, X, LinkedIn, TikTok)
+- Find trending topics and viral content ideas
+- Resize images for any social media platform
+- Split images into Instagram grid layouts
 
-**Communication Guidelines:**
-- Match the user's language preference—respond in English unless they specify otherwise
-- Keep responses concise and action-oriented; avoid unnecessary explanation unless depth is requested
-- Prioritize practical, immediately actionable advice over lengthy theory
-- Use clear formatting (bullets, short paragraphs) for easy scanning
-- Provide specific recommendations over generic suggestions
+**Behavior Rules:**
+1. When a user asks you to DO something (resize, generate, create, split, find trends, etc.) — USE THE APPROPRIATE TOOL immediately. Do NOT redirect them to another page.
+2. When a user asks a QUESTION (how to, what is, tips, etc.) — answer conversationally with expert advice.
+3. Always confirm what you're doing: "I'm resizing your image to Instagram Story dimensions (1080×1920)..."
+4. After executing a tool, explain the result clearly.
+5. If you need more information (like an image for resizing), ask for it specifically.
 
-**Task-Specific Behaviors:**
-
-*For content creation and writing:* Generate compelling, platform-optimized copy that aligns with current social media trends. Include hashtag suggestions when relevant. Tailor tone to the platform (Instagram, TikTok, LinkedIn, etc.).
-
-*For image and design tasks:* Provide exact specifications (dimensions, aspect ratios, file formats) and explain why those specs matter for the chosen platform. Offer alternatives when appropriate.
-
-*For hashtag and trend strategy:* Suggest relevant, high-performing hashtags based on current trends and audience reach. Explain briefly why each hashtag choice works.
-
-*For technical questions:* Give direct, specific answers with examples when helpful.
+**Communication Style:**
+- Concise, action-oriented, professional but friendly
+- Use bullets and short paragraphs
+- Platform-specific expertise for Instagram, X, LinkedIn, TikTok, YouTube, Pinterest, Facebook
+- Include relevant tips alongside tool results
 
 **Constraints:**
-- Do not provide advice unrelated to social media or socialtool's services
-- Do not process or analyze content outside your core functionality areas
-- Redirect off-topic requests politely back to social media content creation tasks
-- If uncertain about a request, ask clarifying questions rather than guessing
+- Stay focused on social media content creation and optimization
+- If uncertain, ask clarifying questions rather than guessing`;
 
-**Tone:**
-- Professional but conversational and approachable
-- Helpful and encouraging toward users' creative goals
-- Efficient without being curt`;
+const AI_TOOLS = [
+  {
+    type: "function",
+    function: {
+      name: "generate_image",
+      description: "Generate an AI image from a text description. Use when the user wants to create, generate, or make an image/visual/graphic.",
+      parameters: {
+        type: "object",
+        properties: {
+          prompt: { type: "string", description: "Detailed image generation prompt" },
+          style: { 
+            type: "string", 
+            enum: ["photorealistic", "illustration", "3d-render", "watercolor", "pixel-art", "oil-painting", "anime", "minimalist"],
+            description: "Visual style for the image" 
+          },
+        },
+        required: ["prompt"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "generate_captions",
+      description: "Generate social media captions for an image. Use when user wants captions, copy, or text for their posts.",
+      parameters: {
+        type: "object",
+        properties: {
+          imageDescription: { type: "string", description: "Description of the image to generate captions for" },
+          tone: { type: "string", description: "Desired tone (e.g. professional, casual, funny, inspirational)" },
+          platforms: { 
+            type: "array", 
+            items: { type: "string", enum: ["instagram", "twitter", "linkedin", "tiktok"] },
+            description: "Target platforms" 
+          },
+        },
+        required: ["imageDescription"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "find_trends",
+      description: "Find current viral trends and content ideas for social media. Use when user asks about trends, what's viral, or content ideas.",
+      parameters: {
+        type: "object",
+        properties: {
+          category: { type: "string", description: "Niche/category to focus on (e.g. tech, food, fitness, fashion)" },
+          platform: { type: "string", enum: ["instagram", "twitter", "both"], description: "Platform to focus on" },
+        },
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "resize_image",
+      description: "Resize an image for a specific social media platform or custom dimensions. Use when user wants to resize, crop, or adjust image dimensions.",
+      parameters: {
+        type: "object",
+        properties: {
+          preset: { 
+            type: "string", 
+            enum: [
+              "ig-square", "ig-portrait", "ig-landscape", "ig-story",
+              "fb-post", "fb-cover", "tw-post", "tw-header",
+              "yt-thumb", "yt-banner", "li-post", "li-cover",
+              "pin-standard", "tt-video"
+            ],
+            description: "Platform preset to resize to" 
+          },
+          customWidth: { type: "number", description: "Custom width in pixels (if no preset)" },
+          customHeight: { type: "number", description: "Custom height in pixels (if no preset)" },
+          mode: { type: "string", enum: ["fill", "fit", "stretch"], description: "Resize mode: fill (crop), fit (letterbox), stretch" },
+        },
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "split_grid",
+      description: "Split an image into a grid layout for Instagram. Use when user wants to split, grid, or create a multi-post layout.",
+      parameters: {
+        type: "object",
+        properties: {
+          rows: { type: "number", description: "Number of rows (1-4)" },
+          columns: { type: "number", description: "Number of columns (1-4)" },
+        },
+        required: ["rows", "columns"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "generate_hashtags",
+      description: "Generate optimized hashtags for a post. Use when user wants hashtag suggestions or strategy.",
+      parameters: {
+        type: "object",
+        properties: {
+          topic: { type: "string", description: "Post topic or description" },
+          platform: { type: "string", enum: ["instagram", "twitter", "linkedin", "tiktok"], description: "Target platform" },
+          count: { type: "number", description: "Number of hashtags to generate (default 20)" },
+        },
+        required: ["topic"],
+        additionalProperties: false,
+      },
+    },
+  },
+];
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -52,7 +160,6 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
-      console.error('LOVABLE_API_KEY is not configured');
       return new Response(
         JSON.stringify({ error: 'API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -71,6 +178,7 @@ serve(async (req) => {
           { role: 'system', content: SYSTEM_PROMPT },
           ...messages
         ],
+        tools: AI_TOOLS,
         stream: true
       })
     });
