@@ -73,7 +73,7 @@ You MUST respond with ONLY valid JSON matching this exact structure, no markdown
         });
       }
       const text = await response.text();
-      console.error("OpenRouter error:", response.status, text);
+      console.error("DeepSeek error:", response.status, text);
       throw new Error("AI service error");
     }
 

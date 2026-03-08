@@ -90,7 +90,7 @@ Generate 3 reply options with different tones.`;
         });
       }
       const t = await response.text();
-      console.error("OpenRouter error:", response.status, t);
+      console.error("DeepSeek error:", response.status, t);
       throw new Error("AI service error");
     }
 

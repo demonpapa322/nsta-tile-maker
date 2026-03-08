@@ -185,7 +185,7 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenRouter error:', response.status, errorText);
+      console.error('DeepSeek error:', response.status, errorText);
       
       if (response.status === 429) {
         return new Response(
