@@ -92,7 +92,7 @@ const ImageResizer = memo(function ImageResizer() {
       <Helmet>
         <title>Free Image Resizer for Social Media | SocialTool</title>
         <meta name="description" content="Resize images for Instagram, Facebook, Twitter, YouTube and more. Smart crop, fit, or stretch — free, private, browser-based." />
-        <meta name="keywords" content="image resizer, social media image resizer, instagram image size, facebook cover photo size, resize image online free" />
+        <meta name="keywords" content="image resizer, resize image for Instagram, social media image resizer, free image resizer, Instagram story dimensions, resize image without losing quality, AI image resizer, best image resizer, how to resize an image for Instagram, online image resizer" />
         <link rel="canonical" href="https://www.socialtool.co/image-resizer" />
         <meta property="og:title" content="Free Image Resizer for Social Media | SocialTool" />
         <meta property="og:description" content="Resize images to perfect social media dimensions. Free, private, no signup." />
