@@ -324,10 +324,10 @@ const GridSplitter = memo(function GridSplitter() {
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "WebApplication",
-            "name": "Instagram Grid Splitter",
+             "@type": "WebApplication",
+            "name": "Grid & Carousel Maker",
             "url": "https://www.socialtool.co/grid-splitter",
-            "description": "Free online tool to split images into Instagram grid posts. Create stunning carousel and puzzle feeds.",
+            "description": "Free online tool to create Instagram grid posts and carousels. Design stunning puzzle feeds.",
             "applicationCategory": "UtilitiesApplication",
             "operatingSystem": "Any",
             "offers": {
