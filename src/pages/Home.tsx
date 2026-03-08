@@ -11,7 +11,9 @@ import {
   type Message 
 } from '@/components/chat';
 import { FeedbackModal } from '@/components/FeedbackModal';
-import { streamChat } from '@/lib/openrouter';
+import { streamChat, type ToolCall } from '@/lib/openrouter';
+import { executeToolCall, type ToolResult } from '@/lib/toolExecutor';
+
 const pageVariants = {
   initial: { opacity: 0 },
   animate: { opacity: 1, transition: { duration: 0.3 } },
@@ -23,6 +25,7 @@ const Home = memo(function Home() {
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [userImageUrl, setUserImageUrl] = useState<string | null>(null);
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -32,6 +35,7 @@ const Home = memo(function Home() {
 
   const handleNewChat = useCallback(() => {
     setMessages([]);
+    setUserImageUrl(null);
     setIsSidebarOpen(false);
   }, []);
 
@@ -39,7 +43,42 @@ const Home = memo(function Home() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
+  const handleToolCalls = useCallback(async (
+    toolCalls: ToolCall[], 
+    assistantId: string,
+    imageUrl: string | null
+  ) => {
+    // Show executing state
+    setMessages(prev => prev.map(m => 
+      m.id === assistantId ? { ...m, isExecutingTool: true } : m
+    ));
+
+    const results: ToolResult[] = [];
+    
+    for (const tc of toolCalls) {
+      const result = await executeToolCall(tc, imageUrl);
+      results.push(result);
+    }
+
+    // Update message with results
+    setMessages(prev => prev.map(m => 
+      m.id === assistantId 
+        ? { ...m, isExecutingTool: false, toolResults: results } 
+        : m
+    ));
+    
+    scrollToBottom();
+  }, [scrollToBottom]);
+
   const handleSendMessage = useCallback((content: string, image?: File) => {
+    // If user uploads an image, store it as a URL for tool use
+    let currentImageUrl = userImageUrl;
+    if (image) {
+      const url = URL.createObjectURL(image);
+      setUserImageUrl(url);
+      currentImageUrl = url;
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
@@ -48,27 +87,11 @@ const Home = memo(function Home() {
     };
     
     setMessages(prev => [...prev, userMessage]);
-    
-    // If image is uploaded, navigate to grid splitter
-    if (image) {
-      setTimeout(() => {
-        const aiMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: "Great image! Let me take you to the Grid Splitter where you can choose your grid layout and split this image for Instagram.",
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, aiMessage]);
-        scrollToBottom();
-        setTimeout(() => navigate('/grid-splitter'), 1200);
-      }, 500);
-      return;
-    }
-    
-    // Use AI for responses
     setIsLoading(true);
+    
     const assistantId = (Date.now() + 1).toString();
     let assistantContent = '';
+    const pendingToolCalls: ToolCall[] = [];
 
     // Add empty assistant message
     setMessages(prev => [...prev, {
@@ -91,14 +114,16 @@ const Home = memo(function Home() {
         ));
         scrollToBottom();
       },
+      onToolCall: (toolCall) => {
+        pendingToolCalls.push(toolCall);
+      },
       onDone: () => {
         setIsLoading(false);
         scrollToBottom();
         
-        // Check if response suggests navigation
-        const lowerContent = content.toLowerCase();
-        if (lowerContent.includes('split') || lowerContent.includes('grid')) {
-          setTimeout(() => navigate('/grid-splitter'), 2000);
+        // Execute any tool calls
+        if (pendingToolCalls.length > 0) {
+          handleToolCalls(pendingToolCalls, assistantId, currentImageUrl);
         }
       },
       onError: (error) => {
@@ -111,7 +136,7 @@ const Home = memo(function Home() {
         ));
       }
     });
-  }, [messages, navigate, scrollToBottom]);
+  }, [messages, scrollToBottom, handleToolCalls, userImageUrl]);
 
   const handleQuickAction = useCallback((prompt: string) => {
     handleSendMessage(prompt);
@@ -128,29 +153,29 @@ const Home = memo(function Home() {
       className="h-screen flex bg-background overflow-hidden"
     >
       <Helmet>
-        <title>GridAI - AI-Powered Instagram Grid Splitter</title>
-        <meta name="title" content="GridAI - AI-Powered Instagram Grid Splitter" />
-        <meta name="description" content="Split images into perfect Instagram grid posts with AI assistance. Free, fast, and private - all processing happens in your browser." />
-        <meta name="keywords" content="instagram grid splitter, AI image splitter, grid maker, instagram carousel, social media tools" />
+        <title>SocialTool - AI-Powered Social Media Suite</title>
+        <meta name="title" content="SocialTool - AI-Powered Social Media Suite" />
+        <meta name="description" content="AI-powered social media toolkit. Generate images, write captions, find trends, resize photos, and split grids — all from one chat interface." />
+        <meta name="keywords" content="social media tools, AI image generator, caption generator, hashtag finder, instagram grid splitter, image resizer" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://www.socialtool.co/" />
         
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.socialtool.co/" />
-        <meta property="og:title" content="GridAI - AI-Powered Instagram Grid Splitter" />
-        <meta property="og:description" content="Split images into perfect Instagram grid posts with AI assistance. Free and private." />
+        <meta property="og:title" content="SocialTool - AI-Powered Social Media Suite" />
+        <meta property="og:description" content="AI-powered social media toolkit. Generate, resize, caption, and optimize — all from chat." />
         
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="GridAI - AI-Powered Instagram Grid Splitter" />
-        <meta name="twitter:description" content="Split images into perfect Instagram grid posts with AI assistance." />
+        <meta name="twitter:title" content="SocialTool - AI-Powered Social Media Suite" />
+        <meta name="twitter:description" content="AI-powered social media toolkit for creators." />
         
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebApplication",
-            "name": "GridAI",
+            "name": "SocialTool",
             "url": "https://www.socialtool.co",
-            "description": "AI-powered Instagram grid splitter and social media tools",
+            "description": "AI-powered social media suite for content creators",
             "applicationCategory": "UtilitiesApplication",
             "operatingSystem": "Any",
             "offers": {
@@ -206,7 +231,7 @@ const Home = memo(function Home() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
                   >
-                    AI-assisted grid splitting for Instagram
+                    Your AI social media assistant — generate, resize, caption, and more
                   </motion.p>
                 </div>
 
@@ -234,12 +259,12 @@ const Home = memo(function Home() {
           <div className="h-32 shrink-0" />
         </main>
 
-        {/* Floating Input — inside main content column so it centers correctly */}
+        {/* Floating Input */}
         <div className="absolute bottom-0 left-0 right-0 z-40 pointer-events-none">
           <div className="w-full max-w-3xl mx-auto pointer-events-auto">
             <ChatInput 
               onSend={handleSendMessage}
-              placeholder="Ask anything"
+              placeholder="Ask anything — generate images, write captions, find trends..."
               disabled={isLoading}
             />
           </div>
