@@ -1,6 +1,5 @@
 import { forwardRef } from 'react';
 import { motion } from 'framer-motion';
-import { Bot, User, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ToolResultDisplay } from './ToolResultDisplay';
 import type { ToolResult } from '@/lib/toolExecutor';
@@ -18,68 +17,75 @@ interface ChatMessageProps {
   message: Message;
 }
 
+// ChatGPT-style bouncing dot loader
+function TypingDots() {
+  return (
+    <div className="flex items-center gap-1 px-1 py-1">
+      {[0, 1, 2].map((i) => (
+        <motion.span
+          key={i}
+          className="w-2 h-2 rounded-full bg-foreground/70"
+          animate={{ opacity: [0.3, 1, 0.3], scale: [0.85, 1.1, 0.85] }}
+          transition={{
+            duration: 1.2,
+            repeat: Infinity,
+            delay: i * 0.2,
+            ease: 'easeInOut',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
   function ChatMessage({ message }, ref) {
     const isUser = message.role === 'user';
+    const isEmpty = !message.content && !message.isExecutingTool && !message.toolResults?.length;
+
+    if (isEmpty) return null;
 
     return (
       <motion.div
         ref={ref}
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
         className={cn(
-          "flex gap-3 max-w-3xl mx-auto px-4 py-4",
-          isUser && "flex-row-reverse"
+          "max-w-3xl mx-auto px-4 py-2",
+          isUser ? "flex justify-end" : "flex justify-start"
         )}
       >
-        {/* Avatar */}
-        <div
-          className={cn(
-            "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
-            isUser 
-              ? "bg-gradient-to-br from-violet-400 to-fuchsia-400" 
-              : "bg-muted border border-border"
-          )}
-        >
-          {isUser ? (
-            <User className="w-4 h-4 text-white" />
-          ) : (
-            <Bot className="w-4 h-4 text-foreground" />
-          )}
-        </div>
-
-        {/* Message Content */}
-        <div className={cn("flex-1 space-y-2", isUser ? "ml-12" : "mr-12")}>
-          {message.content && (
-            <div
-              className={cn(
-                "rounded-2xl px-4 py-3 text-sm",
-                isUser 
-                  ? "bg-primary text-primary-foreground" 
-                  : "bg-muted"
-              )}
-            >
+        {isUser ? (
+          /* User message — ChatGPT style: right-aligned rounded bubble, no avatar */
+          <div className="max-w-[85%] sm:max-w-[70%]">
+            <div className="rounded-3xl bg-muted px-4 py-2.5 text-sm text-foreground">
               <p className="whitespace-pre-wrap">{message.content}</p>
             </div>
-          )}
-          
-          {/* Tool execution indicator */}
-          {message.isExecutingTool && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/5 border border-primary/20 text-sm text-primary"
-            >
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              <span className="text-xs font-medium">Working on it...</span>
-            </motion.div>
-          )}
-          
-          {/* Tool results */}
-          {message.toolResults?.map((result, i) => (
-            <ToolResultDisplay key={i} result={result} />
-          ))}
-        </div>
+          </div>
+        ) : (
+          /* Assistant message — ChatGPT style: left-aligned, no avatar, plain text */
+          <div className="max-w-[85%] sm:max-w-[80%] space-y-2">
+            {/* Show typing dots when content is empty (streaming hasn't started) */}
+            {!message.content && !message.toolResults?.length && !message.isExecutingTool ? (
+              <TypingDots />
+            ) : message.content ? (
+              <div className="text-sm text-foreground leading-relaxed">
+                <p className="whitespace-pre-wrap">{message.content}</p>
+              </div>
+            ) : null}
+
+            {/* Tool execution — typing dots */}
+            {message.isExecutingTool && (
+              <TypingDots />
+            )}
+
+            {/* Tool results */}
+            {message.toolResults?.map((result, i) => (
+              <ToolResultDisplay key={i} result={result} />
+            ))}
+          </div>
+        )}
       </motion.div>
     );
   }
