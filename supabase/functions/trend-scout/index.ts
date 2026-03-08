@@ -10,8 +10,8 @@ serve(async (req) => {
 
   try {
     const { category, platform } = await req.json();
-    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
-    if (!OPENROUTER_API_KEY) throw new Error("OpenRouter API key is not configured");
+    const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
+    if (!DEEPSEEK_API_KEY) throw new Error("DeepSeek API key is not configured");
 
     const categoryContext = category
       ? `Focus specifically on the "${category}" niche/category.`
@@ -51,15 +51,14 @@ You MUST respond with ONLY valid JSON matching this exact structure, no markdown
   ]
 }`;
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch("https://api.deepseek.com/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+        Authorization: `Bearer ${DEEPSEEK_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://nsta-tile-maker.lovable.app",
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-chat-v3:free",
+        model: "deepseek-chat",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: "Scan for the hottest viral trends right now on social media. What visual content styles, topics, and formats are getting the most engagement? Give me trend-based image prompts I can use immediately." },
@@ -74,7 +73,7 @@ You MUST respond with ONLY valid JSON matching this exact structure, no markdown
         });
       }
       const text = await response.text();
-      console.error("OpenRouter error:", response.status, text);
+      console.error("DeepSeek error:", response.status, text);
       throw new Error("AI service error");
     }
 
