@@ -222,6 +222,20 @@ const Home = memo(function Home() {
         </script>
       </Helmet>
 
+      {/* Mobile backdrop */}
+      <AnimatePresence>
+        {isMobile && isSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       <ChatSidebar 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)}
@@ -232,6 +246,7 @@ const Home = memo(function Home() {
         activeChatId={activeChatId}
         onSelectChat={handleSelectChat}
         onDeleteChat={deleteChat}
+        isMobile={isMobile}
       />
 
       <div className="flex-1 flex flex-col min-w-0 relative">
