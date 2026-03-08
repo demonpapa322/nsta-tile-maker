@@ -234,6 +234,7 @@ const ImageGenerator = () => {
       <Helmet>
         <title>AI Image Generator - SocialTool</title>
         <meta name="description" content="Generate stunning images with AI for your social media posts. Free AI image generator powered by Google Gemini." />
+        <meta name="keywords" content="AI image generator, generate image from text, free AI image generator, AI art generator, best AI image generator, AI image generator from prompt, create AI generated images, realistic AI image generator, social media post from AI image, text to image AI" />
       </Helmet>
 
       {/* ── Top bar ── */}
