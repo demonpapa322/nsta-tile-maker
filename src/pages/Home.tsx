@@ -25,6 +25,11 @@ const pageVariants = {
 const Home = memo(function Home() {
   const isMobile = useIsMobile();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Open sidebar by default on desktop only (after mount)
+  useEffect(() => {
+    if (!isMobile) setIsSidebarOpen(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
