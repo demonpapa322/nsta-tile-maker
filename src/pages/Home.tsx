@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { useState, useCallback, memo, useRef } from 'react';
+import { useState, useCallback, memo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -14,6 +14,7 @@ import { FeedbackModal } from '@/components/FeedbackModal';
 import { streamChat, type ToolCall } from '@/lib/openrouter';
 import { executeToolCall, type ToolResult } from '@/lib/toolExecutor';
 import { useChatHistory } from '@/hooks/useChatHistory';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const pageVariants = {
   initial: { opacity: 0 },
@@ -22,7 +23,13 @@ const pageVariants = {
 };
 
 const Home = memo(function Home() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const isMobile = useIsMobile();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Open sidebar by default on desktop only (after mount)
+  useEffect(() => {
+    if (!isMobile) setIsSidebarOpen(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -215,6 +222,20 @@ const Home = memo(function Home() {
         </script>
       </Helmet>
 
+      {/* Mobile backdrop */}
+      <AnimatePresence>
+        {isMobile && isSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       <ChatSidebar 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)}
@@ -225,6 +246,7 @@ const Home = memo(function Home() {
         activeChatId={activeChatId}
         onSelectChat={handleSelectChat}
         onDeleteChat={deleteChat}
+        isMobile={isMobile}
       />
 
       <div className="flex-1 flex flex-col min-w-0 relative">

@@ -23,11 +23,12 @@ interface ChatSidebarProps {
   activeChatId: string | null;
   onSelectChat: (id: string) => void;
   onDeleteChat: (id: string) => void;
+  isMobile?: boolean;
 }
 
 export function ChatSidebar({ 
   isOpen, onClose, onToggle, onNewChat, onFeedback,
-  chats, activeChatId, onSelectChat, onDeleteChat 
+  chats, activeChatId, onSelectChat, onDeleteChat, isMobile 
 }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -48,9 +49,10 @@ export function ChatSidebar({
           opacity: { duration: 0.2, ease: [0.4, 0, 0.2, 1] }
         }}
         className={cn(
-          "relative h-full z-50 overflow-hidden will-change-[width,opacity]",
+          "h-full z-50 overflow-hidden will-change-[width,opacity]",
           "bg-sidebar border-r border-border/50",
           "flex flex-col",
+          isMobile ? "fixed top-0 left-0 shadow-xl" : "relative",
         )}
       >
         <div className="w-[260px] flex flex-col h-full">
