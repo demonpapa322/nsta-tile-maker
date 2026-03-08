@@ -232,7 +232,6 @@ const Home = memo(function Home() {
 
           {/* Spacer for floating input */}
           <div className="h-32 shrink-0" />
-        </main>
 
         {/* Floating Input — inside main content column so it centers correctly */}
         <div className="absolute bottom-0 left-0 right-0 z-40 pointer-events-none">
@@ -244,15 +243,7 @@ const Home = memo(function Home() {
             />
           </div>
         </div>
-        </main>
       </div>
-
-      {/* Floating Input */}
-      <ChatInput 
-        onSend={handleSendMessage}
-        placeholder="Ask anything"
-        disabled={isLoading}
-      />
 
       {/* Feedback Modal */}
       <FeedbackModal 
