@@ -166,6 +166,7 @@ const Home = memo(function Home() {
       <ChatSidebar 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)}
+        onToggle={handleToggleSidebar}
         onNewChat={handleNewChat}
         onFeedback={() => setIsFeedbackOpen(true)}
       />
