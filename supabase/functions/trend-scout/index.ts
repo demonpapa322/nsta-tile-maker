@@ -59,7 +59,7 @@ You MUST respond with ONLY valid JSON matching this exact structure, no markdown
         "HTTP-Referer": "https://nsta-tile-maker.lovable.app",
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-r1:free",
+        model: "deepseek/deepseek-chat-v3:free",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: "Scan for the hottest viral trends right now on social media. What visual content styles, topics, and formats are getting the most engagement? Give me trend-based image prompts I can use immediately." },

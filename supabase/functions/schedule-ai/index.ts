@@ -76,7 +76,7 @@ Generate 3 reply options with different tones.`;
         "HTTP-Referer": "https://nsta-tile-maker.lovable.app",
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-r1:free",
+        model: "deepseek/deepseek-chat-v3:free",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
