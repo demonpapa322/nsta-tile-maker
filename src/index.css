@@ -284,10 +284,17 @@
     font-family: 'DM Sans', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Faster, smoother theme transitions - reduced from 0.5s to 0.15s */
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    font-feature-settings: 'kern' 1, 'liga' 1;
     transition: background-color 0.15s ease-out, color 0.15s ease-out;
-    /* Optimize rendering performance */
     content-visibility: auto;
+  }
+
+  /* Crisp rendering for all images and icons */
+  img, svg, canvas {
+    image-rendering: -webkit-optimize-contrast;
+    shape-rendering: geometricPrecision;
   }
 
   /* Optimized theme transitions - only animate color properties, removed box-shadow (expensive) */
