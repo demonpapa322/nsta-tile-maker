@@ -13,6 +13,7 @@ import {
 import { FeedbackModal } from '@/components/FeedbackModal';
 import { streamChat, type ToolCall } from '@/lib/openrouter';
 import { executeToolCall, type ToolResult } from '@/lib/toolExecutor';
+import { useChatHistory } from '@/hooks/useChatHistory';
 
 const pageVariants = {
   initial: { opacity: 0 },
@@ -28,6 +29,12 @@ const Home = memo(function Home() {
   const [userImageUrl, setUserImageUrl] = useState<string | null>(null);
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const currentChatIdRef = useRef<string | null>(null);
+
+  const {
+    chats, activeChatId, setActiveChatId,
+    createChat, deleteChat, saveMessage, loadMessages, startNewChat
+  } = useChatHistory();
 
   const handleToggleSidebar = useCallback(() => {
     setIsSidebarOpen(prev => !prev);
@@ -36,8 +43,23 @@ const Home = memo(function Home() {
   const handleNewChat = useCallback(() => {
     setMessages([]);
     setUserImageUrl(null);
+    currentChatIdRef.current = null;
+    startNewChat();
     setIsSidebarOpen(false);
-  }, []);
+  }, [startNewChat]);
+
+  const handleSelectChat = useCallback(async (chatId: string) => {
+    setActiveChatId(chatId);
+    currentChatIdRef.current = chatId;
+    const dbMessages = await loadMessages(chatId);
+    setMessages(dbMessages.map(m => ({
+      id: m.id,
+      role: m.role as 'user' | 'assistant',
+      content: m.content,
+      timestamp: new Date(m.created_at),
+    })));
+    setIsSidebarOpen(false);
+  }, [setActiveChatId, loadMessages]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -48,30 +70,25 @@ const Home = memo(function Home() {
     assistantId: string,
     imageUrl: string | null
   ) => {
-    // Show executing state
     setMessages(prev => prev.map(m => 
       m.id === assistantId ? { ...m, isExecutingTool: true } : m
     ));
 
     const results: ToolResult[] = [];
-    
     for (const tc of toolCalls) {
       const result = await executeToolCall(tc, imageUrl);
       results.push(result);
     }
 
-    // Update message with results
     setMessages(prev => prev.map(m => 
       m.id === assistantId 
         ? { ...m, isExecutingTool: false, toolResults: results } 
         : m
     ));
-    
     scrollToBottom();
   }, [scrollToBottom]);
 
-  const handleSendMessage = useCallback((content: string, image?: File) => {
-    // If user uploads an image, store it as a URL for tool use
+  const handleSendMessage = useCallback(async (content: string, image?: File) => {
     let currentImageUrl = userImageUrl;
     if (image) {
       const url = URL.createObjectURL(image);
@@ -88,12 +105,19 @@ const Home = memo(function Home() {
     
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
+
+    // Create chat if first message
+    let chatId = currentChatIdRef.current;
+    if (!chatId) {
+      chatId = await createChat(userMessage.content);
+      currentChatIdRef.current = chatId;
+    }
+    await saveMessage(chatId, 'user', userMessage.content);
     
     const assistantId = (Date.now() + 1).toString();
     let assistantContent = '';
     const pendingToolCalls: ToolCall[] = [];
 
-    // Add empty assistant message
     setMessages(prev => [...prev, {
       id: assistantId,
       role: 'assistant',
@@ -117,11 +141,15 @@ const Home = memo(function Home() {
       onToolCall: (toolCall) => {
         pendingToolCalls.push(toolCall);
       },
-      onDone: () => {
+      onDone: async () => {
         setIsLoading(false);
         scrollToBottom();
         
-        // Execute any tool calls
+        // Save assistant message
+        if (chatId && assistantContent) {
+          await saveMessage(chatId, 'assistant', assistantContent);
+        }
+        
         if (pendingToolCalls.length > 0) {
           handleToolCalls(pendingToolCalls, assistantId, currentImageUrl);
         }
@@ -136,7 +164,7 @@ const Home = memo(function Home() {
         ));
       }
     });
-  }, [messages, scrollToBottom, handleToolCalls, userImageUrl]);
+  }, [messages, scrollToBottom, handleToolCalls, userImageUrl, createChat, saveMessage]);
 
   const handleQuickAction = useCallback((prompt: string) => {
     handleSendMessage(prompt);
@@ -187,28 +215,27 @@ const Home = memo(function Home() {
         </script>
       </Helmet>
 
-      {/* Sidebar */}
       <ChatSidebar 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)}
         onToggle={handleToggleSidebar}
         onNewChat={handleNewChat}
         onFeedback={() => setIsFeedbackOpen(true)}
+        chats={chats}
+        activeChatId={activeChatId}
+        onSelectChat={handleSelectChat}
+        onDeleteChat={deleteChat}
       />
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 relative">
-        {/* Header */}
         <ChatHeader 
           onMenuToggle={handleToggleSidebar}
           isSidebarOpen={isSidebarOpen}
         />
 
-        {/* Chat Area */}
         <main className="flex-1 flex flex-col overflow-hidden">
           <AnimatePresence mode="wait">
             {!hasMessages ? (
-              /* Empty State - Welcome View */
               <motion.div 
                 key="welcome"
                 initial={{ opacity: 0, y: 20 }}
@@ -234,11 +261,9 @@ const Home = memo(function Home() {
                     Your AI social media assistant — generate, resize, caption, and more
                   </motion.p>
                 </div>
-
                 <QuickActions onSelect={handleQuickAction} />
               </motion.div>
             ) : (
-              /* Messages View */
               <motion.div 
                 key="messages"
                 initial={{ opacity: 0 }}
@@ -254,12 +279,9 @@ const Home = memo(function Home() {
               </motion.div>
             )}
           </AnimatePresence>
-
-          {/* Spacer for floating input */}
           <div className="h-32 shrink-0" />
         </main>
 
-        {/* Floating Input */}
         <div className="absolute bottom-0 left-0 right-0 z-40 pointer-events-none">
           <div className="w-full max-w-3xl mx-auto pointer-events-auto">
             <ChatInput 
@@ -271,7 +293,6 @@ const Home = memo(function Home() {
         </div>
       </div>
 
-      {/* Feedback Modal */}
       <FeedbackModal 
         isOpen={isFeedbackOpen} 
         onClose={() => setIsFeedbackOpen(false)} 
