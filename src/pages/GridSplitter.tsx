@@ -19,7 +19,7 @@ const Header = memo(function Header() {
     <>
       <div className="fixed top-4 left-4 z-50">
         <Link
-          to="/"
+          to="/tools"
           className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted/50"
         >
           <ArrowLeft className="w-4 h-4" />

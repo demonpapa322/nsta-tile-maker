@@ -237,7 +237,7 @@ const ImageGenerator = () => {
       </Helmet>
 
       {/* ── Top bar ── */}
-      <header className="fixed top-0 inset-x-0 z-50 h-14 border-b border-border bg-background/80 backdrop-blur-md flex items-center justify-between px-4">
+      <header className="fixed top-0 inset-x-0 z-50 h-14 bg-background/80 backdrop-blur-md flex items-center justify-between px-4">
         <Link
           to="/tools"
           className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
