@@ -5,12 +5,19 @@ import {
   Search, 
   PenSquare, 
   Wrench,
-  Trash2,
+  Pin,
+  MessageCircle,
   PanelLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThemePicker } from '@/components/ThemePicker';
-import type { Conversation } from '@/hooks/useChatStorage';
+
+interface ChatHistory {
+  id: string;
+  title: string;
+  pinned?: boolean;
+  hasNotification?: boolean;
+}
 
 interface ChatSidebarProps {
   isOpen: boolean;
@@ -18,35 +25,26 @@ interface ChatSidebarProps {
   onToggle: () => void;
   onNewChat: () => void;
   onFeedback?: () => void;
-  conversations: Conversation[];
-  activeConversationId: string | null;
-  onSelectConversation: (id: string) => void;
-  onDeleteConversation: (id: string) => void;
 }
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
+const mockHistory: ChatHistory[] = [
+  { id: '1', title: 'Instagram Grid 3x3 Split', pinned: true },
+  { id: '2', title: 'Profile Photo Resize' },
+  { id: '3', title: 'Carousel Layout Design', hasNotification: true },
+  { id: '4', title: 'Story Dimensions Help' },
+  { id: '5', title: 'Feed Aesthetic Planning' },
+];
 
-export function ChatSidebar({ 
-  isOpen, onClose, onToggle, onNewChat, 
-  conversations, activeConversationId, onSelectConversation, onDeleteConversation 
-}: ChatSidebarProps) {
+export function ChatSidebar({ isOpen, onClose, onToggle, onNewChat, onFeedback }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredConversations = conversations.filter(c =>
-    c.title.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredHistory = mockHistory.filter(item =>
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <>
+      {/* Sidebar */}
       <motion.aside
         initial={false}
         animate={{ 
@@ -64,14 +62,17 @@ export function ChatSidebar({
         )}
       >
         <div className="w-[260px] flex flex-col h-full">
-          {/* Top row */}
+          {/* Top row: sidebar brand + toggle */}
           <div className="flex items-center justify-between h-12 px-2">
             <Link 
               to="/"
               className="text-sm font-semibold hover:opacity-80 transition-opacity ml-1"
+              draggable="true"
             >
               <span className="bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent">SocialTool</span>
             </Link>
+
+            {/* GPT-style collapse toggle — inside sidebar, top right */}
             <div className="flex items-center gap-0.5">
               <motion.button
                 onClick={onNewChat}
@@ -143,57 +144,41 @@ export function ChatSidebar({
           {/* Divider */}
           <div className="mx-3 h-px bg-border/40" />
 
-          {/* Chat History - Real conversations */}
+          {/* Chat History */}
           <div className="flex-1 overflow-y-auto px-2 py-2 scrollbar-none">
-            {filteredConversations.length === 0 ? (
-              <div className="px-3 py-8 text-center">
-                <p className="text-xs text-muted-foreground/50">No conversations yet</p>
-                <p className="text-xs text-muted-foreground/40 mt-1">Chats auto-delete after 7 days</p>
-              </div>
-            ) : (
-              <div className="space-y-0.5">
-                {filteredConversations.map((convo) => (
-                  <div
-                    key={convo.id}
-                    className={cn(
-                      "w-full flex items-center justify-between gap-1 px-3 py-2 rounded-lg transition-colors text-sm text-left group cursor-pointer",
-                      convo.id === activeConversationId
-                        ? "bg-muted/80 text-foreground"
-                        : "hover:bg-muted/60 text-foreground/70"
+            <div className="space-y-0.5">
+              {filteredHistory.map((item) => (
+                <button
+                  key={item.id}
+                  className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg hover:bg-muted/60 transition-colors text-sm text-left group"
+                >
+                  <span className="truncate flex-1 text-foreground/80">{item.title}</span>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {item.pinned && <Pin className="w-3 h-3 text-muted-foreground/60" />}
+                    {item.hasNotification && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                     )}
-                    onClick={() => onSelectConversation(convo.id)}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <span className="block truncate text-[13px]">{convo.title}</span>
-                      <span className="block text-[10px] text-muted-foreground/50 mt-0.5">
-                        {timeAgo(convo.updatedAt)}
-                      </span>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteConversation(convo.id);
-                      }}
-                      className="opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center rounded-md hover:bg-destructive/10 hover:text-destructive transition-all shrink-0"
-                      aria-label="Delete chat"
-                      title="Delete chat"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
                   </div>
-                ))}
-              </div>
-            )}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Theme */}
+          {/* Theme & Feedback */}
           <div className="p-2 border-t border-border/40 space-y-0.5">
             <ThemePicker />
+            <button 
+              onClick={onFeedback}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/60 transition-colors text-sm text-muted-foreground hover:text-foreground"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>Send Feedback</span>
+            </button>
           </div>
         </div>
       </motion.aside>
 
-      {/* Floating open button */}
+      {/* Floating open button — visible when sidebar is closed */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button

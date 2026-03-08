@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { useState, useCallback, memo, useRef, useEffect } from 'react';
+import { useState, useCallback, memo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -13,31 +13,12 @@ import {
 import { FeedbackModal } from '@/components/FeedbackModal';
 import { streamChat, type ToolCall } from '@/lib/openrouter';
 import { executeToolCall, type ToolResult } from '@/lib/toolExecutor';
-import { useChatStorage, type StoredMessage } from '@/hooks/useChatStorage';
 
 const pageVariants = {
   initial: { opacity: 0 },
   animate: { opacity: 1, transition: { duration: 0.3 } },
   exit: { opacity: 0, transition: { duration: 0.2 } }
 };
-
-function toStoredMessages(msgs: Message[]): StoredMessage[] {
-  return msgs.map(m => ({
-    id: m.id,
-    role: m.role,
-    content: m.content,
-    timestamp: m.timestamp.toISOString(),
-  }));
-}
-
-function fromStoredMessages(msgs: StoredMessage[]): Message[] {
-  return msgs.map(m => ({
-    id: m.id,
-    role: m.role,
-    content: m.content,
-    timestamp: new Date(m.timestamp),
-  }));
-}
 
 const Home = memo(function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -48,47 +29,15 @@ const Home = memo(function Home() {
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const {
-    conversations,
-    activeConversation,
-    activeConversationId,
-    createConversation,
-    updateConversation,
-    deleteConversation,
-    switchConversation,
-    startNewChat,
-  } = useChatStorage();
-
-  // When switching conversations, load messages
-  useEffect(() => {
-    if (activeConversation) {
-      setMessages(fromStoredMessages(activeConversation.messages));
-    } else {
-      setMessages([]);
-    }
-    setUserImageUrl(null);
-  }, [activeConversationId]); // intentionally only on ID change
-
-  // Save messages to storage whenever they change (debounced by effect)
-  const currentConvoId = useRef<string | null>(null);
-  useEffect(() => {
-    currentConvoId.current = activeConversationId;
-  }, [activeConversationId]);
-
-  const persistMessages = useCallback((msgs: Message[], convoId: string) => {
-    updateConversation(convoId, toStoredMessages(msgs));
-  }, [updateConversation]);
-
   const handleToggleSidebar = useCallback(() => {
     setIsSidebarOpen(prev => !prev);
   }, []);
 
   const handleNewChat = useCallback(() => {
-    startNewChat();
     setMessages([]);
     setUserImageUrl(null);
     setIsSidebarOpen(false);
-  }, [startNewChat]);
+  }, []);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -97,44 +46,37 @@ const Home = memo(function Home() {
   const handleToolCalls = useCallback(async (
     toolCalls: ToolCall[], 
     assistantId: string,
-    imageUrl: string | null,
-    convoId: string
+    imageUrl: string | null
   ) => {
+    // Show executing state
     setMessages(prev => prev.map(m => 
       m.id === assistantId ? { ...m, isExecutingTool: true } : m
     ));
 
     const results: ToolResult[] = [];
+    
     for (const tc of toolCalls) {
       const result = await executeToolCall(tc, imageUrl);
       results.push(result);
     }
 
-    setMessages(prev => {
-      const updated = prev.map(m => 
-        m.id === assistantId 
-          ? { ...m, isExecutingTool: false, toolResults: results } 
-          : m
-      );
-      persistMessages(updated, convoId);
-      return updated;
-    });
+    // Update message with results
+    setMessages(prev => prev.map(m => 
+      m.id === assistantId 
+        ? { ...m, isExecutingTool: false, toolResults: results } 
+        : m
+    ));
     
     scrollToBottom();
-  }, [scrollToBottom, persistMessages]);
+  }, [scrollToBottom]);
 
   const handleSendMessage = useCallback((content: string, image?: File) => {
+    // If user uploads an image, store it as a URL for tool use
     let currentImageUrl = userImageUrl;
     if (image) {
       const url = URL.createObjectURL(image);
       setUserImageUrl(url);
       currentImageUrl = url;
-    }
-
-    // Ensure we have a conversation
-    let convoId = activeConversationId;
-    if (!convoId) {
-      convoId = createConversation();
     }
 
     const userMessage: Message = {
@@ -151,6 +93,7 @@ const Home = memo(function Home() {
     let assistantContent = '';
     const pendingToolCalls: ToolCall[] = [];
 
+    // Add empty assistant message
     setMessages(prev => [...prev, {
       id: assistantId,
       role: 'assistant',
@@ -162,8 +105,6 @@ const Home = memo(function Home() {
       role: m.role as 'user' | 'assistant',
       content: m.content
     }));
-
-    const capturedConvoId = convoId;
 
     streamChat(chatHistory, {
       onDelta: (text) => {
@@ -180,39 +121,26 @@ const Home = memo(function Home() {
         setIsLoading(false);
         scrollToBottom();
         
-        // Save to storage
-        setMessages(prev => {
-          persistMessages(prev, capturedConvoId);
-          return prev;
-        });
-
+        // Execute any tool calls
         if (pendingToolCalls.length > 0) {
-          handleToolCalls(pendingToolCalls, assistantId, currentImageUrl, capturedConvoId);
+          handleToolCalls(pendingToolCalls, assistantId, currentImageUrl);
         }
       },
       onError: (error) => {
         console.error('AI error:', error);
         setIsLoading(false);
-        setMessages(prev => {
-          const updated = prev.map(m => 
-            m.id === assistantId 
-              ? { ...m, content: "Sorry, I encountered an error. Please try again." } 
-              : m
-          );
-          persistMessages(updated, capturedConvoId);
-          return updated;
-        });
+        setMessages(prev => prev.map(m => 
+          m.id === assistantId 
+            ? { ...m, content: "Sorry, I encountered an error. Please try again." } 
+            : m
+        ));
       }
     });
-  }, [messages, scrollToBottom, handleToolCalls, userImageUrl, activeConversationId, createConversation, persistMessages]);
+  }, [messages, scrollToBottom, handleToolCalls, userImageUrl]);
 
   const handleQuickAction = useCallback((prompt: string) => {
     handleSendMessage(prompt);
   }, [handleSendMessage]);
-
-  const handleSelectConversation = useCallback((id: string) => {
-    switchConversation(id);
-  }, [switchConversation]);
 
   const hasMessages = messages.length > 0;
 
@@ -266,22 +194,21 @@ const Home = memo(function Home() {
         onToggle={handleToggleSidebar}
         onNewChat={handleNewChat}
         onFeedback={() => setIsFeedbackOpen(true)}
-        conversations={conversations}
-        activeConversationId={activeConversationId}
-        onSelectConversation={handleSelectConversation}
-        onDeleteConversation={deleteConversation}
       />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 relative">
+        {/* Header */}
         <ChatHeader 
           onMenuToggle={handleToggleSidebar}
           isSidebarOpen={isSidebarOpen}
         />
 
+        {/* Chat Area */}
         <main className="flex-1 flex flex-col overflow-hidden">
           <AnimatePresence mode="wait">
             {!hasMessages ? (
+              /* Empty State - Welcome View */
               <motion.div 
                 key="welcome"
                 initial={{ opacity: 0, y: 20 }}
@@ -307,9 +234,11 @@ const Home = memo(function Home() {
                     Your AI social media assistant — generate, resize, caption, and more
                   </motion.p>
                 </div>
+
                 <QuickActions onSelect={handleQuickAction} />
               </motion.div>
             ) : (
+              /* Messages View */
               <motion.div 
                 key="messages"
                 initial={{ opacity: 0 }}
@@ -325,9 +254,12 @@ const Home = memo(function Home() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Spacer for floating input */}
           <div className="h-32 shrink-0" />
         </main>
 
+        {/* Floating Input */}
         <div className="absolute bottom-0 left-0 right-0 z-40 pointer-events-none">
           <div className="w-full max-w-3xl mx-auto pointer-events-auto">
             <ChatInput 
@@ -339,6 +271,7 @@ const Home = memo(function Home() {
         </div>
       </div>
 
+      {/* Feedback Modal */}
       <FeedbackModal 
         isOpen={isFeedbackOpen} 
         onClose={() => setIsFeedbackOpen(false)} 
