@@ -182,17 +182,17 @@ export function ChatSidebar({ isOpen, onClose, onToggle, onNewChat, onFeedback }
       <AnimatePresence>
         {!isOpen && (
           <motion.button
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -8 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
             onClick={onToggle}
-            className="fixed top-3 left-3 z-50 w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
-            whileTap={{ scale: 0.9 }}
+            className="fixed top-3.5 left-3 z-50 w-8 h-8 flex items-center justify-center rounded-md text-muted-foreground/70 hover:text-foreground hover:bg-muted/50 transition-colors"
+            whileTap={{ scale: 0.85 }}
             aria-label="Open sidebar"
             title="Open sidebar"
           >
-            <PanelLeft className="w-5 h-5" />
+            <PanelLeft className="w-4 h-4" />
           </motion.button>
         )}
       </AnimatePresence>
