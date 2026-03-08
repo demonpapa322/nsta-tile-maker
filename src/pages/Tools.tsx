@@ -16,7 +16,7 @@ interface Tool {
 
 const tools: Tool[] = [
   {
-    title: 'Grid Splitter',
+    title: 'Grid & Carousel Maker',
     description: 'Split images into perfect Instagram grid layouts with precision control',
     icon: Grid3X3,
     href: '/grid-splitter',
