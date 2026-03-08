@@ -172,7 +172,7 @@ const Home = memo(function Home() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative">
         {/* Header */}
         <ChatHeader 
           onMenuToggle={handleToggleSidebar}

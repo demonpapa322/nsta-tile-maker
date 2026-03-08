@@ -242,7 +242,6 @@ export function ChatInput({
         <p className="text-[11px] text-muted-foreground/35 text-center mt-2 pb-0.5">
           SocialTool can make mistakes. Check important info.
         </p>
-      </div>
     </div>
   );
 }
