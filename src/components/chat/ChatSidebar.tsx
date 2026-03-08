@@ -10,6 +10,7 @@ import {
   PanelLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ThemePicker } from '@/components/ThemePicker';
 
 interface ChatHistory {
   id: string;
