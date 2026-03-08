@@ -392,20 +392,20 @@ const GridSplitter = memo(function GridSplitter() {
             "@context": "https://schema.org",
             "@type": "FAQPage",
             "mainEntity": [
-              {
+               {
                 "@type": "Question",
-                "name": "What is an Instagram grid splitter?",
+                "name": "What is a Grid & Carousel Maker?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "An Instagram grid splitter is a tool that divides a single image into multiple tiles that, when posted to Instagram in sequence, create a seamless panoramic or puzzle effect on your profile grid."
+                  "text": "A Grid & Carousel Maker is a tool that divides a single image into multiple tiles that, when posted to Instagram in sequence, create a seamless panoramic or puzzle effect on your profile grid."
                 }
               },
               {
                 "@type": "Question",
-                "name": "Is this Instagram grid splitter free?",
+                "name": "Is this Grid & Carousel Maker free?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Yes, SocialTools Grid Splitter is completely free to use with no hidden fees, watermarks, or signup required."
+                  "text": "Yes, SocialTools Grid & Carousel Maker is completely free to use with no hidden fees, watermarks, or signup required."
                 }
               },
               {

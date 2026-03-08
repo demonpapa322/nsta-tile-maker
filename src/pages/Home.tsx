@@ -184,7 +184,7 @@ const Home = memo(function Home() {
         <title>SocialTool - AI-Powered Social Media Suite</title>
         <meta name="title" content="SocialTool - AI-Powered Social Media Suite" />
         <meta name="description" content="AI-powered social media toolkit. Generate images, write captions, find trends, resize photos, and split grids — all from one chat interface." />
-        <meta name="keywords" content="social media tools, AI image generator, caption generator, hashtag finder, instagram grid splitter, image resizer" />
+        <meta name="keywords" content="social media tools, AI image generator, caption generator, hashtag finder, instagram grid and carousel maker, image resizer" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://www.socialtool.co/" />
         
