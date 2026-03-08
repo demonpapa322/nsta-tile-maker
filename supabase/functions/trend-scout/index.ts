@@ -10,8 +10,8 @@ serve(async (req) => {
 
   try {
     const { category, platform } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
+    if (!OPENROUTER_API_KEY) throw new Error("OpenRouter API key is not configured");
 
     const categoryContext = category
       ? `Focus specifically on the "${category}" niche/category.`
@@ -34,58 +34,36 @@ For each trend you identify, provide:
 5. A specific, detailed image generation prompt that would create content aligned with this trend
 6. An engagement score estimate (1-100)
 
-Return EXACTLY 6 trends. Be specific and actionable.`;
+Return EXACTLY 6 trends. Be specific and actionable.
 
-    const userPrompt = `Scan for the hottest viral trends right now on social media. What visual content styles, topics, and formats are getting the most engagement? Give me trend-based image prompts I can use immediately.
+You MUST respond with ONLY valid JSON matching this exact structure, no markdown, no code fences:
+{
+  "trends": [
+    {
+      "title": "Trend name",
+      "platform": "instagram" or "twitter" or "both",
+      "reason": "Why it's viral",
+      "hashtags": ["#tag1", "#tag2"],
+      "image_prompt": "Detailed AI image generation prompt",
+      "engagement_score": 85,
+      "category": "lifestyle"
+    }
+  ]
+}`;
 
-Return your response using the suggest_trends tool.`;
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
+        "HTTP-Referer": "https://nsta-tile-maker.lovable.app",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "deepseek/deepseek-chat",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
+          { role: "user", content: "Scan for the hottest viral trends right now on social media. What visual content styles, topics, and formats are getting the most engagement? Give me trend-based image prompts I can use immediately." },
         ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "suggest_trends",
-              description: "Return 6 viral trend suggestions with image prompts.",
-              parameters: {
-                type: "object",
-                properties: {
-                  trends: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        title: { type: "string", description: "Short trend name" },
-                        platform: { type: "string", enum: ["instagram", "twitter", "both"], description: "Where it's trending" },
-                        reason: { type: "string", description: "Why it's viral (1-2 sentences)" },
-                        hashtags: { type: "array", items: { type: "string" }, description: "5-8 relevant hashtags with # prefix" },
-                        image_prompt: { type: "string", description: "Detailed AI image generation prompt (50-100 words)" },
-                        engagement_score: { type: "number", description: "Estimated virality score 1-100" },
-                        category: { type: "string", description: "Content category (e.g. lifestyle, tech, food)" },
-                      },
-                      required: ["title", "platform", "reason", "hashtags", "image_prompt", "engagement_score", "category"],
-                      additionalProperties: false,
-                    },
-                  },
-                },
-                required: ["trends"],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "suggest_trends" } },
       }),
     });
 
@@ -95,24 +73,26 @@ Return your response using the suggest_trends tool.`;
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits in Settings." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
       const text = await response.text();
-      console.error("AI gateway error:", response.status, text);
-      throw new Error("AI gateway error");
+      console.error("OpenRouter error:", response.status, text);
+      throw new Error("AI service error");
     }
 
     const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    const content = data.choices?.[0]?.message?.content || "";
 
-    if (!toolCall?.function?.arguments) {
-      throw new Error("No structured response from AI");
+    let parsed;
+    try {
+      let cleaned = content.trim();
+      if (cleaned.startsWith("```")) {
+        cleaned = cleaned.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
+      }
+      parsed = JSON.parse(cleaned);
+    } catch {
+      // Try extracting JSON object
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : { trends: [] };
     }
-
-    const parsed = JSON.parse(toolCall.function.arguments);
 
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
