@@ -14,6 +14,7 @@ import HashtagFinder from "./pages/HashtagFinder";
 import ImageResizer from "./pages/ImageResizer";
 import ImageGenerator from "./pages/ImageGenerator";
 import TrendScout from "./pages/TrendScout";
+import PostScheduler from "./pages/PostScheduler";
 import Tools from "./pages/Tools";
 import NotFound from "./pages/NotFound";
 
