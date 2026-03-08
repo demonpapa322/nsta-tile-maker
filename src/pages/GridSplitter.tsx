@@ -296,10 +296,10 @@ const GridSplitter = memo(function GridSplitter() {
     >
       <Helmet>
         {/* Primary Meta Tags */}
-        <title>Image Splitter & Grid Maker for Instagram - 100% Online</title>
-        <meta name="title" content="Image Splitter & Grid Maker for Instagram - 100% Online" />
-        <meta name="description" content="Split your images into perfect Instagram grid posts for free. Create stunning 3x3, 3x2, 3x1 carousel grids in seconds. No signup, 100% private - works entirely in your browser." />
-        <meta name="keywords" content="instagram grid splitter, instagram grid maker, split image for instagram, instagram carousel maker, instagram photo splitter, grid post maker, instagram puzzle feed, split photo into grid, instagram grid layout, photo grid splitter online, free instagram grid tool, instagram multi-post, instagram seamless grid, 9 grid photo splitter, instagram profile grid" />
+        <title>Grid & Carousel Maker for Instagram - 100% Online</title>
+        <meta name="title" content="Grid & Carousel Maker for Instagram - 100% Online" />
+        <meta name="description" content="Create perfect Instagram grid posts and carousels for free. Make stunning 3x3, 3x2, 3x1 grid layouts in seconds. No signup, 100% private - works entirely in your browser." />
+        <meta name="keywords" content="instagram grid maker, instagram carousel maker, grid and carousel maker, split image for instagram, instagram photo grid, grid post maker, instagram puzzle feed, instagram grid layout, photo grid maker online, free instagram grid tool, instagram multi-post, instagram seamless grid, 9 grid photo maker, instagram profile grid" />
         <meta name="robots" content="index, follow" />
         <meta name="language" content="English" />
         <meta name="author" content="SocialTools" />
@@ -310,15 +310,15 @@ const GridSplitter = memo(function GridSplitter() {
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.socialtool.co/grid-splitter" />
-        <meta property="og:title" content="Free Instagram Grid Splitter | Create Stunning Grid Posts" />
-        <meta property="og:description" content="Transform any image into a beautiful Instagram grid. Split photos into 3x3, 3x2, or custom grids. Free, fast, and 100% private." />
+        <meta property="og:title" content="Free Grid & Carousel Maker | Create Stunning Grid Posts" />
+        <meta property="og:description" content="Transform any image into a beautiful Instagram grid or carousel. Create 3x3, 3x2, or custom grids. Free, fast, and 100% private." />
         <meta property="og:site_name" content="SocialTools" />
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:url" content="https://www.socialtool.co/grid-splitter" />
-        <meta name="twitter:title" content="Free Instagram Grid Splitter | SocialTools" />
-        <meta name="twitter:description" content="Split images into perfect Instagram grid posts. Free, private, no signup required." />
+        <meta name="twitter:title" content="Free Grid & Carousel Maker | SocialTools" />
+        <meta name="twitter:description" content="Create perfect Instagram grid posts and carousels. Free, private, no signup required." />
         
         {/* Structured Data - WebApplication */}
         <script type="application/ld+json">
