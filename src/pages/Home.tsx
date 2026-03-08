@@ -17,9 +17,9 @@ import { useChatHistory } from '@/hooks/useChatHistory';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const pageVariants = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1, transition: { duration: 0.3 } },
-  exit: { opacity: 0, transition: { duration: 0.2 } }
+  initial: { opacity: 1 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0, transition: { duration: 0.15 } }
 };
 
 const Home = memo(function Home() {
