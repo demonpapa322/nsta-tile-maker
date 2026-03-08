@@ -174,7 +174,7 @@ serve(async (req) => {
         'HTTP-Referer': 'https://nsta-tile-maker.lovable.app',
       },
       body: JSON.stringify({
-        model: 'deepseek/deepseek-chat',
+        model: 'deepseek/deepseek-r1:free',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           ...messages
