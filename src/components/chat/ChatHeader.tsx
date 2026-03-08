@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Menu } from 'lucide-react';
+import { PanelLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -11,26 +11,27 @@ interface ChatHeaderProps {
 export function ChatHeader({ onMenuToggle, isSidebarOpen }: ChatHeaderProps) {
   return (
     <header className="sticky top-0 z-30 w-full bg-background/80 backdrop-blur-xl">
-      <div className="flex items-center justify-between h-14 px-3">
+      <div className="flex items-center justify-between h-12 px-2">
         {/* Left Section */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          {/* GPT-style sidebar toggle — panel icon */}
           <motion.button
             onClick={onMenuToggle}
-            className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-muted transition-colors"
-            whileTap={{ scale: 0.95 }}
-            aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
+            className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-muted/70 transition-colors text-muted-foreground hover:text-foreground"
+            whileTap={{ scale: 0.92 }}
+            aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+            title={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
           >
-            <Menu className="w-5 h-5" />
+            <PanelLeft className="w-5 h-5" />
           </motion.button>
           
           {/* Brand - as draggable link */}
           <Link 
             to="/"
-            className="hidden sm:inline text-base font-semibold hover:opacity-80 transition-opacity"
+            className="hidden sm:inline text-sm font-semibold hover:opacity-80 transition-opacity ml-1"
             draggable="true"
           >
             <span className="bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent">SocialTool</span>
-            <span className="text-muted-foreground font-normal"> - AI powered Social Media suite</span>
           </Link>
         </div>
 

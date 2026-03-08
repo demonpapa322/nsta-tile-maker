@@ -1,6 +1,6 @@
 import { useState, useRef, KeyboardEvent, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Paperclip, ArrowUp, X, ImageIcon } from 'lucide-react';
+import { Plus, ArrowUp, X, ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ChatInputProps {
@@ -12,13 +12,14 @@ interface ChatInputProps {
 
 export function ChatInput({ 
   onSend, 
-  placeholder = "Ask about grid splitting...",
+  placeholder = "Ask anything",
   disabled = false 
 }: ChatInputProps) {
   const [message, setMessage] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isAttachOpen, setIsAttachOpen] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -28,6 +29,7 @@ export function ChatInput({
       const reader = new FileReader();
       reader.onload = (e) => setImagePreview(e.target?.result as string);
       reader.readAsDataURL(file);
+      setIsAttachOpen(false);
     }
   }, []);
 
@@ -80,19 +82,24 @@ export function ChatInput({
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
     e.target.style.height = 'auto';
-    e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px';
+    e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
   };
 
   const handleAttachClick = () => {
     fileInputRef.current?.click();
   };
 
+  const canSend = (message.trim() || image) && !disabled;
+
   return (
     <div className="w-full max-w-3xl mx-auto px-4 pb-4">
       <motion.div 
         className={cn(
-          "relative flex flex-col rounded-3xl bg-card/80 backdrop-blur-sm border shadow-lg transition-all",
-          isDragging ? "border-primary/50 bg-primary/5 shadow-primary/20" : "border-border/40 hover:border-border/60"
+          "relative flex flex-col rounded-3xl border transition-all",
+          "bg-muted/40 dark:bg-muted/20",
+          isDragging 
+            ? "border-primary/50 bg-primary/5 shadow-lg" 
+            : "border-border/60 hover:border-border focus-within:border-border focus-within:shadow-sm"
         )}
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -114,7 +121,7 @@ export function ChatInput({
                 <img 
                   src={imagePreview} 
                   alt="Upload preview" 
-                  className="h-16 w-auto rounded-xl object-cover"
+                  className="h-16 w-auto rounded-xl object-cover border border-border/40"
                 />
                 <button
                   onClick={removeImage}
@@ -146,7 +153,7 @@ export function ChatInput({
         </AnimatePresence>
 
         {/* Input Row */}
-        <div className="flex items-end gap-2 px-4 py-3">
+        <div className="flex items-end gap-1.5 px-3 py-2.5">
           {/* Hidden file input */}
           <input
             ref={fileInputRef}
@@ -156,13 +163,18 @@ export function ChatInput({
             className="hidden"
           />
 
-          {/* Attachment Button */}
+          {/* GPT-style Plus Button */}
           <button
             onClick={handleAttachClick}
-            className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-muted/50 hover:bg-muted transition-colors"
-            aria-label="Add image"
+            className={cn(
+              "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-all",
+              "border border-border/60 hover:border-border",
+              "text-muted-foreground hover:text-foreground",
+              "hover:bg-muted/50 active:scale-95"
+            )}
+            aria-label="Attach file"
           >
-            <Paperclip className="w-4 h-4 text-muted-foreground" />
+            <Plus className="w-4 h-4" />
           </button>
 
           {/* Text Input */}
@@ -178,32 +190,32 @@ export function ChatInput({
               "flex-1 resize-none bg-transparent border-0 text-sm leading-relaxed",
               "placeholder:text-muted-foreground/50",
               "focus:outline-none focus:ring-0",
-              "min-h-[36px] max-h-[120px] py-2",
+              "min-h-[32px] max-h-[200px] py-1.5",
               disabled && "opacity-50 cursor-not-allowed"
             )}
           />
 
-          {/* Send Button */}
+          {/* Send Button - GPT style: solid circle, dark when active */}
           <motion.button
             onClick={handleSend}
-            disabled={(!message.trim() && !image) || disabled}
+            disabled={!canSend}
             className={cn(
-              "flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full transition-all",
-              (message.trim() || image)
-                ? "bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 text-white shadow-md" 
-                : "bg-muted/50 text-muted-foreground/50"
+              "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-all",
+              canSend
+                ? "bg-foreground text-background hover:opacity-80" 
+                : "bg-muted/60 text-muted-foreground/40 cursor-default"
             )}
-            whileTap={{ scale: 0.92 }}
+            whileTap={canSend ? { scale: 0.9 } : undefined}
             aria-label="Send message"
           >
-            <ArrowUp className="w-4 h-4" />
+            <ArrowUp className="w-4 h-4" strokeWidth={2.5} />
           </motion.button>
         </div>
       </motion.div>
       
       {/* Disclaimer */}
-      <p className="text-[10px] text-muted-foreground/50 text-center mt-2.5">
-        All processing happens locally in your browser
+      <p className="text-[10px] text-muted-foreground/40 text-center mt-2">
+        SocialTool can make mistakes. Check important info.
       </p>
     </div>
   );
