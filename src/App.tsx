@@ -33,6 +33,7 @@ const AnimatedRoutes = () => {
         <Route path="/image-generator" element={<ImageGenerator />} />
         <Route path="/tools" element={<Tools />} />
         <Route path="/trend-scout" element={<TrendScout />} />
+        <Route path="/post-scheduler" element={<PostScheduler />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
