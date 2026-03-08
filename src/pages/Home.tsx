@@ -14,6 +14,7 @@ import { FeedbackModal } from '@/components/FeedbackModal';
 import { streamChat, type ToolCall } from '@/lib/openrouter';
 import { executeToolCall, type ToolResult } from '@/lib/toolExecutor';
 import { useChatHistory } from '@/hooks/useChatHistory';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const pageVariants = {
   initial: { opacity: 0 },
