@@ -10,6 +10,7 @@ import {
   PanelLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ThemePicker } from '@/components/ThemePicker';
 
 interface ChatHistory {
   id: string;
@@ -163,8 +164,9 @@ export function ChatSidebar({ isOpen, onClose, onToggle, onNewChat, onFeedback }
             </div>
           </div>
 
-          {/* Feedback Button */}
-          <div className="p-2 border-t border-border/40">
+          {/* Theme & Feedback */}
+          <div className="p-2 border-t border-border/40 space-y-0.5">
+            <ThemePicker />
             <button 
               onClick={onFeedback}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/60 transition-colors text-sm text-muted-foreground hover:text-foreground"
