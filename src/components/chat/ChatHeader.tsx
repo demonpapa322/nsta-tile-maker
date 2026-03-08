@@ -15,7 +15,7 @@ export function ChatHeader({ onMenuToggle, isSidebarOpen }: ChatHeaderProps) {
           {!isSidebarOpen && (
             <Link 
               to="/"
-              className="text-sm font-semibold hover:opacity-80 transition-opacity ml-10"
+              className="text-sm font-semibold hover:opacity-80 transition-opacity ml-9"
               draggable="true"
             >
               <span className="bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent">SocialTool</span>

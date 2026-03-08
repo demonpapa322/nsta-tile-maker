@@ -52,11 +52,11 @@ export function ChatSidebar({ isOpen, onClose, onToggle, onNewChat, onFeedback }
           opacity: isOpen ? 1 : 0,
         }}
         transition={{ 
-          width: { type: 'spring', stiffness: 400, damping: 35, mass: 0.8 },
-          opacity: { duration: 0.15, ease: 'easeOut' }
+          width: { type: 'spring', stiffness: 300, damping: 30, mass: 0.9 },
+          opacity: { duration: 0.2, ease: [0.4, 0, 0.2, 1] }
         }}
         className={cn(
-          "relative h-full z-50 overflow-hidden will-change-[width]",
+          "relative h-full z-50 overflow-hidden will-change-[width,opacity]",
           "bg-sidebar border-r border-border/50",
           "flex flex-col",
         )}
