@@ -33,7 +33,7 @@ const ImageGenerator = () => {
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
             <iframe
-              src="https://null.perchance.org"
+              src="https://perchance.org/ai-text-to-image-generator"
               title="AI Image Generator"
               allow="clipboard-write"
               style={{ width: '100%', height: '800px', border: 'none' }}
