@@ -93,7 +93,7 @@ const AI_TOOLS = [
     type: "function",
     function: {
       name: "resize_image",
-      description: "Resize an image for a specific social media platform or custom dimensions. Use when user wants to resize, crop, or adjust image dimensions.",
+      description: "Resize an image for a specific social media platform or custom dimensions.",
       parameters: {
         type: "object",
         properties: {
@@ -109,7 +109,7 @@ const AI_TOOLS = [
           },
           customWidth: { type: "number", description: "Custom width in pixels (if no preset)" },
           customHeight: { type: "number", description: "Custom height in pixels (if no preset)" },
-          mode: { type: "string", enum: ["fill", "fit", "stretch"], description: "Resize mode: fill (crop), fit (letterbox), stretch" },
+          mode: { type: "string", enum: ["fill", "fit", "stretch"], description: "Resize mode" },
         },
         additionalProperties: false,
       },
@@ -119,7 +119,7 @@ const AI_TOOLS = [
     type: "function",
     function: {
       name: "split_grid",
-      description: "Split an image into a grid layout for Instagram. Use when user wants to split, grid, or create a multi-post layout.",
+      description: "Split an image into a grid layout for Instagram.",
       parameters: {
         type: "object",
         properties: {
@@ -135,7 +135,7 @@ const AI_TOOLS = [
     type: "function",
     function: {
       name: "generate_hashtags",
-      description: "Generate optimized hashtags for a post. Use when user wants hashtag suggestions or strategy.",
+      description: "Generate optimized hashtags for a post.",
       parameters: {
         type: "object",
         properties: {
@@ -157,23 +157,24 @@ serve(async (req) => {
 
   try {
     const { messages } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
     
-    if (!LOVABLE_API_KEY) {
+    if (!OPENROUTER_API_KEY) {
       return new Response(
-        JSON.stringify({ error: 'API key not configured' }),
+        JSON.stringify({ error: 'OpenRouter API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://nsta-tile-maker.lovable.app',
       },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+        model: 'deepseek/deepseek-chat-v3-0324:free',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           ...messages
@@ -185,7 +186,7 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI gateway error:', response.status, errorText);
+      console.error('OpenRouter error:', response.status, errorText);
       
       if (response.status === 429) {
         return new Response(
@@ -193,16 +194,10 @@ serve(async (req) => {
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'AI credits depleted. Please add funds in Settings → Workspace → Usage.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
       
       return new Response(
-        JSON.stringify({ error: 'AI service error' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: `AI service error: ${response.status}` }),
+        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
