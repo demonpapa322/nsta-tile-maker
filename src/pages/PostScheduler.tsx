@@ -67,6 +67,10 @@ export default function PostScheduler() {
         const data = await timesRes.json();
         setTimeSuggestions(data.suggestions || []);
         if (autoMode && data.suggestions?.length) setSelectedTime(0);
+      } else if (timesRes.status === 402) {
+        toast.error('AI credits depleted. Please add funds in Settings → Workspace → Usage.');
+      } else if (timesRes.status === 429) {
+        toast.error('Rate limit reached. Please wait a moment and try again.');
       } else {
         toast.error('Failed to get time suggestions');
       }
@@ -76,7 +80,7 @@ export default function PostScheduler() {
         const data = await commentsRes.json();
         setComments(data.comments || []);
         if (autoMode && data.comments?.length) setSelectedComment(0);
-      } else {
+      } else if (commentsRes.status !== 402 && commentsRes.status !== 429) {
         toast.error('Failed to generate comments');
       }
       setIsLoadingComments(false);
