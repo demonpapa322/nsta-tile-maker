@@ -229,14 +229,8 @@ const Home = memo(function Home() {
             )}
           </AnimatePresence>
 
-          {/* Input Area - Always at bottom */}
-          <div className="mt-auto">
-            <ChatInput 
-              onSend={handleSendMessage}
-              placeholder="Ask about grid splitting..."
-              disabled={isLoading}
-            />
-          </div>
+          {/* Spacer for floating input */}
+          <div className="h-28 shrink-0" />
         </main>
       </div>
 
