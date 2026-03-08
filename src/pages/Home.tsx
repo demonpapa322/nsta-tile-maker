@@ -23,7 +23,8 @@ const pageVariants = {
 };
 
 const Home = memo(function Home() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const isMobile = useIsMobile();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
