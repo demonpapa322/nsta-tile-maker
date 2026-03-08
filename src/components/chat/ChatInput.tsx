@@ -97,8 +97,7 @@ export function ChatInput({
   const canSend = (message.trim() || image) && !disabled;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
-      <div className="w-full max-w-3xl mx-auto px-3 sm:px-4 pb-3 pointer-events-auto">
+    <div className="w-full px-3 sm:px-4 pb-3">
         {/* Fade gradient above input */}
         <div className="h-8 bg-gradient-to-t from-background to-transparent -mb-px" />
         
