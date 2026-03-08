@@ -23,11 +23,12 @@ interface ChatSidebarProps {
   activeChatId: string | null;
   onSelectChat: (id: string) => void;
   onDeleteChat: (id: string) => void;
+  isMobile?: boolean;
 }
 
 export function ChatSidebar({ 
   isOpen, onClose, onToggle, onNewChat, onFeedback,
-  chats, activeChatId, onSelectChat, onDeleteChat 
+  chats, activeChatId, onSelectChat, onDeleteChat, isMobile 
 }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
