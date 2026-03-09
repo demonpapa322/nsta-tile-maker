@@ -21,10 +21,15 @@ const Home = memo(function Home() {
   const isMobile = useIsMobile();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Open sidebar by default on desktop only (after mount)
+  // Open sidebar by default on desktop only (after isMobile resolves)
+  const hasInitedSidebar = useRef(false);
   useEffect(() => {
-    if (!isMobile) setIsSidebarOpen(true);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (isMobile === undefined) return; // hook hasn't resolved yet
+    if (!hasInitedSidebar.current) {
+      hasInitedSidebar.current = true;
+      if (!isMobile) setIsSidebarOpen(true);
+    }
+  }, [isMobile]);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
