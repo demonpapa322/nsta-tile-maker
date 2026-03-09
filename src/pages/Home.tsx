@@ -19,17 +19,10 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 const Home = memo(function Home() {
   const isMobile = useIsMobile();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // Open sidebar by default on desktop only (after isMobile resolves)
-  const hasInitedSidebar = useRef(false);
-  useEffect(() => {
-    if (isMobile === undefined) return; // hook hasn't resolved yet
-    if (!hasInitedSidebar.current) {
-      hasInitedSidebar.current = true;
-      if (!isMobile) setIsSidebarOpen(true);
-    }
-  }, [isMobile]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    // Open sidebar by default only on desktop
+    return typeof window !== 'undefined' && window.innerWidth >= 768;
+  });
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
