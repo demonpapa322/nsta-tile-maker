@@ -16,11 +16,6 @@ import { executeToolCall, type ToolResult } from '@/lib/toolExecutor';
 import { useChatHistory } from '@/hooks/useChatHistory';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const pageVariants = {
-  initial: { opacity: 1 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0, transition: { duration: 0.15 } }
-};
 
 const Home = memo(function Home() {
   const isMobile = useIsMobile();
@@ -180,13 +175,7 @@ const Home = memo(function Home() {
   const hasMessages = messages.length > 0;
 
   return (
-    <motion.div 
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      variants={pageVariants}
-      className="h-screen flex bg-background overflow-hidden"
-    >
+    <div className="h-screen flex bg-background overflow-hidden">
       <Helmet>
         <title>SocialTool - AI-Powered Social Media Suite</title>
         <meta name="title" content="SocialTool - AI-Powered Social Media Suite" />
@@ -319,7 +308,7 @@ const Home = memo(function Home() {
         isOpen={isFeedbackOpen} 
         onClose={() => setIsFeedbackOpen(false)} 
       />
-    </motion.div>
+    </div>
   );
 });
 
