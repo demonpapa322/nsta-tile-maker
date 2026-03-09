@@ -16,11 +16,6 @@ import { executeToolCall, type ToolResult } from '@/lib/toolExecutor';
 import { useChatHistory } from '@/hooks/useChatHistory';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const pageVariants = {
-  initial: { opacity: 1 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0, transition: { duration: 0.15 } }
-};
 
 const Home = memo(function Home() {
   const isMobile = useIsMobile();
