@@ -180,13 +180,7 @@ const Home = memo(function Home() {
   const hasMessages = messages.length > 0;
 
   return (
-    <motion.div 
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      variants={pageVariants}
-      className="h-screen flex bg-background overflow-hidden"
-    >
+    <div className="h-screen flex bg-background overflow-hidden">
       <Helmet>
         <title>SocialTool - AI-Powered Social Media Suite</title>
         <meta name="title" content="SocialTool - AI-Powered Social Media Suite" />
