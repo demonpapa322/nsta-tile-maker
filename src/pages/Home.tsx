@@ -313,7 +313,7 @@ const Home = memo(function Home() {
         isOpen={isFeedbackOpen} 
         onClose={() => setIsFeedbackOpen(false)} 
       />
-    </motion.div>
+    </div>
   );
 });
 
