@@ -19,12 +19,10 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 const Home = memo(function Home() {
   const isMobile = useIsMobile();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // Open sidebar by default on desktop only (after mount)
-  useEffect(() => {
-    if (!isMobile) setIsSidebarOpen(true);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    // Open sidebar by default only on desktop
+    return typeof window !== 'undefined' && window.innerWidth >= 768;
+  });
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
