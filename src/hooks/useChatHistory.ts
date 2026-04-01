@@ -1,10 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-
-// Global headers helper for device-scoped RLS
-function getDeviceHeaders() {
-  return { 'x-device-id': getDeviceId() };
-}
+import { createClient } from '@supabase/supabase-js';
 
 export interface ChatRecord {
   id: string;
@@ -21,21 +16,27 @@ function getDeviceId(): string {
   return id;
 }
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+function getDeviceScopedClient() {
+  return createClient(SUPABASE_URL, SUPABASE_KEY, {
+    global: { headers: { 'x-device-id': getDeviceId() } },
+  });
+}
+
 export function useChatHistory() {
   const [chats, setChats] = useState<ChatRecord[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const deviceId = getDeviceId();
+  const db = getDeviceScopedClient();
 
   const fetchChats = useCallback(async () => {
-    const { data } = await supabase.rpc
-    // Use custom headers for RLS
-    const client = supabase;
-    // @ts-ignore - set global headers for this request
-    const { data: chatData } = await supabase
+    const { data: chatData } = await db
       .from('chats')
       .select('id, title, created_at')
       .eq('device_id', deviceId)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false });
     if (chatData) setChats(chatData);
   }, [deviceId]);
 
@@ -43,7 +44,7 @@ export function useChatHistory() {
 
   const createChat = useCallback(async (firstMessage: string): Promise<string> => {
     const title = firstMessage.slice(0, 60) || 'New Chat';
-    const { data } = await supabase
+    const { data } = await db
       .from('chats')
       .insert({ device_id: deviceId, title })
       .select('id')
@@ -55,17 +56,17 @@ export function useChatHistory() {
   }, [deviceId, fetchChats]);
 
   const deleteChat = useCallback(async (chatId: string) => {
-    await supabase.from('chats').delete().eq('id', chatId);
+    await db.from('chats').delete().eq('id', chatId);
     if (activeChatId === chatId) setActiveChatId(null);
     setChats(prev => prev.filter(c => c.id !== chatId));
   }, [activeChatId]);
 
   const saveMessage = useCallback(async (chatId: string, role: 'user' | 'assistant', content: string) => {
-    await supabase.from('chat_messages').insert({ chat_id: chatId, role, content });
+    await db.from('chat_messages').insert({ chat_id: chatId, role, content });
   }, []);
 
   const loadMessages = useCallback(async (chatId: string) => {
-    const { data } = await supabase
+    const { data } = await db
       .from('chat_messages')
       .select('id, role, content, created_at')
       .eq('chat_id', chatId)
