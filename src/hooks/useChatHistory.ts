@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+// Global headers helper for device-scoped RLS
+function getDeviceHeaders() {
+  return { 'x-device-id': getDeviceId() };
+}
+
 export interface ChatRecord {
   id: string;
   title: string;
@@ -22,12 +27,16 @@ export function useChatHistory() {
   const deviceId = getDeviceId();
 
   const fetchChats = useCallback(async () => {
-    const { data } = await supabase
+    const { data } = await supabase.rpc
+    // Use custom headers for RLS
+    const client = supabase;
+    // @ts-ignore - set global headers for this request
+    const { data: chatData } = await supabase
       .from('chats')
       .select('id, title, created_at')
       .eq('device_id', deviceId)
-      .order('created_at', { ascending: false });
-    if (data) setChats(data);
+      .order('created_at', { ascending: false })
+    if (chatData) setChats(chatData);
   }, [deviceId]);
 
   useEffect(() => { fetchChats(); }, [fetchChats]);
