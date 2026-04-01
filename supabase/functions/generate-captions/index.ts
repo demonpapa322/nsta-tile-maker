@@ -24,11 +24,30 @@ serve(async (req) => {
 
     const { imageUrl, tone, platforms } = body;
 
-    if (!imageUrl || typeof imageUrl !== "string") {
+    if (!imageUrl || typeof imageUrl !== "string" || imageUrl.length > 500000) {
       return new Response(
-        JSON.stringify({ error: "An image is required." }),
+        JSON.stringify({ error: "A valid image is required (URL or base64 under 500KB)." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    if (tone && (typeof tone !== "string" || tone.length > 200)) {
+      return new Response(
+        JSON.stringify({ error: "Tone must be a string under 200 characters." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const allowedPlatforms = ["instagram", "twitter", "linkedin", "tiktok"];
+    if (platforms && Array.isArray(platforms)) {
+      for (const p of platforms) {
+        if (!allowedPlatforms.includes(p)) {
+          return new Response(
+            JSON.stringify({ error: `Invalid platform: ${p}. Allowed: ${allowedPlatforms.join(", ")}` }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");

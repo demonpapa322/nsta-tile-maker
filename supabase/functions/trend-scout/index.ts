@@ -9,12 +9,28 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { category, platform } = await req.json();
+    let body: any;
+    try { body = await req.json(); } catch {
+      return new Response(JSON.stringify({ error: "Invalid request body" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const { category, platform } = body;
+
+    // Validate inputs
+    if (category && (typeof category !== "string" || category.length > 200)) {
+      return new Response(JSON.stringify({ error: "Category must be a string under 200 chars" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const allowedPlatforms = ["instagram", "twitter", "both"];
+    if (platform && !allowedPlatforms.includes(platform)) {
+      return new Response(JSON.stringify({ error: `Invalid platform. Allowed: ${allowedPlatforms.join(", ")}` }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    // Sanitize category for prompt injection
+    const safeCategory = category ? category.replace(/[\"\\]/g, '').slice(0, 200) : '';
+
     const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
     if (!DEEPSEEK_API_KEY) throw new Error("DeepSeek API key is not configured");
 
-    const categoryContext = category
-      ? `Focus specifically on the "${category}" niche/category.`
+    const categoryContext = safeCategory
+      ? `Focus specifically on the "${safeCategory}" niche/category.`
       : "Cover a broad range of popular niches (lifestyle, tech, food, fitness, fashion, travel, business).";
 
     const platformContext = platform
