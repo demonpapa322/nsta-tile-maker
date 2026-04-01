@@ -72,9 +72,24 @@ serve(async (req) => {
 
     const { prompt, style } = body;
 
-    if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
+    if (!prompt || typeof prompt !== "string" || !prompt.trim() || prompt.length > 2000) {
       return new Response(
-        JSON.stringify({ error: "A prompt is required." }),
+        JSON.stringify({ error: "A prompt is required and must be under 2000 characters." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (style && typeof style !== "string") {
+      return new Response(
+        JSON.stringify({ error: "Invalid style parameter." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const validStyles = Object.keys(styleMap);
+    if (style && !validStyles.includes(style)) {
+      return new Response(
+        JSON.stringify({ error: `Invalid style. Allowed: ${validStyles.join(", ")}` }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
