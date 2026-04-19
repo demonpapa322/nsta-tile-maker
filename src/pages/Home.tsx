@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { useState, useCallback, memo, useRef, useEffect } from 'react';
+import { useState, useCallback, memo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -14,15 +14,15 @@ import { FeedbackModal } from '@/components/FeedbackModal';
 import { streamChat, type ToolCall } from '@/lib/openrouter';
 import { executeToolCall, type ToolResult } from '@/lib/toolExecutor';
 import { useChatHistory } from '@/hooks/useChatHistory';
-import { useIsMobile } from '@/hooks/use-mobile';
 
+const pageVariants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.3 } },
+  exit: { opacity: 0, transition: { duration: 0.2 } }
+};
 
 const Home = memo(function Home() {
-  const isMobile = useIsMobile();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
-    // Open sidebar by default only on desktop
-    return typeof window !== 'undefined' && window.innerWidth >= 768;
-  });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -173,7 +173,13 @@ const Home = memo(function Home() {
   const hasMessages = messages.length > 0;
 
   return (
-    <div className="h-screen flex bg-background overflow-hidden">
+    <motion.div 
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={pageVariants}
+      className="h-screen flex bg-background overflow-hidden"
+    >
       <Helmet>
         <title>SocialTool - AI-Powered Social Media Suite</title>
         <meta name="title" content="SocialTool - AI-Powered Social Media Suite" />
@@ -209,20 +215,6 @@ const Home = memo(function Home() {
         </script>
       </Helmet>
 
-      {/* Mobile backdrop */}
-      <AnimatePresence>
-        {isMobile && isSidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]"
-            onClick={() => setIsSidebarOpen(false)}
-          />
-        )}
-      </AnimatePresence>
-
       <ChatSidebar 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)}
@@ -233,7 +225,6 @@ const Home = memo(function Home() {
         activeChatId={activeChatId}
         onSelectChat={handleSelectChat}
         onDeleteChat={deleteChat}
-        isMobile={isMobile}
       />
 
       <div className="flex-1 flex flex-col min-w-0 relative">
@@ -306,7 +297,7 @@ const Home = memo(function Home() {
         isOpen={isFeedbackOpen} 
         onClose={() => setIsFeedbackOpen(false)} 
       />
-    </div>
+    </motion.div>
   );
 });
 

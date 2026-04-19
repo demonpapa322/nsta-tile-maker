@@ -22,13 +22,13 @@ export function useChatHistory() {
   const deviceId = getDeviceId();
 
   const fetchChats = useCallback(async () => {
-    const { data: chatData } = await supabase
+    const { data } = await supabase
       .from('chats')
       .select('id, title, created_at')
       .eq('device_id', deviceId)
       .order('created_at', { ascending: false });
-    if (chatData) setChats(chatData);
-  }, []);
+    if (data) setChats(data);
+  }, [deviceId]);
 
   useEffect(() => { fetchChats(); }, [fetchChats]);
 
@@ -43,7 +43,7 @@ export function useChatHistory() {
     setActiveChatId(chatId);
     await fetchChats();
     return chatId;
-  }, [fetchChats]);
+  }, [deviceId, fetchChats]);
 
   const deleteChat = useCallback(async (chatId: string) => {
     await supabase.from('chats').delete().eq('id', chatId);

@@ -73,7 +73,6 @@ export type Database = {
     }
     Functions: {
       cleanup_old_chats: { Args: never; Returns: undefined }
-      get_request_device_id: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
