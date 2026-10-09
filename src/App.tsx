@@ -7,15 +7,11 @@ import { ThemeProvider } from "next-themes";
 import { MotionConfig, AnimatePresence } from "framer-motion";
 import { Analytics } from "@vercel/analytics/react";
 import { HelmetProvider } from "react-helmet-async";
-import Home from "./pages/Home";
 import GridSplitter from "./pages/GridSplitter";
-import CaptionGenerator from "./pages/CaptionGenerator";
 import HashtagFinder from "./pages/HashtagFinder";
 import ImageResizer from "./pages/ImageResizer";
-import ImageGenerator from "./pages/ImageGenerator";
-import TrendScout from "./pages/TrendScout";
-import PostScheduler from "./pages/PostScheduler";
 import Tools from "./pages/Tools";
+import ComingSoon from "./pages/ComingSoon";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,15 +21,15 @@ const AnimatedRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Tools />} />
         <Route path="/grid-splitter" element={<GridSplitter />} />
-        <Route path="/caption-generator" element={<CaptionGenerator />} />
+        <Route path="/caption-generator" element={<ComingSoon title="Caption Generator" />} />
         <Route path="/hashtag-finder" element={<HashtagFinder />} />
         <Route path="/image-resizer" element={<ImageResizer />} />
-        <Route path="/image-generator" element={<ImageGenerator />} />
+        <Route path="/image-generator" element={<ComingSoon title="AI Image Generator" />} />
         <Route path="/tools" element={<Tools />} />
-        <Route path="/trend-scout" element={<TrendScout />} />
-        <Route path="/post-scheduler" element={<PostScheduler />} />
+        <Route path="/trend-scout" element={<ComingSoon title="Viral Trend Scout" />} />
+        <Route path="/post-scheduler" element={<ComingSoon title="Post Scheduler" />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
