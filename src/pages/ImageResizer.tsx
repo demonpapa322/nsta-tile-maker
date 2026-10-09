@@ -6,6 +6,7 @@ import { ImageUploader } from '@/components/ImageUploader';
 import { RatioSelector } from '@/components/resizer/RatioSelector';
 import { ResizePreview } from '@/components/resizer/ResizePreview';
 import { ResizeControls } from '@/components/resizer/ResizeControls';
+import { BatchResizer } from '@/components/resizer/BatchResizer';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ArrowLeft, Sparkles, RotateCcw } from 'lucide-react';
 import { RESIZE_PRESETS, type ResizePreset, type ResizeMode, type CustomDimensions } from '@/lib/imageResize';
@@ -162,6 +163,7 @@ const ImageResizer = memo(function ImageResizer() {
                   className="max-w-xl mx-auto"
                 >
                   <ImageUploader onImageUpload={handleImageUpload} />
+                  <BatchResizer />
 
                   {/* How it works */}
                   <section className="mt-16 max-w-2xl mx-auto">
