@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { ArrowLeft, Grid3X3, Image, Hash, MessageSquare, Wand2, Zap, ArrowUpRight, Sparkles } from 'lucide-react';
+import { Grid3X3, Image, Hash, MessageSquare, Wand2, Zap, ArrowUpRight, Sparkles } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 interface Tool {
@@ -36,7 +36,7 @@ const tools: Tool[] = [
     description: 'Create stunning visuals from text descriptions with AI',
     icon: Wand2,
     href: '/image-generator',
-    available: true,
+    available: false,
     accent: 'from-fuchsia-500/20 to-pink-500/20 dark:from-fuchsia-500/10 dark:to-pink-500/10',
   },
   {
@@ -44,7 +44,7 @@ const tools: Tool[] = [
     description: 'Write engaging, platform-optimized captions with AI',
     icon: MessageSquare,
     href: '/caption-generator',
-    available: true,
+    available: false,
     accent: 'from-emerald-500/20 to-teal-500/20 dark:from-emerald-500/10 dark:to-teal-500/10',
   },
   {
@@ -52,7 +52,7 @@ const tools: Tool[] = [
     description: 'Discover viral trends and get content ideas before they peak',
     icon: Zap,
     href: '/trend-scout',
-    available: true,
+    available: false,
     accent: 'from-amber-500/20 to-orange-500/20 dark:from-amber-500/10 dark:to-orange-500/10',
   },
   {
@@ -86,10 +86,9 @@ const Tools = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted/50"
+          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="hidden sm:inline bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent font-semibold">
+          <span className=" bg-gradient-to-r from-violet-500 via-fuchsia-500 to-rose-500 bg-clip-text text-transparent font-semibold">
             SocialTool
           </span>
         </Link>
