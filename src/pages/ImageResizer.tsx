@@ -222,6 +222,7 @@ const ImageResizer = memo(function ImageResizer() {
                     <div className="sticky top-20 p-4 rounded-2xl bg-card border border-border shadow-lg space-y-4">
                       <ResizeControls
                         originalUrl={originalImage}
+                        files={uploadedFiles}
                         targetWidth={targetWidth}
                         targetHeight={targetHeight}
                         mode={resizeMode}
@@ -269,6 +270,7 @@ const ImageResizer = memo(function ImageResizer() {
                     <div className="p-4 rounded-2xl bg-card border border-border shadow-sm">
                       <ResizeControls
                         originalUrl={originalImage}
+                        files={uploadedFiles}
                         targetWidth={targetWidth}
                         targetHeight={targetHeight}
                         mode={resizeMode}
