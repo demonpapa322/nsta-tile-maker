@@ -1,7 +1,7 @@
 import { memo, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import JSZip from 'jszip';
-import { Download, Loader2, Crop, Maximize, MoveHorizontal } from 'lucide-react';
+import { Download, Loader2, Crop, Maximize, MoveHorizontal, Layers } from 'lucide-react';
 import { resizeImage, type ResizeMode } from '@/lib/imageResize';
 import { cn } from '@/lib/utils';
 
@@ -97,6 +97,15 @@ export const ResizeControls = memo(function ResizeControls({
 
   return (
     <div className="space-y-4">
+      {batchCount > 1 && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/25">
+          <Layers className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+          <span className="text-[11px] font-medium text-foreground/80 leading-tight">
+            Every change applies to all {batchCount} images.
+          </span>
+        </div>
+      )}
+
       {/* Resize Mode */}
       <div className="space-y-2">
         <h3 className="text-sm font-semibold text-foreground">Resize Mode</h3>
