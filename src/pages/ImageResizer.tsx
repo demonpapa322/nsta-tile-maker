@@ -6,7 +6,6 @@ import { ImageUploader } from '@/components/ImageUploader';
 import { RatioSelector } from '@/components/resizer/RatioSelector';
 import { ResizePreview } from '@/components/resizer/ResizePreview';
 import { ResizeControls } from '@/components/resizer/ResizeControls';
-import { BatchResizer } from '@/components/resizer/BatchResizer';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ArrowLeft, Sparkles, RotateCcw } from 'lucide-react';
 import { RESIZE_PRESETS, type ResizePreset, type ResizeMode, type CustomDimensions } from '@/lib/imageResize';
@@ -38,6 +37,7 @@ const pageVariants: any = {
 
 const ImageResizer = memo(function ImageResizer() {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [selectedPreset, setSelectedPreset] = useState<ResizePreset>(RESIZE_PRESETS[0]);
   const [customDimensions, setCustomDimensions] = useState<CustomDimensions>({ width: 1080, height: 1080 });
   const [isCustom, setIsCustom] = useState(false);
