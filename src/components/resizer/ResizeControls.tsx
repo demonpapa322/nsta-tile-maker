@@ -1,11 +1,14 @@
 import { memo, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import JSZip from 'jszip';
 import { Download, Loader2, Crop, Maximize, MoveHorizontal } from 'lucide-react';
 import { resizeImage, type ResizeMode } from '@/lib/imageResize';
 import { cn } from '@/lib/utils';
 
 interface ResizeControlsProps {
   originalUrl: string;
+  /** All uploaded images. When more than one, download produces a ZIP. */
+  files?: File[];
   targetWidth: number;
   targetHeight: number;
   mode: ResizeMode;
@@ -22,6 +25,7 @@ const MODES: { value: ResizeMode; label: string; description: string; icon: type
 
 export const ResizeControls = memo(function ResizeControls({
   originalUrl,
+  files,
   targetWidth,
   targetHeight,
   mode,
@@ -30,31 +34,66 @@ export const ResizeControls = memo(function ResizeControls({
   onBgColorChange,
 }: ResizeControlsProps) {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpg'>('png');
+
+  const batchCount = files && files.length > 1 ? files.length : 0;
 
   const handleDownload = useCallback(async () => {
     if (targetWidth < 1 || targetHeight < 1) return;
-    
-    setIsDownloading(true);
-    try {
-      const { blob, url } = await resizeImage(originalUrl, targetWidth, targetHeight, mode, bgColor);
-      
-      const ext = downloadFormat;
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `resized-${targetWidth}x${targetHeight}.${ext}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
 
-      // Revoke after download starts
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    setIsDownloading(true);
+    setProgress(0);
+    try {
+      if (batchCount > 1 && files) {
+        // Batch: resize every image with the same settings, deliver one ZIP
+        const zip = new JSZip();
+        const used = new Set<string>();
+        for (let i = 0; i < files.length; i++) {
+          const src = URL.createObjectURL(files[i]);
+          try {
+            const out = await resizeImage(src, targetWidth, targetHeight, mode, bgColor);
+            URL.revokeObjectURL(out.url);
+            let base = files[i].name.replace(/\.[^.]+$/, '') || `image-${i + 1}`;
+            while (used.has(base)) base += '-1';
+            used.add(base);
+            zip.file(`${base}-${targetWidth}x${targetHeight}.${downloadFormat}`, out.blob);
+          } catch {
+            // skip unreadable image
+          } finally {
+            URL.revokeObjectURL(src);
+          }
+          setProgress(i + 1);
+        }
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `resized-${targetWidth}x${targetHeight}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+      } else {
+        const { blob, url } = await resizeImage(originalUrl, targetWidth, targetHeight, mode, bgColor);
+        void blob;
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `resized-${targetWidth}x${targetHeight}.${downloadFormat}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Revoke after download starts
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+      }
     } catch (err) {
       console.error('Download failed:', err);
     } finally {
       setIsDownloading(false);
+      setProgress(0);
     }
-  }, [originalUrl, targetWidth, targetHeight, mode, bgColor, downloadFormat]);
+  }, [originalUrl, files, batchCount, targetWidth, targetHeight, mode, bgColor, downloadFormat]);
 
   return (
     <div className="space-y-4">
@@ -157,15 +196,21 @@ export const ResizeControls = memo(function ResizeControls({
         {isDownloading ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />
-            Processing...
+            {batchCount > 1 ? `Resizing ${progress}/${batchCount}...` : 'Processing...'}
           </>
         ) : (
           <>
             <Download className="w-4 h-4" />
-            Download Image
+            {batchCount > 1 ? `Download All ${batchCount} (ZIP)` : 'Download Image'}
           </>
         )}
       </motion.button>
+
+      {batchCount > 1 && (
+        <p className="text-[11px] text-muted-foreground text-center leading-tight">
+          The same size and mode are applied to all {batchCount} images.
+        </p>
+      )}
     </div>
   );
 });
