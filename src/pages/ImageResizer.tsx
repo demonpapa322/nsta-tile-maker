@@ -55,13 +55,14 @@ const ImageResizer = memo(function ImageResizer() {
   const targetWidth = isCustom ? customDimensions.width : selectedPreset.width;
   const targetHeight = isCustom ? customDimensions.height : selectedPreset.height;
 
-  const handleImageUpload = useCallback((_file: File, preview: string) => {
+  const handleImageUpload = useCallback((files: File[], preview: string) => {
     if (urlRef.current) {
       URL.revokeObjectURL(urlRef.current);
     }
     if (preview.startsWith('blob:')) {
       urlRef.current = preview;
     }
+    setUploadedFiles(files);
     setOriginalImage(preview);
   }, []);
 
@@ -70,6 +71,7 @@ const ImageResizer = memo(function ImageResizer() {
       URL.revokeObjectURL(urlRef.current);
       urlRef.current = null;
     }
+    setUploadedFiles([]);
     setOriginalImage(null);
   }, []);
 
@@ -162,8 +164,7 @@ const ImageResizer = memo(function ImageResizer() {
                   transition={{ duration: 0.15 }}
                   className="max-w-xl mx-auto"
                 >
-                  <ImageUploader onImageUpload={handleImageUpload} />
-                  <BatchResizer />
+                  <ImageUploader onImageUpload={handleImageUpload} multiple maxFiles={100} />
 
                   {/* How it works */}
                   <section className="mt-16 max-w-2xl mx-auto">
