@@ -188,7 +188,9 @@ const GridSplitter = memo(function GridSplitter() {
     });
   }, []);
 
-  const handleImageUpload = useCallback(async (file: File, preview: string) => {
+  const handleImageUpload = useCallback(async (files: File[], preview: string) => {
+    const file = files[0];
+    if (!file) return;
     if (originalImage && originalImage.startsWith('blob:')) {
       URL.revokeObjectURL(originalImage);
       urlsToCleanupRef.current.delete(originalImage);

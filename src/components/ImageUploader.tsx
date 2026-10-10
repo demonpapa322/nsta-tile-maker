@@ -4,28 +4,33 @@ import { Upload, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ImageUploaderProps {
-  onImageUpload: (file: File, preview: string) => void;
+  onImageUpload: (files: File[], preview: string) => void;
+  multiple?: boolean;
+  maxFiles?: number;
 }
 
 export const ImageUploader = memo(forwardRef<HTMLDivElement, ImageUploaderProps>(function ImageUploader({ 
-  onImageUpload, 
+  onImageUpload,
+  multiple = false,
+  maxFiles = 1,
 }, ref) {
   const [isDragging, setIsDragging] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (file) {
+    const files = multiple ? acceptedFiles.slice(0, maxFiles) : acceptedFiles.slice(0, 1);
+    if (files.length > 0) {
       // Use createObjectURL instead of FileReader - much faster, no base64 encoding
-      const preview = URL.createObjectURL(file);
-      onImageUpload(file, preview);
+      const preview = URL.createObjectURL(files[0]);
+      onImageUpload(files, preview);
     }
     setIsDragging(false);
-  }, [onImageUpload]);
+  }, [onImageUpload, multiple, maxFiles]);
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] },
-    maxFiles: 1,
+    multiple,
+    maxFiles: multiple ? maxFiles : 1,
     onDragEnter: () => setIsDragging(true),
     onDragLeave: () => setIsDragging(false),
   });
@@ -58,10 +63,14 @@ export const ImageUploader = memo(forwardRef<HTMLDivElement, ImageUploaderProps>
           </div>
           
           <h2 className="text-lg font-semibold mb-1">
-            {isDragging ? "Drop your image" : "Upload your image"}
+            {isDragging
+              ? (multiple ? "Drop your images" : "Drop your image")
+              : (multiple ? "Upload your images" : "Upload your image")}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Drag and drop or click to browse. PNG, JPG, WebP.
+            {multiple
+              ? `Drag and drop or click to browse. Up to ${maxFiles} images — PNG, JPG, WebP.`
+              : "Drag and drop or click to browse. PNG, JPG, WebP."}
           </p>
         </div>
       </div>
