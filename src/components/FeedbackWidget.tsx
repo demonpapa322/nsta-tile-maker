@@ -107,7 +107,7 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
             transition={{ type: 'spring', stiffness: 500, damping: 35 }}
             className="fixed bottom-20 right-5 z-50 w-80 sm:w-96"
           >
-            <div className="bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl overflow-hidden">
+            <div className="bg-background/95 border border-border/50 rounded-2xl shadow-2xl overflow-hidden">
               {/* Form */}
               <form onSubmit={handleSubmit} className="p-4 space-y-3">
                 <div>

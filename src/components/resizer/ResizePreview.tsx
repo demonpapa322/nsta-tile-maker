@@ -127,7 +127,7 @@ export const ResizePreview = memo(function ResizePreview({
 
         {/* Processing Overlay */}
         {isProcessing && previewUrl && (
-          <div className="absolute inset-0 bg-background/30 backdrop-blur-[2px] flex items-center justify-center">
+          <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
             <Loader2 className="w-5 h-5 text-primary animate-spin" />
           </div>
         )}

@@ -84,7 +84,7 @@ export function ThemePicker() {
                       {theme.preview.map((color, i) => (
                         <m.span
                           key={i}
-                          layoutId={`swatch-${theme.id}-${i}`}
+                         
                           className="w-4 h-4 rounded-full border-2 border-popover"
                           style={{ background: color, zIndex: 3 - i }}
                         />
