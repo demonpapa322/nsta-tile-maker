@@ -215,6 +215,7 @@ const ImageResizer = memo(function ImageResizer() {
                         targetHeight={targetHeight}
                         mode={resizeMode}
                         bgColor={bgColor}
+                        imageCount={uploadedFiles.length || 1}
                       />
                     </div>
 
@@ -238,7 +239,7 @@ const ImageResizer = memo(function ImageResizer() {
                         className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all border border-border"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
-                        Change Image
+                        {uploadedFiles.length > 1 ? `Change All ${uploadedFiles.length} Images` : 'Change Image'}
                       </button>
                     </div>
                   </div>
@@ -252,6 +253,7 @@ const ImageResizer = memo(function ImageResizer() {
                       targetHeight={targetHeight}
                       mode={resizeMode}
                       bgColor={bgColor}
+                      imageCount={uploadedFiles.length || 1}
                     />
 
                     {/* Ratio Selector */}
@@ -285,7 +287,7 @@ const ImageResizer = memo(function ImageResizer() {
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all border border-border"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
-                      Change Image
+                      {uploadedFiles.length > 1 ? `Change All ${uploadedFiles.length} Images` : 'Change Image'}
                     </button>
                   </div>
                 </motion.div>
