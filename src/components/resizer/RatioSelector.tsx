@@ -1,5 +1,5 @@
 import { useState, memo, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { RESIZE_PRESETS, type ResizePreset, type CustomDimensions } from '@/lib/imageResize';
 import { cn } from '@/lib/utils';
@@ -74,7 +74,7 @@ export const RatioSelector = memo(function RatioSelector({
 
               <AnimatePresence>
                 {isExpanded && (
-                  <motion.div
+                  <m.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
@@ -103,7 +103,7 @@ export const RatioSelector = memo(function RatioSelector({
                         );
                       })}
                     </div>
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
             </div>
@@ -129,7 +129,7 @@ export const RatioSelector = memo(function RatioSelector({
         </button>
 
         {isCustom && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -160,7 +160,7 @@ export const RatioSelector = memo(function RatioSelector({
                 className="w-full mt-1 px-2.5 py-1.5 text-sm bg-muted/30 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
               />
             </div>
-          </motion.div>
+          </m.div>
         )}
       </div>
     </div>

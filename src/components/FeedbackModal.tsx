@@ -1,5 +1,5 @@
 import { useState, memo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight } from 'lucide-react';
 import { z } from 'zod';
 
@@ -63,16 +63,16 @@ export const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose }: Fe
       {isOpen && (
         <>
           {/* Backdrop */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/40 z-50"
             onClick={onClose}
           />
 
           {/* Modal */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -139,7 +139,7 @@ export const FeedbackModal = memo(function FeedbackModal({ isOpen, onClose }: Fe
                 </button>
               </form>
             </div>
-          </motion.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>

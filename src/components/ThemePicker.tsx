@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -53,7 +53,7 @@ export function ThemePicker() {
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 4, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.97 }}
@@ -65,7 +65,7 @@ export function ThemePicker() {
               {themes.map((theme) => {
                 const isActive = activeTheme === theme.id;
                 return (
-                  <motion.button
+                  <m.button
                     key={theme.id}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => {
@@ -82,9 +82,9 @@ export function ThemePicker() {
                     {/* Color swatches */}
                     <div className="flex -space-x-1">
                       {theme.preview.map((color, i) => (
-                        <motion.span
+                        <m.span
                           key={i}
-                          layoutId={`swatch-${theme.id}-${i}`}
+                         
                           className="w-4 h-4 rounded-full border-2 border-popover"
                           style={{ background: color, zIndex: 3 - i }}
                         />
@@ -92,16 +92,16 @@ export function ThemePicker() {
                     </div>
                     <span className="font-medium text-xs">{theme.label}</span>
                     {isActive && (
-                      <motion.span
+                      <m.span
                         layoutId="theme-active"
                         className="ml-auto w-1.5 h-1.5 rounded-full bg-primary"
                       />
                     )}
-                  </motion.button>
+                  </m.button>
                 );
               })}
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>
