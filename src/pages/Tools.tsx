@@ -1,6 +1,5 @@
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { m } from 'framer-motion';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Grid3X3, Image, Hash, MessageSquare, Wand2, Zap, ArrowUpRight, Sparkles } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
