@@ -82,7 +82,7 @@ const Tools = () => {
       </Helmet>
 
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4">
+      <nav className="glass fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4">
         <Link
           to="/"
           className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg"
