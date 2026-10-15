@@ -4,9 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
-import { MotionConfig, AnimatePresence, LazyMotion, domAnimation } from "framer-motion";
-import { usePerfTier } from "@/lib/perf";
-import { pick } from "@/lib/springs";
+import { MotionConfig, AnimatePresence } from "framer-motion";
 import { Analytics } from "@vercel/analytics/react";
 import { HelmetProvider } from "react-helmet-async";
 import GridSplitter from "./pages/GridSplitter";
@@ -38,15 +36,12 @@ const AnimatedRoutes = () => {
   );
 };
 
-const App = () => {
-  const tier = usePerfTier();
-  return (
+const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         <Analytics />
-        <LazyMotion features={domAnimation}>
-        <MotionConfig reducedMotion={tier === "low" ? "always" : "user"} transition={pick(tier)}>
+        <MotionConfig reducedMotion="user" transition={{ type: "spring", stiffness: 300, damping: 30 }}>
           <TooltipProvider>
             <Toaster />
             <Sonner />
@@ -55,11 +50,9 @@ const App = () => {
             </BrowserRouter>
           </TooltipProvider>
         </MotionConfig>
-        </LazyMotion>
       </ThemeProvider>
     </QueryClientProvider>
   </HelmetProvider>
-  );
-};
+);
 
 export default App;

@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { m, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const ThemeToggle = memo(function ThemeToggle() {
   const { setTheme, resolvedTheme } = useTheme();
@@ -31,7 +31,7 @@ export const ThemeToggle = memo(function ThemeToggle() {
     >
       <AnimatePresence mode="wait" initial={false}>
         {isDark ? (
-          <m.div
+          <motion.div
             key="moon"
             initial={{ opacity: 0, rotate: -30 }}
             animate={{ opacity: 1, rotate: 0 }}
@@ -39,9 +39,9 @@ export const ThemeToggle = memo(function ThemeToggle() {
             transition={{ duration: 0.12, ease: [0.4, 0, 0.2, 1] }}
           >
             <Moon className="w-4 h-4 text-foreground" />
-          </m.div>
+          </motion.div>
         ) : (
-          <m.div
+          <motion.div
             key="sun"
             initial={{ opacity: 0, rotate: -30 }}
             animate={{ opacity: 1, rotate: 0 }}
@@ -49,7 +49,7 @@ export const ThemeToggle = memo(function ThemeToggle() {
             transition={{ duration: 0.12, ease: [0.4, 0, 0.2, 1] }}
           >
             <Sun className="w-4 h-4 text-foreground" />
-          </m.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </button>

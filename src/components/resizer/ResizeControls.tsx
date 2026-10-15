@@ -1,5 +1,5 @@
 import { memo, useState, useCallback } from 'react';
-import { m } from 'framer-motion';
+import { motion } from 'framer-motion';
 import JSZip from 'jszip';
 import { Download, Loader2, Crop, Maximize, MoveHorizontal, Layers } from 'lucide-react';
 import { resizeImage, type ResizeMode } from '@/lib/imageResize';
@@ -133,7 +133,7 @@ export const ResizeControls = memo(function ResizeControls({
 
       {/* Background Color (only for Fit mode) */}
       {mode === 'fit' && (
-        <m.div
+        <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
@@ -163,7 +163,7 @@ export const ResizeControls = memo(function ResizeControls({
               <div className="w-full h-full bg-gradient-to-br from-red-400 via-green-400 to-blue-400 rounded-md" />
             </label>
           </div>
-        </m.div>
+        </motion.div>
       )}
 
       {/* Divider */}
@@ -191,7 +191,7 @@ export const ResizeControls = memo(function ResizeControls({
       </div>
 
       {/* Download Button */}
-      <m.button
+      <motion.button
         onClick={handleDownload}
         disabled={isDownloading || targetWidth < 1 || targetHeight < 1}
         className={cn(
@@ -213,7 +213,7 @@ export const ResizeControls = memo(function ResizeControls({
             {batchCount > 1 ? `Download All ${batchCount} (ZIP)` : 'Download Image'}
           </>
         )}
-      </m.button>
+      </motion.button>
 
       {batchCount > 1 && (
         <p className="text-[11px] text-muted-foreground text-center leading-tight">

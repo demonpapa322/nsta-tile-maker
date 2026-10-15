@@ -1,5 +1,5 @@
 import { useState, memo, useCallback } from 'react';
-import { m, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, ArrowRight } from 'lucide-react';
 import { z } from 'zod';
 
@@ -65,7 +65,7 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
   return (
     <>
       {/* Themed floating trigger with gradient */}
-      <m.button
+      <motion.button
         onClick={handleToggle}
         className="fixed bottom-5 right-5 z-50 w-12 h-12 rounded-full bg-gradient-to-r from-violet-400/80 via-fuchsia-400/80 to-rose-400/80 text-white flex items-center justify-center shadow-md hover:shadow-lg hover:shadow-fuchsia-400/20 transition-all"
         whileHover={{ scale: 1.05 }}
@@ -74,7 +74,7 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
       >
         <AnimatePresence mode="wait" initial={false}>
           {isOpen ? (
-            <m.div
+            <motion.div
               key="close"
               initial={{ opacity: 0, rotate: -90 }}
               animate={{ opacity: 1, rotate: 0 }}
@@ -82,9 +82,9 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
               transition={{ duration: 0.15 }}
             >
               <X className="w-5 h-5" />
-            </m.div>
+            </motion.div>
           ) : (
-            <m.div
+            <motion.div
               key="open"
               initial={{ opacity: 0, rotate: 90 }}
               animate={{ opacity: 1, rotate: 0 }}
@@ -92,22 +92,22 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
               transition={{ duration: 0.15 }}
             >
               <MessageCircle className="w-5 h-5" />
-            </m.div>
+            </motion.div>
           )}
         </AnimatePresence>
-      </m.button>
+      </motion.button>
 
       {/* Expanded themed panel */}
       <AnimatePresence>
         {isOpen && (
-          <m.div
+          <motion.div
             initial={{ opacity: 0, y: 16, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.96 }}
             transition={{ type: 'spring', stiffness: 500, damping: 35 }}
             className="fixed bottom-20 right-5 z-50 w-80 sm:w-96"
           >
-            <div className="bg-background/95 border border-border/50 rounded-2xl shadow-2xl overflow-hidden">
+            <div className="bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl overflow-hidden">
               {/* Form */}
               <form onSubmit={handleSubmit} className="p-4 space-y-3">
                 <div>
@@ -156,7 +156,7 @@ export const FeedbackWidget = memo(function FeedbackWidget() {
                 </button>
               </form>
             </div>
-          </m.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </>

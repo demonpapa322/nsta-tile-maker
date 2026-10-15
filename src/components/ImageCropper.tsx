@@ -412,7 +412,7 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
             <div className="flex items-center justify-center p-6 min-h-[340px] bg-muted/30 relative">
               {/* Professional Floating Controls */}
               <div className="absolute top-4 inset-x-4 z-20 flex justify-between items-start">
-                <div className="bg-background/95 rounded-2xl p-2 border border-border shadow-xl flex items-center gap-2">
+                <div className="bg-background/80 backdrop-blur-md rounded-2xl p-2 border border-border shadow-xl flex items-center gap-2">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -432,7 +432,7 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
                   </Button>
                 </div>
                 
-                <div className="bg-background/95 rounded-2xl p-2 border border-border shadow-xl">
+                <div className="bg-background/80 backdrop-blur-md rounded-2xl p-2 border border-border shadow-xl">
                   <span className="text-[10px] font-bold tracking-widest text-primary uppercase px-1">
                     {grid}
                   </span>
@@ -473,7 +473,7 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
         </div>
 
         {/* Professional Control Stack */}
-        <div className="space-y-4 bg-card p-4 rounded-3xl border border-border/50">
+        <div className="space-y-4 bg-card/50 backdrop-blur-sm p-4 rounded-3xl border border-border/50">
           <MobileZoomControls
             zoom={zoom}
             isProcessing={isProcessing}
@@ -561,7 +561,7 @@ export const ImageCropper = memo(forwardRef<HTMLDivElement, ImageCropperProps>(f
                 </div>
 
                 {/* Desktop hint overlay */}
-                <div className="hidden lg:group-hover:flex absolute bottom-4 left-1/2 -translate-x-1/2 items-center gap-4 px-4 py-2 rounded-full bg-background/95 border border-border text-xs text-muted-foreground shadow-sm pointer-events-none transition-all animate-in fade-in slide-in-from-bottom-2">
+                <div className="hidden lg:group-hover:flex absolute bottom-4 left-1/2 -translate-x-1/2 items-center gap-4 px-4 py-2 rounded-full bg-background/80 backdrop-blur-sm border border-border text-xs text-muted-foreground shadow-sm pointer-events-none transition-all animate-in fade-in slide-in-from-bottom-2">
                   <div className="flex items-center gap-1.5">
                     <Move className="w-3 h-3" />
                     Drag image to reposition
