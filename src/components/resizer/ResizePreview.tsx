@@ -1,5 +1,5 @@
 import { memo, useEffect, useState, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Loader2, Layers, Images } from 'lucide-react';
 import { resizeImagePreview, type ResizeMode } from '@/lib/imageResize';
 
@@ -101,7 +101,7 @@ export const ResizePreview = memo(function ResizePreview({
       >
         <AnimatePresence mode="wait">
           {previewUrl ? (
-            <motion.img
+            <m.img
               key={previewUrl}
               src={previewUrl}
               alt="Resized preview"
@@ -113,7 +113,7 @@ export const ResizePreview = memo(function ResizePreview({
               draggable={false}
             />
           ) : (
-            <motion.div
+            <m.div
               key="loading"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -121,7 +121,7 @@ export const ResizePreview = memo(function ResizePreview({
               className="absolute inset-0 flex items-center justify-center"
             >
               <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 

@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Grid3X3, Image, Hash, MessageSquare, Wand2, Zap, ArrowUpRight, Sparkles } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -103,12 +103,7 @@ const Tools = () => {
 
       <div className="relative z-10 max-w-5xl mx-auto pt-28 pb-16 px-5">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-          className="mb-16"
-        >
+        <div className="mb-16">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
             Creative
             <br />
@@ -117,7 +112,7 @@ const Tools = () => {
           <p className="mt-4 text-muted-foreground text-base sm:text-lg max-w-md leading-relaxed">
             Everything you need to create, optimize, and grow your social media presence.
           </p>
-        </motion.div>
+        </div>
 
         {/* Tools Grid — Bento-inspired */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -126,15 +121,10 @@ const Tools = () => {
             const colorClass = iconAccentMap[tool.title] || 'text-primary';
 
             return (
-              <motion.div
-                key={tool.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.07, ease: [0.25, 0.1, 0.25, 1] }}
-              >
+              <div key={tool.title}>
                 <Link
                   to={tool.available ? tool.href : '#'}
-                  className={`group relative block rounded-2xl border border-border/60 bg-card p-6 h-full transition-all duration-300 ${
+                  className={`pressable-lg group relative block rounded-2xl border border-border/60 bg-card p-6 h-full transition-colors duration-200 ${
                     tool.available
                       ? 'hover:border-border hover:shadow-elevated cursor-pointer'
                       : 'opacity-60 cursor-default'
@@ -166,7 +156,7 @@ const Tools = () => {
                     </p>
                   </div>
                 </Link>
-              </motion.div>
+              </div>
             );
           })}
         </div>

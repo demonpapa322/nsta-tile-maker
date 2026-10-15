@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect, memo } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ImageUploader } from '@/components/ImageUploader';
@@ -85,7 +85,7 @@ const ImageResizer = memo(function ImageResizer() {
   }, []);
 
   return (
-    <motion.div
+    <m.div
       initial="initial"
       animate="animate"
       exit="exit"
@@ -123,14 +123,14 @@ const ImageResizer = memo(function ImageResizer() {
           {/* Hero */}
           <div className={`text-center transition-all duration-300 ${originalImage ? 'mb-6' : 'mb-12'}`}>
             {!originalImage && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6"
               >
                 <Sparkles className="w-3.5 h-3.5 text-primary" />
                 <span className="text-xs font-medium text-primary">Free & Private</span>
-              </motion.div>
+              </m.div>
             )}
             <h1 className={`font-bold tracking-tight text-foreground transition-all duration-300 ${
               originalImage ? 'text-xl md:text-2xl mb-2' : 'text-3xl md:text-4xl lg:text-5xl mb-4'
@@ -156,7 +156,7 @@ const ImageResizer = memo(function ImageResizer() {
             <AnimatePresence mode="sync">
               {!originalImage ? (
                 /* Upload State */
-                <motion.div
+                <m.div
                   key="upload"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -183,15 +183,15 @@ const ImageResizer = memo(function ImageResizer() {
                       </div>
                     </div>
                   </section>
-                </motion.div>
+                </m.div>
               ) : (
                 /* Editor State */
-                <motion.div
+                <m.div
                   key="editor"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ duration: 0.15 }}
                 >
                   {/* Desktop: side-by-side */}
                   <div className="hidden lg:grid lg:grid-cols-[280px,1fr,280px] lg:gap-6 lg:items-start">
@@ -290,7 +290,7 @@ const ImageResizer = memo(function ImageResizer() {
                       {uploadedFiles.length > 1 ? `Change All ${uploadedFiles.length} Images` : 'Change Image'}
                     </button>
                   </div>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
           </div>
@@ -302,7 +302,7 @@ const ImageResizer = memo(function ImageResizer() {
           </p>
         </footer>
       </div>
-    </motion.div>
+    </m.div>
   );
 });
 

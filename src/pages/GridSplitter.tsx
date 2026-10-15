@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef, memo, useMemo } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ImageUploader } from '@/components/ImageUploader';
@@ -289,7 +289,7 @@ const GridSplitter = memo(function GridSplitter() {
   );
 
   return (
-    <motion.div 
+    <m.div 
       initial="initial"
       animate="animate"
       exit="exit"
@@ -466,7 +466,7 @@ const GridSplitter = memo(function GridSplitter() {
           <div className="max-w-7xl mx-auto">
             <AnimatePresence mode="sync">
               {currentStep === 'upload' && (
-                <motion.div
+                <m.div
                   key="upload"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -477,11 +477,11 @@ const GridSplitter = memo(function GridSplitter() {
                   <ImageUploader
                     onImageUpload={handleImageUpload}
                   />
-                </motion.div>
+                </m.div>
               )}
 
               {currentStep === 'crop' && originalImage && (
-                <motion.div
+                <m.div
                   key="crop"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -499,22 +499,16 @@ const GridSplitter = memo(function GridSplitter() {
                     onCropComplete={handleCropComplete}
                     onCancel={handleBackToPreview}
                   />
-                </motion.div>
+                </m.div>
               )}
 
               {currentStep === 'preview' && activeImage && (
-                <motion.div
+                <m.div
                   key="preview"
-                  initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)", rotateY: -10 }}
-                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)", rotateY: 0 }}
-                  exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)", rotateY: 10 }}
-                  transition={{ 
-                    duration: 0.5, 
-                    ease: [0.16, 1, 0.3, 1],
-                    layout: { duration: 0.3 }
-                  }}
-                  className="will-animate origin-center"
-                  style={{ perspective: "1000px" }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
                 >
                   {/* Desktop: Side-by-side layout */}
                   <div className="hidden lg:grid lg:grid-cols-[1fr,400px] lg:gap-8 lg:items-start">
@@ -570,7 +564,7 @@ const GridSplitter = memo(function GridSplitter() {
                       grid={selectedGrid}
                     />
                   </div>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
           </div>
@@ -585,7 +579,7 @@ const GridSplitter = memo(function GridSplitter() {
           </p>
         </footer>
       </div>
-    </motion.div>
+    </m.div>
   );
 });
 
