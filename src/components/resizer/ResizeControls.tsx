@@ -101,7 +101,7 @@ export const ResizeControls = memo(function ResizeControls({
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/10 border border-primary/25">
           <Layers className="w-3.5 h-3.5 text-primary flex-shrink-0" />
           <span className="text-[11px] font-medium text-foreground/80 leading-tight">
-            Every change applies to all {batchCount} images.
+            The master image sets the settings for all {batchCount} images.
           </span>
         </div>
       )}
@@ -217,7 +217,7 @@ export const ResizeControls = memo(function ResizeControls({
 
       {batchCount > 1 && (
         <p className="text-[11px] text-muted-foreground text-center leading-tight">
-          The same size and mode are applied to all {batchCount} images.
+          Size, mode and format chosen on the master image apply to all {batchCount} images.
         </p>
       )}
     </div>

@@ -215,6 +215,7 @@ const ImageResizer = memo(function ImageResizer() {
                         targetHeight={targetHeight}
                         mode={resizeMode}
                         bgColor={bgColor}
+                        imageCount={uploadedFiles.length || 1}
                       />
                     </div>
 
@@ -252,6 +253,7 @@ const ImageResizer = memo(function ImageResizer() {
                       targetHeight={targetHeight}
                       mode={resizeMode}
                       bgColor={bgColor}
+                      imageCount={uploadedFiles.length || 1}
                     />
 
                     {/* Ratio Selector */}
