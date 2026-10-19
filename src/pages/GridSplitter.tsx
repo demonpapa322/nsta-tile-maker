@@ -271,12 +271,12 @@ const GridSplitter = memo(function GridSplitter() {
 
   // Memoize hero section class
   const heroClass = useMemo(() => 
-    `text-center transition-all duration-300 ${originalImage ? 'mb-6 lg:mb-4' : 'mb-12'}`,
+    `text-center ${originalImage ? 'mb-6 lg:mb-4' : 'mb-12'}`,
     [originalImage]
   );
 
   const titleClass = useMemo(() =>
-    `font-bold tracking-tight text-foreground transition-all duration-300 ${
+    `font-bold tracking-tight text-foreground ${
       originalImage 
         ? 'text-xl md:text-2xl lg:text-xl mb-2' 
         : 'text-3xl md:text-4xl lg:text-5xl mb-4'
