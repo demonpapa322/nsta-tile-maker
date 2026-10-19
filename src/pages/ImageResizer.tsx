@@ -30,9 +30,9 @@ const Header = memo(function Header() {
 });
 
 const pageVariants: any = {
-  initial: { opacity: 0, scale: 0.98 },
-  animate: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 30 } },
-  exit: { opacity: 0, transition: { duration: 0.2 } }
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.18, ease: [0.25, 0.1, 0.25, 1] } },
+  exit: { opacity: 0, transition: { duration: 0.12, ease: 'easeOut' } }
 };
 
 const ImageResizer = memo(function ImageResizer() {
