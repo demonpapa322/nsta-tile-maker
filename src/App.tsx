@@ -28,7 +28,7 @@ const ScrollToTop = () => {
 const AnimatedRoutes = () => {
   const location = useLocation();
   return (
-    <AnimatePresence mode="sync" initial={false}>
+    <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Tools />} />
         <Route path="/grid-splitter" element={<GridSplitter />} />

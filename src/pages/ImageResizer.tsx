@@ -121,7 +121,7 @@ const ImageResizer = memo(function ImageResizer() {
       <div className="relative z-10">
         <main className="container py-8 md:py-12 pt-16">
           {/* Hero */}
-          <div className={`text-center transition-all duration-300 ${originalImage ? 'mb-6' : 'mb-12'}`}>
+          <div className={`text-center ${originalImage ? 'mb-6' : 'mb-12'}`}>
             {!originalImage && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -132,7 +132,7 @@ const ImageResizer = memo(function ImageResizer() {
                 <span className="text-xs font-medium text-primary">Free & Private</span>
               </motion.div>
             )}
-            <h1 className={`font-bold tracking-tight text-foreground transition-all duration-300 ${
+            <h1 className={`font-bold tracking-tight text-foreground ${
               originalImage ? 'text-xl md:text-2xl mb-2' : 'text-3xl md:text-4xl lg:text-5xl mb-4'
             }`}>
               {originalImage ? (
@@ -153,7 +153,7 @@ const ImageResizer = memo(function ImageResizer() {
 
           {/* Main Content */}
           <div className="max-w-7xl mx-auto">
-            <AnimatePresence mode="sync">
+            <AnimatePresence mode="wait" initial={false}>
               {!originalImage ? (
                 /* Upload State */
                 <motion.div
@@ -188,10 +188,10 @@ const ImageResizer = memo(function ImageResizer() {
                 /* Editor State */
                 <motion.div
                   key="editor"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ duration: 0.15 }}
                 >
                   {/* Desktop: side-by-side */}
                   <div className="hidden lg:grid lg:grid-cols-[280px,1fr,280px] lg:gap-6 lg:items-start">

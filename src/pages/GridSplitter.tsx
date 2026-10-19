@@ -271,12 +271,12 @@ const GridSplitter = memo(function GridSplitter() {
 
   // Memoize hero section class
   const heroClass = useMemo(() => 
-    `text-center transition-all duration-300 ${originalImage ? 'mb-6 lg:mb-4' : 'mb-12'}`,
+    `text-center ${originalImage ? 'mb-6 lg:mb-4' : 'mb-12'}`,
     [originalImage]
   );
 
   const titleClass = useMemo(() =>
-    `font-bold tracking-tight text-foreground transition-all duration-300 ${
+    `font-bold tracking-tight text-foreground ${
       originalImage 
         ? 'text-xl md:text-2xl lg:text-xl mb-2' 
         : 'text-3xl md:text-4xl lg:text-5xl mb-4'
@@ -460,7 +460,7 @@ const GridSplitter = memo(function GridSplitter() {
 
           {/* App Interface */}
           <div className="max-w-7xl mx-auto">
-            <AnimatePresence mode="sync">
+            <AnimatePresence mode="wait" initial={false}>
               {currentStep === 'upload' && (
                 <motion.div
                   key="upload"
@@ -501,16 +501,11 @@ const GridSplitter = memo(function GridSplitter() {
               {currentStep === 'preview' && activeImage && (
                 <motion.div
                   key="preview"
-                  initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)", rotateY: -10 }}
-                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)", rotateY: 0 }}
-                  exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)", rotateY: 10 }}
-                  transition={{ 
-                    duration: 0.5, 
-                    ease: [0.16, 1, 0.3, 1],
-                    layout: { duration: 0.3 }
-                  }}
-                  className="will-animate origin-center"
-                  style={{ perspective: "1000px" }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="will-animate"
                 >
                   {/* Desktop: Side-by-side layout */}
                   <div className="hidden lg:grid lg:grid-cols-[1fr,400px] lg:gap-8 lg:items-start">
