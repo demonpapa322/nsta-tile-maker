@@ -384,3 +384,15 @@
 #lovable-badge {
   display: none !important;
 }
+
+/* iOS-style page cross-fade: outgoing and incoming pages share the same
+   grid cell so they overlap perfectly during the fade — no blank flash,
+   no layout shift, no jitter. */
+.page-stack {
+  display: grid;
+}
+
+.page-stack-item {
+  grid-area: 1 / 1;
+  min-height: 100vh;
+}
