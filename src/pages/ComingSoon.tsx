@@ -1,10 +1,18 @@
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { pageVariants } from '@/lib/pageTransition';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 const ComingSoon = ({ title }: { title: string }) => (
-  <div className="min-h-screen bg-background flex flex-col">
+  <motion.div
+    variants={pageVariants}
+    initial="initial"
+    animate="animate"
+    exit="exit"
+    className="min-h-screen bg-background flex flex-col"
+  >
     <Helmet>
       <title>{`${title} - Coming Soon | SocialTool`}</title>
     </Helmet>
@@ -22,7 +30,7 @@ const ComingSoon = ({ title }: { title: string }) => (
         Browse tools
       </Link>
     </main>
-  </div>
+  </motion.div>
 );
 
 export default ComingSoon;

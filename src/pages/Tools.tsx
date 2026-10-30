@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { pageVariants } from '@/lib/pageTransition';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Grid3X3, Image, Hash, MessageSquare, Wand2, Zap, ArrowUpRight, Sparkles } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -76,7 +77,13 @@ const iconAccentMap: Record<string, string> = {
 
 const Tools = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="min-h-screen bg-background"
+    >
       <Helmet>
         <title>Tools - SocialTool</title>
         <meta name="description" content="Free social media tools - Instagram grid splitter, image resizer, caption generator, and hashtag finder." />
@@ -171,7 +178,7 @@ const Tools = () => {
           })}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -28,20 +28,24 @@ const ScrollToTop = () => {
 const AnimatedRoutes = () => {
   const location = useLocation();
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Tools />} />
-        <Route path="/grid-splitter" element={<GridSplitter />} />
-        <Route path="/caption-generator" element={<ComingSoon title="Caption Generator" />} />
-        <Route path="/hashtag-finder" element={<HashtagFinder />} />
-        <Route path="/image-resizer" element={<ImageResizer />} />
-        <Route path="/image-generator" element={<ComingSoon title="AI Image Generator" />} />
-        <Route path="/tools" element={<Tools />} />
-        <Route path="/trend-scout" element={<ComingSoon title="Viral Trend Scout" />} />
-        <Route path="/post-scheduler" element={<ComingSoon title="Post Scheduler" />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </AnimatePresence>
+    <div className="page-stack">
+      <AnimatePresence mode="sync">
+        <div key={location.pathname} className="page-stack-item">
+          <Routes location={location}>
+            <Route path="/" element={<Tools />} />
+            <Route path="/grid-splitter" element={<GridSplitter />} />
+            <Route path="/caption-generator" element={<ComingSoon title="Caption Generator" />} />
+            <Route path="/hashtag-finder" element={<HashtagFinder />} />
+            <Route path="/image-resizer" element={<ImageResizer />} />
+            <Route path="/image-generator" element={<ComingSoon title="AI Image Generator" />} />
+            <Route path="/tools" element={<Tools />} />
+            <Route path="/trend-scout" element={<ComingSoon title="Viral Trend Scout" />} />
+            <Route path="/post-scheduler" element={<ComingSoon title="Post Scheduler" />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+      </AnimatePresence>
+    </div>
   );
 };
 

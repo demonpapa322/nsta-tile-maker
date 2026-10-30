@@ -9,6 +9,7 @@ import { ResizeControls } from '@/components/resizer/ResizeControls';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ArrowLeft, Sparkles, RotateCcw } from 'lucide-react';
 import { RESIZE_PRESETS, type ResizePreset, type ResizeMode, type CustomDimensions } from '@/lib/imageResize';
+import { pageVariants } from '@/lib/pageTransition';
 
 const Header = memo(function Header() {
   return (
@@ -29,11 +30,6 @@ const Header = memo(function Header() {
   );
 });
 
-const pageVariants: any = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1, transition: { duration: 0.18, ease: [0.25, 0.1, 0.25, 1] } },
-  exit: { opacity: 0, transition: { duration: 0.12, ease: 'easeOut' } }
-};
 
 const ImageResizer = memo(function ImageResizer() {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
