@@ -1,10 +1,18 @@
 import { Link } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ArrowLeft, Hash, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { pageVariants } from '@/lib/pageTransition';
 
 const HashtagFinder = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="min-h-screen bg-background"
+    >
       {/* Header */}
       <div className="fixed top-4 left-4 z-50">
         <Link
@@ -39,7 +47,7 @@ const HashtagFinder = () => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
