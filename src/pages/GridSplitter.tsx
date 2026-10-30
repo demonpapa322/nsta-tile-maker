@@ -10,6 +10,7 @@ import { DownloadSection } from '@/components/DownloadSection';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ArrowLeft, Sparkles, Eye, EyeOff, Pencil } from 'lucide-react';
 import { create2DCanvas, canvasToBlob } from '@/lib/canvas';
+import { pageVariants } from '@/lib/pageTransition';
 
 type Step = 'upload' | 'crop' | 'preview';
 
@@ -90,23 +91,6 @@ const ActionButtons = memo(function ActionButtons({
   );
 });
 
-const pageVariants: any = {
-  initial: { opacity: 0 },
-  animate: {
-    opacity: 1,
-    transition: {
-      duration: 0.18,
-      ease: [0.25, 0.1, 0.25, 1]
-    }
-  },
-  exit: {
-    opacity: 0,
-    transition: {
-      duration: 0.12,
-      ease: "easeOut"
-    }
-  }
-};
 
 const GridSplitter = memo(function GridSplitter() {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
