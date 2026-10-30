@@ -29,7 +29,7 @@ const AnimatedRoutes = () => {
   const location = useLocation();
   return (
     <div className="page-stack">
-      <AnimatePresence mode="sync" initial={false}>
+      <AnimatePresence mode="sync">
         <div key={location.pathname} className="page-stack-item">
           <Routes location={location}>
             <Route path="/" element={<Tools />} />
