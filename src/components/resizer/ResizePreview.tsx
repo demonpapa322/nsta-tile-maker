@@ -99,17 +99,18 @@ export const ResizePreview = memo(function ResizePreview({
         className="relative rounded-2xl overflow-hidden border border-border shadow-lg bg-muted/20"
         style={{ width: '100%', maxWidth: displayW, aspectRatio: `${targetWidth}/${targetHeight}` }}
       >
-        <AnimatePresence mode="wait">
+        {/* Cross-fade: new preview dissolves in over the old one, no blank gap */}
+        <AnimatePresence initial={false}>
           {previewUrl ? (
             <motion.img
               key={previewUrl}
               src={previewUrl}
               alt="Resized preview"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="w-full h-full object-contain"
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="absolute inset-0 w-full h-full object-contain"
               draggable={false}
             />
           ) : (

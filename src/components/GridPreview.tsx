@@ -1,4 +1,5 @@
-import { memo, useMemo, useState, useEffect } from 'react';
+import { memo, useMemo, useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { Grid3X3, Bookmark, User } from 'lucide-react';
 
 interface GridPreviewProps {
@@ -106,6 +107,18 @@ export const GridPreview = memo(function GridPreview({
     }));
   }, [totalTiles]);
 
+  // Cross-fade on image change: keep the previous image as an overlay that
+  // dissolves out while the tiles underneath already show the new image.
+  const [fadingImage, setFadingImage] = useState<string | null>(null);
+  const prevImageRef = useRef(imageUrl);
+  useEffect(() => {
+    if (prevImageRef.current !== imageUrl) {
+      const prev = prevImageRef.current;
+      prevImageRef.current = imageUrl;
+      setFadingImage(prev);
+    }
+  }, [imageUrl]);
+
   // Stable grid container style
   const gridStyle = useMemo(() => ({
     display: 'grid',
@@ -125,7 +138,7 @@ export const GridPreview = memo(function GridPreview({
         </div>
 
         {/* Grid */}
-        <div style={gridStyle}>
+        <div style={gridStyle} className="relative">
           {tiles.map(({ index, postOrder }) => (
             <GridTile
               key={index}
@@ -137,6 +150,25 @@ export const GridPreview = memo(function GridPreview({
               showNumbers={showNumbers}
             />
           ))}
+
+          {/* Previous image dissolving out over the new one */}
+          {fadingImage && (
+            <motion.div
+              key={fadingImage}
+              aria-hidden="true"
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage: `url(${fadingImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }}
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+              onAnimationComplete={() => setFadingImage(null)}
+            />
+          )}
         </div>
       </div>
     </div>
