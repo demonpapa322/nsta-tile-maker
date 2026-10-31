@@ -138,7 +138,7 @@ export const GridPreview = memo(function GridPreview({
         </div>
 
         {/* Grid */}
-        <div style={gridStyle}>
+        <div style={gridStyle} className="relative">
           {tiles.map(({ index, postOrder }) => (
             <GridTile
               key={index}
@@ -150,6 +150,25 @@ export const GridPreview = memo(function GridPreview({
               showNumbers={showNumbers}
             />
           ))}
+
+          {/* Previous image dissolving out over the new one */}
+          {fadingImage && (
+            <motion.div
+              key={fadingImage}
+              aria-hidden="true"
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage: `url(${fadingImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }}
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+              onAnimationComplete={() => setFadingImage(null)}
+            />
+          )}
         </div>
       </div>
     </div>
