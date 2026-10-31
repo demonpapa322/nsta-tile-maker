@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type ThemeId = 'default' | 'pastel-green' | 'pure-white' | 'warm-beige' | 'lavender' | 'midnight';
+export type ThemeId = 'default' | 'vibe' | 'pastel-green' | 'pure-white' | 'warm-beige' | 'lavender' | 'midnight';
 
 interface ThemeOption {
   id: ThemeId;
@@ -12,6 +12,7 @@ interface ThemeOption {
 }
 
 const themes: ThemeOption[] = [
+  { id: 'vibe', label: 'Vibe', preview: ['hsl(265,75%,58%)', 'hsl(335,80%,56%)', 'hsl(20,90%,58%)'] },
   { id: 'default', label: 'Rose', preview: ['hsl(340,65%,65%)', 'hsl(30,30%,98%)', 'hsl(200,60%,70%)'] },
   { id: 'pastel-green', label: 'Sage', preview: ['hsl(150,35%,55%)', 'hsl(140,20%,97%)', 'hsl(160,30%,80%)'] },
   { id: 'pure-white', label: 'Snow', preview: ['hsl(220,60%,55%)', 'hsl(0,0%,100%)', 'hsl(220,30%,90%)'] },
