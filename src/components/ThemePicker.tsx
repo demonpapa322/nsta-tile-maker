@@ -23,13 +23,16 @@ const themes: ThemeOption[] = [
 export function ThemePicker() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTheme, setActiveTheme] = useState<ThemeId>(() => {
-    return (localStorage.getItem('app-theme') as ThemeId) || 'default';
+    const stored = localStorage.getItem('app-theme') as ThemeId | null;
+    // One-time migration: previously-default Rose becomes the new Vibe default
+    if (!stored || stored === 'default') return 'vibe';
+    return stored;
   });
 
   useEffect(() => {
     const root = document.documentElement;
     // Remove all theme classes
-    root.classList.remove('theme-pastel-green', 'theme-pure-white', 'theme-warm-beige', 'theme-lavender', 'theme-midnight');
+    root.classList.remove('theme-vibe', 'theme-pastel-green', 'theme-pure-white', 'theme-warm-beige', 'theme-lavender', 'theme-midnight');
     if (activeTheme !== 'default') {
       root.classList.add(`theme-${activeTheme}`);
     }
