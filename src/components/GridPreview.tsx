@@ -1,4 +1,5 @@
-import { memo, useMemo, useState, useEffect } from 'react';
+import { memo, useMemo, useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { Grid3X3, Bookmark, User } from 'lucide-react';
 
 interface GridPreviewProps {
@@ -105,6 +106,18 @@ export const GridPreview = memo(function GridPreview({
       postOrder: totalTiles - index,
     }));
   }, [totalTiles]);
+
+  // Cross-fade on image change: keep the previous image as an overlay that
+  // dissolves out while the tiles underneath already show the new image.
+  const [fadingImage, setFadingImage] = useState<string | null>(null);
+  const prevImageRef = useRef(imageUrl);
+  useEffect(() => {
+    if (prevImageRef.current !== imageUrl) {
+      const prev = prevImageRef.current;
+      prevImageRef.current = imageUrl;
+      setFadingImage(prev);
+    }
+  }, [imageUrl]);
 
   // Stable grid container style
   const gridStyle = useMemo(() => ({
