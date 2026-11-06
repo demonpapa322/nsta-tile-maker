@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { pageVariants } from '@/lib/pageTransition';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { ThemePicker } from '@/components/ThemePicker';
 import { Grid3X3, Image, Hash, MessageSquare, Wand2, Zap, ArrowUpRight, Sparkles } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -99,7 +100,7 @@ const Tools = () => {
             SocialTool
           </span>
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-2"><ThemePicker /><ThemeToggle /></div>
       </nav>
 
       {/* Ambient background */}

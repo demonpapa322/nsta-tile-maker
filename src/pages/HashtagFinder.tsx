@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { ThemePicker } from '@/components/ThemePicker';
 import { ArrowLeft, Hash, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { pageVariants } from '@/lib/pageTransition';
@@ -24,7 +25,7 @@ const HashtagFinder = () => {
         </Link>
       </div>
       <div className="fixed top-4 right-4 z-50">
-        <ThemeToggle />
+        <div className="flex items-center gap-2"><ThemePicker /><ThemeToggle /></div>
       </div>
 
       {/* Background gradient */}
