@@ -7,6 +7,7 @@ import { RatioSelector } from '@/components/resizer/RatioSelector';
 import { ResizePreview } from '@/components/resizer/ResizePreview';
 import { ResizeControls } from '@/components/resizer/ResizeControls';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { ThemePicker } from '@/components/ThemePicker';
 import { ArrowLeft, Sparkles, RotateCcw } from 'lucide-react';
 import { RESIZE_PRESETS, type ResizePreset, type ResizeMode, type CustomDimensions } from '@/lib/imageResize';
 import { pageVariants } from '@/lib/pageTransition';
@@ -24,7 +25,7 @@ const Header = memo(function Header() {
         </Link>
       </div>
       <div className="fixed top-4 right-4 z-50">
-        <ThemeToggle />
+        <div className="flex items-center gap-2"><ThemePicker /><ThemeToggle /></div>
       </div>
     </>
   );

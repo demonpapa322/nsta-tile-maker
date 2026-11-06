@@ -8,6 +8,7 @@ import { GridSelector } from '@/components/GridSelector';
 import { GridPreview } from '@/components/GridPreview';
 import { DownloadSection } from '@/components/DownloadSection';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { ThemePicker } from '@/components/ThemePicker';
 import { ArrowLeft, Sparkles, Eye, EyeOff, Pencil } from 'lucide-react';
 import { create2DCanvas, canvasToBlob } from '@/lib/canvas';
 import { pageVariants } from '@/lib/pageTransition';
@@ -28,7 +29,7 @@ const Header = memo(function Header() {
         </Link>
       </div>
       <div className="fixed top-4 right-4 z-50">
-        <ThemeToggle />
+        <div className="flex items-center gap-2"><ThemePicker /><ThemeToggle /></div>
       </div>
     </>
   );

@@ -4,6 +4,7 @@ import { ArrowLeft, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { pageVariants } from '@/lib/pageTransition';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { ThemePicker } from '@/components/ThemePicker';
 
 const ComingSoon = ({ title }: { title: string }) => (
   <motion.div
@@ -20,7 +21,7 @@ const ComingSoon = ({ title }: { title: string }) => (
       <Link to="/tools" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" /> Tools
       </Link>
-      <ThemeToggle />
+      <div className="flex items-center gap-2"><ThemePicker /><ThemeToggle /></div>
     </nav>
     <main className="flex-1 flex flex-col items-center justify-center text-center px-6">
       <Sparkles className="w-8 h-8 text-primary mb-4" />
