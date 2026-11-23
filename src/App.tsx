@@ -3,17 +3,18 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { ThemeProvider } from "next-themes";
 import { MotionConfig, AnimatePresence } from "framer-motion";
 import { Analytics } from "@vercel/analytics/react";
 import { HelmetProvider } from "react-helmet-async";
-import GridSplitter from "./pages/GridSplitter";
-import HashtagFinder from "./pages/HashtagFinder";
-import ImageResizer from "./pages/ImageResizer";
 import Tools from "./pages/Tools";
-import ComingSoon from "./pages/ComingSoon";
-import NotFound from "./pages/NotFound";
+
+const GridSplitter = lazy(() => import("./pages/GridSplitter"));
+const HashtagFinder = lazy(() => import("./pages/HashtagFinder"));
+const ImageResizer = lazy(() => import("./pages/ImageResizer"));
+const ComingSoon = lazy(() => import("./pages/ComingSoon"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -31,23 +32,31 @@ const AnimatedRoutes = () => {
     <div className="page-stack">
       <AnimatePresence mode="sync">
         <div key={location.pathname} className="page-stack-item">
-          <Routes location={location}>
-            <Route path="/" element={<Tools />} />
-            <Route path="/grid-splitter" element={<GridSplitter />} />
-            <Route path="/caption-generator" element={<ComingSoon title="Caption Generator" />} />
-            <Route path="/hashtag-finder" element={<HashtagFinder />} />
-            <Route path="/image-resizer" element={<ImageResizer />} />
-            <Route path="/image-generator" element={<ComingSoon title="AI Image Generator" />} />
-            <Route path="/tools" element={<Tools />} />
-            <Route path="/trend-scout" element={<ComingSoon title="Viral Trend Scout" />} />
-            <Route path="/post-scheduler" element={<ComingSoon title="Post Scheduler" />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Suspense fallback={<RouteLoading />}>
+            <Routes location={location}>
+              <Route path="/" element={<Tools />} />
+              <Route path="/grid-splitter" element={<GridSplitter />} />
+              <Route path="/caption-generator" element={<ComingSoon title="Caption Generator" />} />
+              <Route path="/hashtag-finder" element={<HashtagFinder />} />
+              <Route path="/image-resizer" element={<ImageResizer />} />
+              <Route path="/image-generator" element={<ComingSoon title="AI Image Generator" />} />
+              <Route path="/tools" element={<Tools />} />
+              <Route path="/trend-scout" element={<ComingSoon title="Viral Trend Scout" />} />
+              <Route path="/post-scheduler" element={<ComingSoon title="Post Scheduler" />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </div>
       </AnimatePresence>
     </div>
   );
 };
+
+const RouteLoading = () => (
+  <div className="min-h-screen bg-background flex items-center justify-center" role="status" aria-label="Loading tool">
+    <span className="h-5 w-5 rounded-full border-2 border-muted border-t-primary animate-spin" />
+  </div>
+);
 
 const App = () => (
   <HelmetProvider>

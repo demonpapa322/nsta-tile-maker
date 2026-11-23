@@ -25,13 +25,19 @@ export const ResizePreview = memo(function ResizePreview({
   const [isProcessing, setIsProcessing] = useState(false);
   const prevUrlRef = useRef<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const requestIdRef = useRef(0);
 
   const generatePreview = useCallback(async () => {
     if (targetWidth < 1 || targetHeight < 1) return;
-    
+    const requestId = ++requestIdRef.current;
     setIsProcessing(true);
     try {
       const url = await resizeImagePreview(originalUrl, targetWidth, targetHeight, mode, bgColor);
+
+      if (requestId !== requestIdRef.current) {
+        URL.revokeObjectURL(url);
+        return;
+      }
       
       // Revoke old preview URL
       if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
@@ -40,7 +46,7 @@ export const ResizePreview = memo(function ResizePreview({
     } catch (err) {
       console.error('Preview generation failed:', err);
     } finally {
-      setIsProcessing(false);
+      if (requestId === requestIdRef.current) setIsProcessing(false);
     }
   }, [originalUrl, targetWidth, targetHeight, mode, bgColor]);
 
@@ -51,6 +57,7 @@ export const ResizePreview = memo(function ResizePreview({
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
+      requestIdRef.current += 1;
     };
   }, [generatePreview]);
 
@@ -128,7 +135,7 @@ export const ResizePreview = memo(function ResizePreview({
 
         {/* Processing Overlay */}
         {isProcessing && previewUrl && (
-          <div className="absolute inset-0 bg-background/30 backdrop-blur-[2px] flex items-center justify-center">
+          <div className="absolute inset-0 bg-background/30 flex items-center justify-center">
             <Loader2 className="w-5 h-5 text-primary animate-spin" />
           </div>
         )}

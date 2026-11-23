@@ -327,7 +327,6 @@
     -webkit-text-size-adjust: 100%;
     font-feature-settings: 'kern' 1, 'liga' 1;
     transition: background-color 0.15s ease-out, color 0.15s ease-out;
-    content-visibility: auto;
   }
 
   /* Crisp rendering for all images and icons */
@@ -336,25 +335,9 @@
     shape-rendering: geometricPrecision;
   }
 
-  /* Optimized theme transitions - only animate color properties, removed box-shadow (expensive) */
-  *, *::before, *::after {
-    transition: background-color 0.15s ease-out,
-                border-color 0.15s ease-out,
-                color 0.15s ease-out,
-                fill 0.15s ease-out,
-                stroke 0.15s ease-out;
-  }
-
-  /* Disable transitions for elements that need to be instant or are already animated by Framer Motion */
+  /* Keep explicitly animated elements from inheriting broad theme transitions. */
   .no-transition, .no-transition * {
     transition: none !important;
-  }
-
-  /* Hardware acceleration only for animated elements, not all elements */
-  .will-animate {
-    will-change: transform, opacity;
-    backface-visibility: hidden;
-    transform: translateZ(0);
   }
 
   /* Optimize paint for theme changes */

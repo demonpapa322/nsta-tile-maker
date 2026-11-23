@@ -453,7 +453,7 @@ const GridSplitter = memo(function GridSplitter() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.15 }}
-                  className="max-w-xl mx-auto will-animate"
+                  className="max-w-xl mx-auto"
                 >
                   <ImageUploader
                     onImageUpload={handleImageUpload}
@@ -468,7 +468,7 @@ const GridSplitter = memo(function GridSplitter() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.15 }}
-                  className="max-w-4xl mx-auto space-y-6 will-animate"
+                  className="max-w-4xl mx-auto space-y-6"
                 >
                   <GridSelector
                     selectedGrid={selectedGrid}
@@ -490,7 +490,7 @@ const GridSplitter = memo(function GridSplitter() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.15 }}
-                  className="will-animate"
+                  className=""
                 >
                   {/* Desktop: Side-by-side layout */}
                   <div className="hidden lg:grid lg:grid-cols-[1fr,400px] lg:gap-8 lg:items-start">

@@ -138,7 +138,7 @@ const Tools = () => {
                 key={tool.title}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: i * 0.04, ease: [0.25, 0.1, 0.25, 1] }}
+                transition={{ duration: 0.24, delay: i * 0.02, ease: [0.25, 0.1, 0.25, 1] }}
               >
                 <Link
                   to={tool.available ? tool.href : '#'}
