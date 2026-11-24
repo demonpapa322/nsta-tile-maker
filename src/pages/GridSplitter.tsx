@@ -11,6 +11,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { ThemePicker } from '@/components/ThemePicker';
 import { ArrowLeft, Sparkles, Eye, EyeOff, Pencil } from 'lucide-react';
 import { create2DCanvas, canvasToBlob } from '@/lib/canvas';
+import { calculateGridFitGeometry } from '@/lib/gridFitGeometry';
 import { pageVariants } from '@/lib/pageTransition';
 
 type Step = 'upload' | 'crop' | 'preview';
@@ -111,58 +112,41 @@ const GridSplitter = memo(function GridSplitter() {
     };
   }, []);
 
-  // Auto-crop image to grid aspect ratio on upload for instant preview
-  const autoCropToGrid = useCallback((imageUrl: string, gridAspect: number): Promise<string> => {
+  // Fit the complete image to square grid tiles without cropping or stretching.
+  const autoFitToGrid = useCallback((imageUrl: string, cols: number, rows: number): Promise<string> => {
     return new Promise((resolve) => {
       const img = new Image();
-      img.onload = () => {
-        const imgAspect = img.naturalWidth / img.naturalHeight;
-        
-        let cropWidth = img.naturalWidth;
-        let cropHeight = img.naturalHeight;
-        let cropX = 0;
-        let cropY = 0;
-        
-        if (imgAspect > gridAspect) {
-          // Image is wider - crop sides
-          cropWidth = img.naturalHeight * gridAspect;
-          cropX = (img.naturalWidth - cropWidth) / 2;
-        } else if (imgAspect < gridAspect) {
-          // Image is taller - crop top/bottom
-          cropHeight = img.naturalWidth / gridAspect;
-          cropY = (img.naturalHeight - cropHeight) / 2;
-        }
-        
-        // Cap dimensions for performance
-        const maxDim = 2048;
-        let outWidth = cropWidth;
-        let outHeight = cropHeight;
-        if (outWidth > maxDim || outHeight > maxDim) {
-          const scale = maxDim / Math.max(outWidth, outHeight);
-          outWidth = Math.floor(outWidth * scale);
-          outHeight = Math.floor(outHeight * scale);
-        }
+      img.onload = async () => {
+        try {
+          const fit = calculateGridFitGeometry(img.naturalWidth, img.naturalHeight, cols, rows);
+          const { canvas, ctx } = create2DCanvas(fit.canvasWidth, fit.canvasHeight);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, fit.canvasWidth, fit.canvasHeight);
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(
+            img,
+            0,
+            0,
+            img.naturalWidth,
+            img.naturalHeight,
+            fit.imageX,
+            fit.imageY,
+            fit.imageWidth,
+            fit.imageHeight,
+          );
 
-        (async () => {
-          try {
-            const { canvas, ctx, width: safeW, height: safeH } = create2DCanvas(outWidth, outHeight);
-            outWidth = safeW;
-            outHeight = safeH;
-
-            ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, outWidth, outHeight);
-
-            const blob = await canvasToBlob(canvas, { type: 'image/jpeg', quality: 0.92 });
-            if (blob) {
-              const url = URL.createObjectURL(blob);
-              urlsToCleanupRef.current.add(url);
-              resolve(url);
-              return;
-            }
-          } catch (err) {
-            console.error('Auto-crop failed:', err);
+          const blob = await canvasToBlob(canvas, { type: 'image/jpeg', quality: 0.92 });
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            urlsToCleanupRef.current.add(url);
+            resolve(url);
+            return;
           }
-          resolve(imageUrl);
-        })();
+        } catch (err) {
+          console.error('Grid image fit failed:', err);
+        }
+        resolve(imageUrl);
       };
       img.onerror = () => resolve(imageUrl);
       img.src = imageUrl;
@@ -181,17 +165,14 @@ const GridSplitter = memo(function GridSplitter() {
       urlsToCleanupRef.current.add(preview);
     }
     
-    // Parse current grid aspect ratio
+    // Fit the uploaded image to the selected grid while preserving every part.
     const [cols, rows] = selectedGrid.split('x').map(Number);
-    const gridAspect = cols / rows;
-    
-    // Auto-crop to grid aspect ratio for immediate correct preview
-    const croppedPreview = await autoCropToGrid(preview, gridAspect);
+    const croppedPreview = await autoFitToGrid(preview, cols, rows);
     
     setOriginalImage(preview);
     setCroppedImage(croppedPreview);
     setCurrentStep('preview');
-  }, [originalImage, selectedGrid, autoCropToGrid]);
+  }, [originalImage, selectedGrid, autoFitToGrid]);
 
   const handleClear = useCallback(() => {
     if (originalImage?.startsWith('blob:')) {
@@ -215,16 +196,15 @@ const GridSplitter = memo(function GridSplitter() {
       urlsToCleanupRef.current.delete(croppedImage);
     }
     
-    // Re-crop original image to new grid aspect ratio
+    // Re-fit the original image to the new grid so no content is lost.
     if (originalImage) {
       const [cols, rows] = grid.split('x').map(Number);
-      const gridAspect = cols / rows;
-      const newCropped = await autoCropToGrid(originalImage, gridAspect);
+      const newCropped = await autoFitToGrid(originalImage, cols, rows);
       setCroppedImage(newCropped);
     } else {
       setCroppedImage(null);
     }
-  }, [croppedImage, originalImage, autoCropToGrid]);
+  }, [croppedImage, originalImage, autoFitToGrid]);
 
   const handleCropComplete = useCallback((croppedUrl: string) => {
     if (croppedImage?.startsWith('blob:')) {

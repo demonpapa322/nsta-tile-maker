@@ -3,6 +3,8 @@ import { Download, Loader2, Check, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { create2DCanvas } from '@/lib/canvas';
+import { calculateGridFitGeometry } from '@/lib/gridFitGeometry';
 
 interface SplitResult {
   blob: Blob;
@@ -159,33 +161,28 @@ export const DownloadSection = memo(function DownloadSection({
 
       if (!isMountedRef.current) return;
 
-      // Calculate tile dimensions respecting natural aspect ratio with cover behavior
-      // This ensures the final output is never stretched or compressed.
-      const imageAspect = img.naturalWidth / img.naturalHeight;
-      const gridAspect = cols / rows;
-      
-      let sourceWidth: number;
-      let sourceHeight: number;
-      
-      if (imageAspect > gridAspect) {
-        // Image is wider than grid - fit by height, crop width (natural cover)
-        sourceHeight = img.naturalHeight;
-        sourceWidth = sourceHeight * gridAspect;
-      } else {
-        // Image is taller than grid - fit by width, crop height (natural cover)
-        sourceWidth = img.naturalWidth;
-        sourceHeight = sourceWidth / gridAspect;
-      }
-      
-      const tileWidth = sourceWidth / cols;
-      const tileHeight = sourceHeight / rows;
-      
-      const outputWidth = preset.maxSize ? Math.min(tileWidth, preset.maxSize) : tileWidth;
-      const outputHeight = preset.maxSize ? Math.min(tileHeight, preset.maxSize) : tileHeight;
-      
-      // Center the crop area perfectly
-      const offsetX = (img.naturalWidth - sourceWidth) / 2;
-      const offsetY = (img.naturalHeight - sourceHeight) / 2;
+      // Use the same full-image fit as the preview, then slice exact square tiles.
+      const fit = calculateGridFitGeometry(img.naturalWidth, img.naturalHeight, cols, rows);
+      const { canvas: fittedCanvas, ctx: fitCtx } = create2DCanvas(fit.canvasWidth, fit.canvasHeight);
+      fitCtx.fillStyle = '#ffffff';
+      fitCtx.fillRect(0, 0, fit.canvasWidth, fit.canvasHeight);
+      fitCtx.imageSmoothingEnabled = true;
+      fitCtx.imageSmoothingQuality = 'high';
+      fitCtx.drawImage(
+        img,
+        0,
+        0,
+        img.naturalWidth,
+        img.naturalHeight,
+        fit.imageX,
+        fit.imageY,
+        fit.imageWidth,
+        fit.imageHeight,
+      );
+
+      const tileSize = fit.tileSize;
+      const outputWidth = preset.maxSize ? Math.min(tileSize, preset.maxSize) : tileSize;
+      const outputHeight = outputWidth;
 
       const results: SplitResult[] = [];
       
@@ -216,13 +213,12 @@ export const DownloadSection = memo(function DownloadSection({
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
 
-        // Fix: Use correct source coordinates to slice the image into tiles
         ctx.drawImage(
-          img,
-          Math.floor(offsetX + col * tileWidth),
-          Math.floor(offsetY + row * tileHeight),
-          Math.floor(tileWidth),
-          Math.floor(tileHeight),
+          fittedCanvas,
+          col * tileSize,
+          row * tileSize,
+          tileSize,
+          tileSize,
           0,
           0,
           outputWidth,
