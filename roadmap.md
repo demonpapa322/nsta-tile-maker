@@ -7,6 +7,6 @@
 
 ## Full-image grid fitting
 
-- [ ] Match the complete image to the chosen grid ratio without cropping or stretching.
-- [ ] Keep grid preview and downloaded tiles aligned to the same fitted canvas.
-- [ ] Verify exact 3:1 and mismatched image ratios.
+- [x] Match the complete image to the chosen grid ratio without cropping or stretching.
+- [x] Keep grid preview and downloaded tiles aligned to the same fitted canvas.
+- [x] Verify exact 3:1 and mismatched image ratios.
