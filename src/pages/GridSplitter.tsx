@@ -10,8 +10,6 @@ import { DownloadSection } from '@/components/DownloadSection';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ThemePicker } from '@/components/ThemePicker';
 import { ArrowLeft, Sparkles, Eye, EyeOff, Pencil } from 'lucide-react';
-import { create2DCanvas, canvasToBlob } from '@/lib/canvas';
-import { calculateGridFitGeometry } from '@/lib/gridFitGeometry';
 import { pageVariants } from '@/lib/pageTransition';
 
 type Step = 'upload' | 'crop' | 'preview';
@@ -112,74 +110,33 @@ const GridSplitter = memo(function GridSplitter() {
     };
   }, []);
 
-  // Fit the complete image to square grid tiles without cropping or stretching.
-  const autoFitToGrid = useCallback((imageUrl: string, cols: number, rows: number): Promise<string> => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = async () => {
-        try {
-          const fit = calculateGridFitGeometry(img.naturalWidth, img.naturalHeight, cols, rows);
-          const { canvas, ctx } = create2DCanvas(fit.canvasWidth, fit.canvasHeight);
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, fit.canvasWidth, fit.canvasHeight);
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = 'high';
-          ctx.drawImage(
-            img,
-            0,
-            0,
-            img.naturalWidth,
-            img.naturalHeight,
-            fit.imageX,
-            fit.imageY,
-            fit.imageWidth,
-            fit.imageHeight,
-          );
-
-          const blob = await canvasToBlob(canvas, { type: 'image/jpeg', quality: 0.92 });
-          if (blob) {
-            const url = URL.createObjectURL(blob);
-            urlsToCleanupRef.current.add(url);
-            resolve(url);
-            return;
-          }
-        } catch (err) {
-          console.error('Grid image fit failed:', err);
-        }
-        resolve(imageUrl);
-      };
-      img.onerror = () => resolve(imageUrl);
-      img.src = imageUrl;
-    });
-  }, []);
-
-  const handleImageUpload = useCallback(async (files: File[], preview: string) => {
+  const handleImageUpload = useCallback((files: File[], preview: string) => {
     const file = files[0];
     if (!file) return;
     if (originalImage && originalImage.startsWith('blob:')) {
       URL.revokeObjectURL(originalImage);
       urlsToCleanupRef.current.delete(originalImage);
     }
+    if (croppedImage?.startsWith('blob:') && croppedImage !== originalImage) {
+      URL.revokeObjectURL(croppedImage);
+      urlsToCleanupRef.current.delete(croppedImage);
+    }
     
     if (preview.startsWith('blob:')) {
       urlsToCleanupRef.current.add(preview);
     }
     
-    // Fit the uploaded image to the selected grid while preserving every part.
-    const [cols, rows] = selectedGrid.split('x').map(Number);
-    const croppedPreview = await autoFitToGrid(preview, cols, rows);
-    
     setOriginalImage(preview);
-    setCroppedImage(croppedPreview);
+    setCroppedImage(null);
     setCurrentStep('preview');
-  }, [originalImage, selectedGrid, autoFitToGrid]);
+  }, [originalImage, croppedImage]);
 
   const handleClear = useCallback(() => {
     if (originalImage?.startsWith('blob:')) {
       URL.revokeObjectURL(originalImage);
       urlsToCleanupRef.current.delete(originalImage);
     }
-    if (croppedImage?.startsWith('blob:')) {
+    if (croppedImage?.startsWith('blob:') && croppedImage !== originalImage) {
       URL.revokeObjectURL(croppedImage);
       urlsToCleanupRef.current.delete(croppedImage);
     }
@@ -189,22 +146,9 @@ const GridSplitter = memo(function GridSplitter() {
     setCurrentStep('upload');
   }, [originalImage, croppedImage]);
 
-  const handleGridSelect = useCallback(async (grid: string) => {
+  const handleGridSelect = useCallback((grid: string) => {
     setSelectedGrid(grid);
-    if (croppedImage?.startsWith('blob:')) {
-      URL.revokeObjectURL(croppedImage);
-      urlsToCleanupRef.current.delete(croppedImage);
-    }
-    
-    // Re-fit the original image to the new grid so no content is lost.
-    if (originalImage) {
-      const [cols, rows] = grid.split('x').map(Number);
-      const newCropped = await autoFitToGrid(originalImage, cols, rows);
-      setCroppedImage(newCropped);
-    } else {
-      setCroppedImage(null);
-    }
-  }, [croppedImage, originalImage, autoFitToGrid]);
+  }, []);
 
   const handleCropComplete = useCallback((croppedUrl: string) => {
     if (croppedImage?.startsWith('blob:')) {

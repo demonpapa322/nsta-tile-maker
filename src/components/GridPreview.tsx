@@ -1,6 +1,7 @@
 import { memo, useMemo, useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Grid3X3, Bookmark, User } from 'lucide-react';
+import { calculateGridFitGeometry, GridFitGeometry } from '@/lib/gridFitGeometry';
 
 interface GridPreviewProps {
   imageUrl: string;
@@ -16,6 +17,7 @@ const GridTile = memo(function GridTile({
   rows, 
   imageUrl, 
   showNumbers,
+  fit,
 }: { 
   index: number; 
   postOrder: number; 
@@ -23,34 +25,50 @@ const GridTile = memo(function GridTile({
   rows: number; 
   imageUrl: string; 
   showNumbers: boolean;
+  fit: GridFitGeometry | null;
 }) {
+  const column = index % cols;
+  const row = Math.floor(index / cols);
   const style = useMemo(() => {
-    const colIndex = index % cols;
-    const rowIndex = Math.floor(index / cols);
-    
-    // Simple and correct: the image is pre-cropped to the grid aspect ratio,
-    // so we just need to slice it evenly. No cover/zoom logic needed.
-    // Background size = full grid dimensions (cols x rows tiles worth)
-    // Each tile shows 1/cols width and 1/rows height of the image
-    const bgWidth = cols * 100;
-    const bgHeight = rows * 100;
-    
-    // Position the background so this tile shows its corresponding slice
-    // For col 0: 0%, col 1: 100/(cols-1)%, etc. (percentage of movable range)
-    const bgPosX = cols > 1 ? (colIndex / (cols - 1)) * 100 : 50;
-    const bgPosY = rows > 1 ? (rowIndex / (rows - 1)) * 100 : 50;
-    
+    if (!fit) return null;
+
+    const getLayerStyle = (x: number, y: number, width: number, height: number) => ({
+      left: `${((x / fit.tileSize) - column) * 100}%`,
+      top: `${((y / fit.tileSize) - row) * 100}%`,
+      width: `${(width / fit.tileSize) * 100}%`,
+      height: `${(height / fit.tileSize) * 100}%`,
+    });
+
     return {
-      backgroundImage: `url(${imageUrl})`,
-      backgroundSize: `${bgWidth}% ${bgHeight}%`,
-      backgroundPosition: `${bgPosX}% ${bgPosY}%`,
-      backgroundRepeat: 'no-repeat',
+      background: getLayerStyle(fit.backgroundX, fit.backgroundY, fit.backgroundWidth, fit.backgroundHeight),
+      source: getLayerStyle(fit.imageX, fit.imageY, fit.imageWidth, fit.imageHeight),
     };
-  }, [index, cols, rows, imageUrl]);
+  }, [column, fit, row]);
   
   return (
-    <div className="relative aspect-square overflow-hidden">
-      <div className="absolute inset-0" style={style} />
+    <div className="relative aspect-square overflow-hidden bg-muted">
+      {fit && style && (
+        <>
+          <img
+            src={imageUrl}
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+            decoding="async"
+            className="absolute max-w-none pointer-events-none blur-[10px] brightness-[0.72]"
+            style={style.background}
+          />
+          <img
+            src={imageUrl}
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+            decoding="async"
+            className="absolute max-w-none pointer-events-none"
+            style={style.source}
+          />
+        </>
+      )}
       {showNumbers && (
         <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/70 flex items-center justify-center">
           <span className="text-[10px] font-semibold text-white">{postOrder}</span>
@@ -98,6 +116,34 @@ export const GridPreview = memo(function GridPreview({
     const [c, r] = grid.split('x').map(Number);
     return { cols: c, rows: r, totalTiles: c * r };
   }, [grid]);
+
+  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setImageDimensions(null);
+    const image = new Image();
+    image.onload = () => {
+      if (!cancelled) {
+        setImageDimensions({ width: image.naturalWidth, height: image.naturalHeight });
+      }
+    };
+    image.onerror = () => {
+      if (!cancelled) setImageDimensions(null);
+    };
+    image.src = imageUrl;
+
+    return () => {
+      cancelled = true;
+      image.onload = null;
+      image.onerror = null;
+    };
+  }, [imageUrl]);
+
+  const fit = useMemo(() => {
+    if (!imageDimensions) return null;
+    return calculateGridFitGeometry(imageDimensions.width, imageDimensions.height, cols, rows);
+  }, [cols, imageDimensions, rows]);
 
   // Pre-compute tiles array once
   const tiles = useMemo(() => {
@@ -148,6 +194,7 @@ export const GridPreview = memo(function GridPreview({
               rows={rows}
               imageUrl={imageUrl}
               showNumbers={showNumbers}
+              fit={fit}
             />
           ))}
 

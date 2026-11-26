@@ -5,16 +5,19 @@ export interface GridFitGeometry {
   imageY: number;
   imageWidth: number;
   imageHeight: number;
+  backgroundX: number;
+  backgroundY: number;
+  backgroundWidth: number;
+  backgroundHeight: number;
   tileSize: number;
   scale: number;
 }
 
-const MAX_CANVAS_PIXELS = 2048 * 2048;
 const MAX_CANVAS_DIMENSION = 4096;
 
 /**
- * Calculate a square-tile canvas that contains the complete source image.
- * The image is never enlarged; excess canvas area is left for a neutral fill.
+ * Calculate shared tile geometry that contains the complete source image and
+ * provides an overscanned cover image for filling any unused canvas area.
  */
 export function calculateGridFitGeometry(
   sourceWidth: number,
@@ -32,16 +35,17 @@ export function calculateGridFitGeometry(
     throw new RangeError('Invalid image or grid dimensions');
   }
 
-  const maxTileByPixels = Math.floor(Math.sqrt(MAX_CANVAS_PIXELS / (cols * rows)));
   const maxTileByDimension = Math.floor(MAX_CANVAS_DIMENSION / Math.max(cols, rows));
-  const maxTileSize = Math.min(maxTileByPixels, maxTileByDimension);
   const neededTileSize = Math.ceil(Math.max(sourceWidth / cols, sourceHeight / rows));
-  const tileSize = Math.max(1, Math.min(neededTileSize, maxTileSize));
+  const tileSize = Math.max(1, Math.min(neededTileSize, maxTileByDimension));
   const canvasWidth = cols * tileSize;
   const canvasHeight = rows * tileSize;
   const scale = Math.min(1, canvasWidth / sourceWidth, canvasHeight / sourceHeight);
   const imageWidth = sourceWidth * scale;
   const imageHeight = sourceHeight * scale;
+  const backgroundScale = Math.max(canvasWidth / sourceWidth, canvasHeight / sourceHeight) * 1.08;
+  const backgroundWidth = sourceWidth * backgroundScale;
+  const backgroundHeight = sourceHeight * backgroundScale;
 
   return {
     canvasWidth,
@@ -50,6 +54,10 @@ export function calculateGridFitGeometry(
     imageY: (canvasHeight - imageHeight) / 2,
     imageWidth,
     imageHeight,
+    backgroundX: (canvasWidth - backgroundWidth) / 2,
+    backgroundY: (canvasHeight - backgroundHeight) / 2,
+    backgroundWidth,
+    backgroundHeight,
     tileSize,
     scale,
   };

@@ -161,28 +161,33 @@ export const DownloadSection = memo(function DownloadSection({
 
       if (!isMountedRef.current) return;
 
-      // Use the same full-image fit as the preview, then slice exact square tiles.
+      // Use the same geometry as the preview, drawing the source image directly
+      // into each tile so no low-resolution intermediate copy is introduced.
       const fit = calculateGridFitGeometry(img.naturalWidth, img.naturalHeight, cols, rows);
-      const { canvas: fittedCanvas, ctx: fitCtx } = create2DCanvas(fit.canvasWidth, fit.canvasHeight);
-      fitCtx.fillStyle = '#ffffff';
-      fitCtx.fillRect(0, 0, fit.canvasWidth, fit.canvasHeight);
-      fitCtx.imageSmoothingEnabled = true;
-      fitCtx.imageSmoothingQuality = 'high';
-      fitCtx.drawImage(
+      const tileSize = fit.tileSize;
+      const outputWidth = preset.maxSize ? Math.min(tileSize, preset.maxSize) : tileSize;
+      const outputHeight = outputWidth;
+      const backdropTileSize = Math.min(256, tileSize);
+      const backdropScale = backdropTileSize / tileSize;
+      const { canvas: backdropCanvas, ctx: backdropCtx } = create2DCanvas(
+        cols * backdropTileSize,
+        rows * backdropTileSize,
+      );
+      backdropCtx.imageSmoothingEnabled = true;
+      backdropCtx.imageSmoothingQuality = 'high';
+      backdropCtx.filter = `blur(${Math.max(6, backdropTileSize * 0.04)}px) brightness(0.72)`;
+      backdropCtx.drawImage(
         img,
         0,
         0,
         img.naturalWidth,
         img.naturalHeight,
-        fit.imageX,
-        fit.imageY,
-        fit.imageWidth,
-        fit.imageHeight,
+        fit.backgroundX * backdropScale,
+        fit.backgroundY * backdropScale,
+        fit.backgroundWidth * backdropScale,
+        fit.backgroundHeight * backdropScale,
       );
-
-      const tileSize = fit.tileSize;
-      const outputWidth = preset.maxSize ? Math.min(tileSize, preset.maxSize) : tileSize;
-      const outputHeight = outputWidth;
+      backdropCtx.filter = 'none';
 
       const results: SplitResult[] = [];
       
@@ -210,27 +215,41 @@ export const DownloadSection = memo(function DownloadSection({
         
         if (!ctx) return;
         
+        const outputScale = outputWidth / tileSize;
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-
         ctx.drawImage(
-          fittedCanvas,
-          col * tileSize,
-          row * tileSize,
-          tileSize,
-          tileSize,
+          backdropCanvas,
+          col * backdropTileSize,
+          row * backdropTileSize,
+          backdropTileSize,
+          backdropTileSize,
           0,
           0,
           outputWidth,
           outputHeight
+        );
+        ctx.drawImage(
+          img,
+          0,
+          0,
+          img.naturalWidth,
+          img.naturalHeight,
+          (fit.imageX - col * tileSize) * outputScale,
+          (fit.imageY - row * tileSize) * outputScale,
+          fit.imageWidth * outputScale,
+          fit.imageHeight * outputScale,
         );
 
         let blob: Blob;
         if (useOffscreen && canvas instanceof OffscreenCanvas) {
           blob = await canvas.convertToBlob({ type: mimeType, quality: preset.quality });
         } else {
-          blob = await new Promise<Blob>((resolve) => {
-            (canvas as HTMLCanvasElement).toBlob((b) => resolve(b!), mimeType, preset.quality);
+          blob = await new Promise<Blob>((resolve, reject) => {
+            (canvas as HTMLCanvasElement).toBlob((result) => {
+              if (result) resolve(result);
+              else reject(new Error('Tile encoding failed'));
+            }, mimeType, preset.quality);
           });
         }
 
